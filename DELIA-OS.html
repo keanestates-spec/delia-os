@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<!-- saved from url=(0044)file:///Users/deliakeane/delia-os/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DELIA-OS</title>
+  <link rel="stylesheet" href="./DELIA-OS_files/style.css">
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="noise"></div>
+
+  <header class="topbar">
+    <span class="logo">DELIA<span class="accent">-OS</span></span>
+    <div class="topbar-right">
+      <span id="topbar-time">09:46</span>
+      <span id="topbar-date">MAY 30</span>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- Clock & Weather -->
+    <section class="widget widget-clock" id="widget-clock">
+      <div class="widget-header"><span class="widget-title">SYSTEM TIME</span><span class="widget-icon">⏱</span></div>
+      <div class="clock-time" id="clock-time">09:46:06</div>
+      <div class="clock-date" id="clock-date">SAT  MAY 30, 2026</div>
+      <div class="weather-row">
+        <div class="weather-info">
+          <span class="weather-icon" id="weather-icon">⛅</span>
+          <span class="weather-temp" id="weather-temp">59°F</span>
+          <span class="weather-desc" id="weather-desc">Partly cloudy</span>
+        </div>
+        <div class="weather-location" id="weather-location">Unknown</div>
+      </div>
+    </section>
+
+    <!-- To-Do -->
+    <section class="widget widget-todo" id="widget-todo">
+      <div class="widget-header"><span class="widget-title">TASKS</span><span class="widget-icon">✓</span></div>
+      <div class="todo-input-row">
+        <input type="text" id="todo-input" placeholder="New task…" maxlength="80">
+        <button id="todo-add">ADD</button>
+      </div>
+      <ul id="todo-list"></ul>
+      <div class="todo-footer"><span id="todo-count">0 remaining · 0 done</span><button id="todo-clear">CLEAR DONE</button></div>
+    </section>
+
+    <!-- Calendar / Agenda -->
+    <section class="widget widget-calendar" id="widget-calendar">
+      <div class="widget-header"><span class="widget-title">AGENDA</span><span class="widget-icon">📅</span></div>
+      <div class="cal-nav">
+        <button id="cal-prev">◀</button>
+        <span id="cal-month-label">MAY 2026</span>
+        <button id="cal-next">▶</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"><div class="cal-cell header">S</div><div class="cal-cell header">M</div><div class="cal-cell header">T</div><div class="cal-cell header">W</div><div class="cal-cell header">T</div><div class="cal-cell header">F</div><div class="cal-cell header">S</div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell">1</div><div class="cal-cell">2</div><div class="cal-cell">3</div><div class="cal-cell">4</div><div class="cal-cell">5</div><div class="cal-cell">6</div><div class="cal-cell">7</div><div class="cal-cell">8</div><div class="cal-cell">9</div><div class="cal-cell">10</div><div class="cal-cell">11</div><div class="cal-cell">12</div><div class="cal-cell">13</div><div class="cal-cell">14</div><div class="cal-cell">15</div><div class="cal-cell">16</div><div class="cal-cell">17</div><div class="cal-cell">18</div><div class="cal-cell">19</div><div class="cal-cell">20</div><div class="cal-cell">21</div><div class="cal-cell">22</div><div class="cal-cell">23</div><div class="cal-cell">24</div><div class="cal-cell">25</div><div class="cal-cell">26</div><div class="cal-cell">27</div><div class="cal-cell">28</div><div class="cal-cell">29</div><div class="cal-cell today selected">30</div><div class="cal-cell">31</div></div>
+      <div class="event-section">
+        <div class="event-add-row">
+          <input type="text" id="event-input" placeholder="Add event for selected day…" maxlength="60">
+          <button id="event-add">+</button>
+        </div>
+        <div class="event-date-label">SAT MAY 30</div><ul id="event-list"></ul>
+      </div>
+    </section>
+
+    <!-- Bookmarks -->
+    <section class="widget widget-bookmarks" id="widget-bookmarks">
+      <div class="widget-header"><span class="widget-title">LAUNCHPAD</span><span class="widget-icon">⚡</span></div>
+      <div class="bookmark-add-row">
+        <input type="text" id="bm-name" placeholder="Label" maxlength="20">
+        <input type="url" id="bm-url" placeholder="https://…">
+        <button id="bm-add">ADD</button>
+      </div>
+      <div class="bookmark-grid" id="bookmark-grid"><a class="bookmark-item" href="https://github.com/" target="_blank" rel="noopener"><img class="bookmark-favicon" src="./DELIA-OS_files/favicons"><span>GitHub</span><button class="bookmark-delete">✕</button></a><a class="bookmark-item" href="https://youtube.com/" target="_blank" rel="noopener"><img class="bookmark-favicon" src="./DELIA-OS_files/favicons(1)"><span>YouTube</span><button class="bookmark-delete">✕</button></a><a class="bookmark-item" href="https://mail.google.com/" target="_blank" rel="noopener"><img class="bookmark-favicon" src="./DELIA-OS_files/favicons(2)"><span>Gmail</span><button class="bookmark-delete">✕</button></a></div>
+    </section>
+
+    <!-- Business Metrics -->
+    <section class="widget widget-metrics" id="widget-metrics">
+      <div class="widget-header">
+        <span class="widget-title">BUSINESS METRICS</span>
+        <div class="metrics-header-right">
+          <span class="widget-icon">💹</span>
+        </div>
+      </div>
+
+      <!-- KPI row -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">THIS MONTH</div>
+          <div class="kpi-value accent" id="kpi-month">€0.00</div>
+          <div class="kpi-delta" id="kpi-delta">vs last month</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">ALL TIME</div>
+          <div class="kpi-value" id="kpi-total">€0.00</div>
+          <div class="kpi-delta" id="kpi-txcount">0 total entries</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">AVG / MONTH</div>
+          <div class="kpi-value" id="kpi-avg">€0.00</div>
+          <div class="kpi-delta" id="kpi-top-cat">No data yet</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">THIS YEAR</div>
+          <div class="kpi-value" id="kpi-year">€0.00</div>
+          <div class="kpi-delta" id="kpi-year-txcount">0 this year</div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="chart-container">
+        <svg id="rev-chart" width="100%" height="120" preserveAspectRatio="none"><line x1="0" x2="984" y1="86.5" y2="86.5" stroke="#1e1e3a" stroke-width="1"></line><line x1="0" x2="984" y1="59" y2="59" stroke="#1e1e3a" stroke-width="1"></line><line x1="0" x2="984" y1="31.5" y2="31.5" stroke="#1e1e3a" stroke-width="1"></line><line x1="0" x2="984" y1="4" y2="4" stroke="#1e1e3a" stroke-width="1"></line><rect x="20" y="108" width="151" height="2" fill="#00f5d4" opacity="0.8" rx="2" class="chart-bar"><title>DEC: €0.00</title></rect><rect x="177" y="108" width="151" height="2" fill="#00f5d4" opacity="0.8" rx="2" class="chart-bar"><title>JAN: €0.00</title></rect><rect x="334" y="108" width="151" height="2" fill="#00f5d4" opacity="0.8" rx="2" class="chart-bar"><title>FEB: €0.00</title></rect><rect x="491" y="108" width="151" height="2" fill="#00f5d4" opacity="0.8" rx="2" class="chart-bar"><title>MAR: €0.00</title></rect><rect x="648" y="108" width="151" height="2" fill="#00f5d4" opacity="0.8" rx="2" class="chart-bar"><title>APR: €0.00</title></rect><rect x="805" y="108" width="151" height="2" fill="#00f5d4" opacity="0.8" rx="2" class="chart-bar"><title>MAY: €0.00</title></rect></svg>
+        <div class="chart-labels" id="chart-labels"><span>DEC</span><span>JAN</span><span>FEB</span><span>MAR</span><span>APR</span><span>MAY</span></div>
+      </div>
+
+      <!-- Entry form + recent transactions -->
+      <div class="metrics-bottom">
+        <div class="rev-form">
+          <div class="rev-form-title">LOG REVENUE</div>
+          <div class="rev-inputs">
+            <input type="number" id="rev-amount" placeholder="Amount (€)" min="0" step="0.01">
+            <input type="text" id="rev-label" placeholder="Description" maxlength="50">
+            <select id="rev-category">
+              <option value="Sales">Sales</option>
+              <option value="Subscription">Subscription</option>
+              <option value="Consulting">Consulting</option>
+              <option value="Refund">Refund</option>
+              <option value="Other">Other</option>
+            </select>
+            <input type="date" id="rev-date">
+            <button id="rev-add">LOG</button>
+          </div>
+        </div>
+
+        <div class="rev-history">
+          <div class="rev-history-header">
+            <span class="rev-history-title">RECENT TRANSACTIONS</span>
+            <select id="rev-filter">
+              <option value="all">All Categories</option>
+              <option value="Sales">Sales</option>
+              <option value="Subscription">Subscription</option>
+              <option value="Consulting">Consulting</option>
+              <option value="Refund">Refund</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <ul id="rev-list"><li style="color: var(--text-dim); font-size: 0.75rem;">No transactions yet.</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Business Pipeline -->
+    <section class="widget widget-pipeline" id="widget-pipeline">
+      <div class="widget-header">
+        <span class="widget-title">BUSINESS PIPELINE</span>
+        <span class="widget-icon">⚡</span>
+      </div>
+      <div class="pipe-tabs">
+        <button class="pipe-tab pipe-tab-active" data-tab="sava">SAVA NEXUS</button>
+        <button class="pipe-tab" data-tab="peptide">PEPTIDE GARAGE</button>
+        <button class="pipe-tab" data-tab="str">AIRBNB / STR</button>
+      </div>
+
+      <!-- SAVA NEXUS -->
+      <div class="pipe-panel" id="tab-sava">
+        <div class="pipe-kpi-row" id="sava-kpis"><div class="pipe-kpi"><div class="pipe-kpi-label">PIPELINE VALUE</div><div class="pipe-kpi-val">€0.00</div><div class="pipe-kpi-sub">0 open deals</div></div><div class="pipe-kpi"><div class="pipe-kpi-label">CLOSED WON</div><div class="pipe-kpi-val">€0.00</div><div class="pipe-kpi-sub">0 deals</div></div><div class="pipe-kpi"><div class="pipe-kpi-label">WIN RATE</div><div class="pipe-kpi-val">--</div><div class="pipe-kpi-sub">0 total</div></div><div class="pipe-kpi"><div class="pipe-kpi-label">AVG DEAL SIZE</div><div class="pipe-kpi-val">€0.00</div><div class="pipe-kpi-sub">all stages</div></div></div>
+        <div class="sava-funnel" id="sava-funnel"><div class="funnel-stage" style="border-color: rgb(90, 90, 138);">
+      <div class="funnel-stage-name">PROSPECT</div>
+      <div class="funnel-stage-count" style="color:#5a5a8a">0</div>
+      <div class="funnel-stage-val">€0.00</div>
+      <div class="funnel-stage-bar" style="background:#5a5a8a"></div></div><div class="funnel-stage" style="border-color: rgb(114, 9, 183);">
+      <div class="funnel-stage-name">QUALIFIED</div>
+      <div class="funnel-stage-count" style="color:#7209b7">0</div>
+      <div class="funnel-stage-val">€0.00</div>
+      <div class="funnel-stage-bar" style="background:#7209b7"></div></div><div class="funnel-stage" style="border-color: rgb(72, 149, 239);">
+      <div class="funnel-stage-name">PROPOSAL</div>
+      <div class="funnel-stage-count" style="color:#4895ef">0</div>
+      <div class="funnel-stage-val">€0.00</div>
+      <div class="funnel-stage-bar" style="background:#4895ef"></div></div><div class="funnel-stage" style="border-color: rgb(247, 183, 49);">
+      <div class="funnel-stage-name">NEGOTIATING</div>
+      <div class="funnel-stage-count" style="color:#f7b731">0</div>
+      <div class="funnel-stage-val">€0.00</div>
+      <div class="funnel-stage-bar" style="background:#f7b731"></div></div><div class="funnel-stage" style="border-color: rgb(0, 245, 212);">
+      <div class="funnel-stage-name">WON</div>
+      <div class="funnel-stage-count" style="color:#00f5d4">0</div>
+      <div class="funnel-stage-val">€0.00</div>
+      <div class="funnel-stage-bar" style="background:#00f5d4"></div></div><div class="funnel-stage" style="border-color: rgb(247, 37, 133);">
+      <div class="funnel-stage-name">LOST</div>
+      <div class="funnel-stage-count" style="color:#f72585">0</div>
+      <div class="funnel-stage-val">€0.00</div>
+      <div class="funnel-stage-bar" style="background:#f72585"></div></div></div>
+        <div class="sava-body">
+          <div class="pipe-form-col">
+            <div class="pcol-title">ADD DEAL</div>
+            <input type="text" id="sava-client" class="pipe-input" placeholder="Client / company" maxlength="50">
+            <input type="number" id="sava-value" class="pipe-input" placeholder="Deal value (€)" min="0" step="0.01">
+            <input type="text" id="sava-contact" class="pipe-input" placeholder="Contact name" maxlength="50">
+            <select id="sava-stage" class="pipe-input">
+              <option value="Prospect">Prospect</option>
+              <option value="Qualified">Qualified</option>
+              <option value="Proposal">Proposal</option>
+              <option value="Negotiating">Negotiating</option>
+              <option value="Won">Won ✓</option>
+              <option value="Lost">Lost ✗</option>
+            </select>
+            <input type="date" id="sava-date" class="pipe-input">
+            <input type="text" id="sava-notes" class="pipe-input" placeholder="Notes…" maxlength="100">
+            <button id="sava-add">ADD DEAL</button>
+          </div>
+          <div class="pipe-list-col">
+            <div class="pipe-list-header">
+              <span class="pcol-title">DEALS</span>
+              <select id="sava-filter" class="pipe-mini-select">
+                <option value="all">All stages</option>
+                <option value="Prospect">Prospect</option>
+                <option value="Qualified">Qualified</option>
+                <option value="Proposal">Proposal</option>
+                <option value="Negotiating">Negotiating</option>
+                <option value="Won">Won</option>
+                <option value="Lost">Lost</option>
+              </select>
+            </div>
+            <ul id="sava-list"><li style="font-size:0.72rem;color:var(--text-dim);padding:8px 0">No deals yet.</li></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- PEPTIDE GARAGE -->
+      <div class="pipe-panel pipe-hidden" id="tab-peptide">
+        <div class="pipe-kpi-row" id="peptide-kpis"><div class="pipe-kpi"><div class="pipe-kpi-label">INVENTORY VALUE</div><div class="pipe-kpi-val">€0.00</div><div class="pipe-kpi-sub">0 products</div></div><div class="pipe-kpi"><div class="pipe-kpi-label">REVENUE DELIVERED</div><div class="pipe-kpi-val">€0.00</div><div class="pipe-kpi-sub">0 orders</div></div><div class="pipe-kpi"><div class="pipe-kpi-label">ACTIVE ORDERS</div><div class="pipe-kpi-val">0</div><div class="pipe-kpi-sub">Pending → Shipped</div></div><div class="pipe-kpi"><div class="pipe-kpi-label">STOCK ALERTS</div><div class="pipe-kpi-val">0</div><div class="pipe-kpi-sub">0 out · 0 low</div></div></div>
+        <div class="peptide-body">
+          <div class="pipe-form-col">
+            <div class="pcol-title">INVENTORY</div>
+            <input type="text" id="pep-name" class="pipe-input" placeholder="Peptide name" maxlength="40">
+            <input type="text" id="pep-type" class="pipe-input" placeholder="Type / compound" maxlength="40">
+            <div class="pipe-row">
+              <input type="number" id="pep-stock" class="pipe-input" placeholder="Stock (units)" min="0">
+              <input type="number" id="pep-price" class="pipe-input" placeholder="Price/unit (€)" min="0" step="0.01">
+              <input type="number" id="pep-cost" class="pipe-input" placeholder="Cost/unit (€)" min="0" step="0.01">
+            </div>
+            <button id="pep-add-product">ADD PRODUCT</button>
+            <ul id="pep-product-list"><li style="font-size:0.72rem;color:var(--text-dim);padding:8px 0">No products yet.</li></ul>
+          </div>
+          <div class="pipe-list-col">
+            <div class="pcol-title">ORDERS</div>
+            <select id="pep-order-product" class="pipe-input"><option value="">— add products first —</option></select>
+            <input type="text" id="pep-customer" class="pipe-input" placeholder="Customer" maxlength="50">
+            <div class="pipe-row">
+              <input type="number" id="pep-qty" class="pipe-input" placeholder="Qty" min="1">
+              <input type="date" id="pep-order-date" class="pipe-input">
+            </div>
+            <select id="pep-order-status" class="pipe-input">
+              <option value="Pending">Pending</option>
+              <option value="Processing">Processing</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Delivered">Delivered</option>
+            </select>
+            <button id="pep-add-order">ADD ORDER</button>
+            <ul id="pep-order-list"><li style="font-size:0.72rem;color:var(--text-dim);padding:8px 0">No orders yet.</li></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- AIRBNB / STR -->
+      <div class="pipe-panel pipe-hidden" id="tab-str">
+        <div class="pipe-kpi-row" id="str-kpis"><div class="pipe-kpi"><div class="pipe-kpi-label">TOTAL REVENUE</div><div class="pipe-kpi-val">€0.00</div><div class="pipe-kpi-sub">0 bookings</div></div><div class="pipe-kpi"><div class="pipe-kpi-label">UPCOMING / ACTIVE</div><div class="pipe-kpi-val">0</div><div class="pipe-kpi-sub">0 properties</div></div><div class="pipe-kpi"><div class="pipe-kpi-label">OCCUPANCY (30D)</div><div class="pipe-kpi-val">0%</div><div class="pipe-kpi-sub">0 nights booked</div></div><div class="pipe-kpi"><div class="pipe-kpi-label">AVG NIGHTLY RATE</div><div class="pipe-kpi-val">€0.00</div><div class="pipe-kpi-sub">across all bookings</div></div></div>
+        <div class="str-body">
+          <div class="pipe-form-col">
+            <div class="pcol-title">PROPERTIES</div>
+            <input type="text" id="str-prop-name" class="pipe-input" placeholder="Property name" maxlength="40">
+            <input type="text" id="str-prop-location" class="pipe-input" placeholder="Location / address" maxlength="60">
+            <div class="pipe-row">
+              <select id="str-prop-platform" class="pipe-input">
+                <option value="Airbnb">Airbnb</option>
+                <option value="Booking.com">Booking.com</option>
+                <option value="Both">Both</option>
+                <option value="Direct">Direct</option>
+              </select>
+              <input type="number" id="str-nightly-rate" class="pipe-input" placeholder="Nightly rate (€)" min="0" step="1">
+            </div>
+            <button id="str-add-property">ADD PROPERTY</button>
+            <div id="str-property-cards"><p style="font-size:0.72rem;color:var(--text-dim);padding:8px 0">No properties yet.</p></div>
+          </div>
+          <div class="pipe-list-col">
+            <div class="pcol-title">BOOKINGS</div>
+            <select id="str-booking-prop" class="pipe-input"><option value="">— add a property first —</option></select>
+            <input type="text" id="str-guest" class="pipe-input" placeholder="Guest name" maxlength="50">
+            <div class="pipe-row">
+              <input type="date" id="str-checkin" class="pipe-input">
+              <input type="date" id="str-checkout" class="pipe-input">
+            </div>
+            <div class="pipe-row">
+              <select id="str-booking-platform" class="pipe-input">
+                <option value="Airbnb">Airbnb</option>
+                <option value="Booking.com">Booking.com</option>
+                <option value="Direct">Direct</option>
+              </select>
+              <input type="number" id="str-booking-amount" class="pipe-input" placeholder="Amount (€)" min="0" step="1">
+            </div>
+            <select id="str-booking-status" class="pipe-input">
+              <option value="Confirmed">Confirmed</option>
+              <option value="Active">Active</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <button id="str-add-booking">ADD BOOKING</button>
+            <ul id="str-booking-list"><li style="font-size:0.72rem;color:var(--text-dim);padding:8px 0">No bookings yet.</li></ul>
+          </div>
+          <div class="str-chart-col">
+            <div class="pcol-title">REVENUE BY PROPERTY</div>
+            <svg id="str-rev-chart" width="100%" height="160" preserveAspectRatio="none"></svg>
+            <div class="str-platform-legend">
+              <span class="legend-dot" style="background:#FF5A5F"></span>Airbnb
+              <span class="legend-dot" style="background:#4fc3f7; margin-left:10px"></span>Booking.com
+              <span class="legend-dot" style="background:#00f5d4; margin-left:10px"></span>Direct
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sleep / Energy / Mood Tracker -->
+    <section class="widget widget-wellness" id="widget-wellness">
+      <div class="widget-header">
+        <span class="widget-title">WELLNESS TRACKER</span>
+        <div class="wellness-day-nav">
+          <button id="well-prev">◀</button>
+          <span id="well-day-label">TODAY</span>
+          <button id="well-next">▶</button>
+        </div>
+        <span class="widget-icon">🌙</span>
+      </div>
+
+      <!-- Summary strip -->
+      <div class="well-summary" id="well-summary">
+        <div class="well-stat"><div class="well-stat-label">SLEEP</div><div class="well-stat-val" id="ws-sleep">--</div></div>
+        <div class="well-stat"><div class="well-stat-label">QUALITY</div><div class="well-stat-val" id="ws-quality">--</div></div>
+        <div class="well-stat"><div class="well-stat-label">ENERGY</div><div class="well-stat-val" id="ws-energy">--</div></div>
+        <div class="well-stat"><div class="well-stat-label">MOOD</div><div class="well-stat-val" id="ws-mood">--</div></div>
+        <div class="well-stat"><div class="well-stat-label">STREAK</div><div class="well-stat-val" id="ws-streak">0 days</div></div>
+      </div>
+
+      <div class="wellness-body">
+
+        <!-- Sleep -->
+        <div class="well-card">
+          <div class="well-card-title">SLEEP</div>
+          <div class="well-field-row">
+            <label>Bedtime</label>
+            <input type="time" id="well-bedtime">
+          </div>
+          <div class="well-field-row">
+            <label>Wake up</label>
+            <input type="time" id="well-waketime">
+          </div>
+          <div class="well-field-row">
+            <label>Quality</label>
+            <div class="star-row" id="well-quality-stars"><button class="star-btn" data-v="1">★</button><button class="star-btn" data-v="2">★</button><button class="star-btn" data-v="3">★</button><button class="star-btn" data-v="4">★</button><button class="star-btn" data-v="5">★</button></div>
+          </div>
+          <div class="well-duration" id="well-duration">— hrs</div>
+        </div>
+
+        <!-- Energy -->
+        <div class="well-card">
+          <div class="well-card-title">ENERGY</div>
+          <div class="energy-scale" id="energy-scale"><button class="energy-btn" data-v="1">1</button><button class="energy-btn" data-v="2">2</button><button class="energy-btn" data-v="3">3</button><button class="energy-btn" data-v="4">4</button><button class="energy-btn" data-v="5">5</button></div>
+          <div class="energy-label" id="energy-label">Not logged</div>
+          <div class="well-field-row" style="margin-top:14px">
+            <label>Note</label>
+            <input type="text" id="well-note" placeholder="How are you feeling…" maxlength="80">
+          </div>
+        </div>
+
+        <!-- Mood -->
+        <div class="well-card">
+          <div class="well-card-title">MOOD</div>
+          <div class="mood-grid" id="mood-grid"><button class="mood-btn" title="Great">😄</button><button class="mood-btn" title="Good">🙂</button><button class="mood-btn" title="Neutral">😐</button><button class="mood-btn" title="Low">😔</button><button class="mood-btn" title="Rough">😩</button><button class="mood-btn" title="Frustrated">😤</button><button class="mood-btn" title="Anxious">😰</button><button class="mood-btn" title="Excited">🤩</button><button class="mood-btn" title="Tired">😴</button><button class="mood-btn" title="Energised">🔥</button></div>
+          <div class="mood-selected" id="mood-selected">Not logged</div>
+        </div>
+
+        <!-- 7-day chart -->
+        <div class="well-card well-card-chart">
+          <div class="well-card-title">7-DAY OVERVIEW</div>
+          <svg id="well-chart" width="100%" height="110" preserveAspectRatio="none"><line x1="0" x2="290" y1="59.77777777777778" y2="59.77777777777778" stroke="#1e1e3a" stroke-width="1"></line><text x="2" y="57.77777777777778" font-size="7" fill="#3a3a5a" font-family="Courier New, monospace">4h</text><line x1="0" x2="290" y1="40.66666666666667" y2="40.66666666666667" stroke="#1e1e3a" stroke-width="1"></line><text x="2" y="38.66666666666667" font-size="7" fill="#3a3a5a" font-family="Courier New, monospace">6h</text><line x1="0" x2="290" y1="21.555555555555557" y2="21.555555555555557" stroke="#1e1e3a" stroke-width="1"></line><text x="2" y="19.555555555555557" font-size="7" fill="#3a3a5a" font-family="Courier New, monospace">8h</text><rect x="10" y="98" width="34" height="0" fill="rgba(0,245,212,0.35)" rx="2"><title>MAY 24: no data</title></rect><rect x="48" y="98" width="34" height="0" fill="rgba(0,245,212,0.35)" rx="2"><title>MAY 25: no data</title></rect><rect x="86" y="98" width="34" height="0" fill="rgba(0,245,212,0.35)" rx="2"><title>MAY 26: no data</title></rect><rect x="124" y="98" width="34" height="0" fill="rgba(0,245,212,0.35)" rx="2"><title>MAY 27: no data</title></rect><rect x="162" y="98" width="34" height="0" fill="rgba(0,245,212,0.35)" rx="2"><title>MAY 28: no data</title></rect><rect x="200" y="98" width="34" height="0" fill="rgba(0,245,212,0.35)" rx="2"><title>MAY 29: no data</title></rect><rect x="238" y="98" width="34" height="0" fill="#00f5d4" rx="2"><title>MAY 30: no data</title></rect></svg>
+          <div class="well-chart-legend">
+            <span class="legend-dot" style="background:#00f5d4"></span>Sleep hrs
+            <span class="legend-dot" style="background:#f72585; margin-left:10px"></span>Energy
+          </div>
+          <div class="well-chart-labels" id="well-chart-labels"><span>MAY</span><span>MAY</span><span>MAY</span><span>MAY</span><span>MAY</span><span>MAY</span><span>MAY</span></div>
+        </div>
+
+      </div>
+
+      <button id="well-save" class="well-save-btn">SAVE TODAY</button>
+    </section>
+
+    <!-- Mind Map & Idea Capture -->
+    <section class="widget widget-mindmap" id="widget-mindmap">
+      <div class="widget-header">
+        <span class="widget-title">MIND MAP &amp; IDEAS</span>
+        <span class="widget-icon">🧠</span>
+      </div>
+      <div class="mindmap-body">
+
+        <!-- Left: Idea Capture -->
+        <div class="ideas-panel">
+          <div class="ideas-panel-header">
+            <span class="ideas-panel-title">IDEA CAPTURE</span>
+            <div class="idea-day-nav">
+              <button id="idea-prev-day">◀</button>
+              <span id="idea-day-label">TODAY</span>
+              <button id="idea-next-day">▶</button>
+            </div>
+          </div>
+          <div class="idea-input-wrap">
+            <input type="text" id="idea-input" placeholder="Capture an idea…" maxlength="120">
+            <button id="idea-add">+</button>
+          </div>
+          <div class="idea-tags-row" id="idea-tags-row"><button class="idea-tag-btn">💡</button><button class="idea-tag-btn">🔥</button><button class="idea-tag-btn">❓</button><button class="idea-tag-btn">📌</button><button class="idea-tag-btn">🌱</button><button class="idea-tag-btn">⚡</button></div>
+          <ul id="idea-list"><li class="ideas-empty">No ideas captured yet.</li></ul>
+        </div>
+
+        <!-- Right: Mind Map -->
+        <div class="mindmap-panel">
+          <div class="mindmap-toolbar">
+            <input type="text" id="map-central-input" placeholder="Today&#39;s focus…" maxlength="40">
+            <button id="map-add-child">+ BRANCH</button>
+            <button id="map-delete-node" disabled="">DEL NODE</button>
+            <button id="map-reset-layout">AUTO LAYOUT</button>
+            <button id="map-clear-all">CLEAR</button>
+          </div>
+          <canvas id="mindmap-canvas" width="1428" height="800" style="width: 714px; height: 400px;"></canvas>
+          <div class="mindmap-hint">Click node to select · Drag to move · Double-click to rename · "+ BRANCH" to expand</div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="./DELIA-OS_files/app.js"></script>
+
+
+</body></html>
