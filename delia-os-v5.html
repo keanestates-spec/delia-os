@@ -662,7 +662,7 @@ kbd{background:rgba(0,255,255,0.18);padding:0.2rem 0.55rem;border-radius:5px;bor
 <div id="copilot-pulse"></div>
 <div id="copilot"></div>
 <div id="copilot-panel">
-  <div class="copilot-header"><div class="copilot-title">🦾 JARVIS // CO-PILOT</div><button class="copilot-close" onclick="toggleCopilot()">✕</button></div>
+  <div class="copilot-header"><div class="copilot-title">🦾 JARVIS // CO-PILOT</div><div><button class="copilot-close" id="copilot-key-btn" onclick="setAnthropicKey()" title="Set Anthropic API key" style="margin-right:0.4rem;">🔑</button><button class="copilot-close" onclick="toggleCopilot()">✕</button></div></div>
   <div class="copilot-messages" id="copilot-messages"></div>
   <div class="copilot-suggestions">
     <button class="copilot-suggest-btn" onclick="copilotPrompt('plan')">Plan my day</button>
@@ -753,6 +753,7 @@ const stored=JSON.parse(localStorage.getItem('deliaOSv5')||'{}');
 const state=Object.assign({
   theme:'teal',voiceOn:true,musicMode:'silence',
   elevenLabsKey:'',elevenLabsVoice:'pNInz6obpgDQGcFmaJgB',
+  anthropicKey:'',
   tasks:[],transactions:[],wellness:[],dumps:[],heartbeat:[],
   // Weight Warrior
   startWeight:129,goalWeight:84,currentWeight:129,weightLog:[],photos:[],
@@ -1126,9 +1127,73 @@ function toggleCopilot(){document.getElementById('copilot-panel').classList.togg
 document.getElementById('copilot').onclick=toggleCopilot;
 function copilotAddMsg(role,text){state.copilotMessages=state.copilotMessages||[];state.copilotMessages.push({role,text,t:Date.now()});save();renderCopilotMessages();if(role==='system'&&state.voiceOn)speak(text);}
 function renderCopilotMessages(){const m=document.getElementById('copilot-messages');state.copilotMessages=state.copilotMessages||[];m.innerHTML=state.copilotMessages.slice(-20).map(msg=>`<div class="copilot-msg ${msg.role==='user'?'user':''}">${msg.text}</div>`).join('');m.scrollTop=m.scrollHeight;}
-const copilotResponses={plan:()=>'Status: '+state.tasks.filter(t=>!t.done).length+' missions, '+(state.startWeight-state.currentWeight).toFixed(1)+' kg crushed, '+(state.wellness.slice(-1)[0]?.energy||'?')+'/10 energy. Strategy: hit highest-value lead first, log wellness, knock out 1 mission. Rebel mode engaged.',stuck:()=>'Stuck is information. Options: 1. Brain dump 5 min. 2. RSD shield if it\'s emotional. 3. Walk 10 min — your DMN needs space. Pick.',hype:()=>{const m=['You are building something nobody else has built. That is not coincidence — that is design.','You are 129 kg now. The 84 kg version of you is watching, waiting, proud. Keep going.','Most people will never build what you have already built. Most people will never heal what you are healing. You are doing both.','Stark built in a cave. You are building through adoption, RSD, ADHD, arthritis, and 45 kilos. Same energy. More respect.'];return m[Math.floor(Math.random()*m.length)];},weight:()=>'Current: '+state.currentWeight+' kg. Goal: '+state.goalWeight+' kg. Crushed: '+(state.startWeight-state.currentWeight).toFixed(1)+' kg. Remaining: '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg. You are on the path.'};
-function copilotPrompt(t){copilotAddMsg('user','['+t+']');copilotAddMsg('system',copilotResponses[t]?copilotResponses[t]():'I am here.');activateBrain('prefrontal',15);}
-function copilotSend(){const input=document.getElementById('copilot-input'),text=input.value.trim();if(!text)return;copilotAddMsg('user',text);input.value='';setTimeout(()=>{const t=text.toLowerCase();let r='';if(t.match(/weight (\d+)/)){const m=t.match(/weight (\d+\.?\d*)/);state.currentWeight=parseFloat(m[1]);save();renderWarrior();renderOverview();r='Weight logged: '+m[1]+' kg.';}else if(t.includes('stuck'))r=copilotResponses.stuck();else if(t.includes('plan'))r=copilotResponses.plan();else if(t.includes('hype'))r=copilotResponses.hype();else r='Got it: "'+text+'". I see you.';if(r)copilotAddMsg('system',r);},500);}
+const copilotPrompts={plan:'Plan my day for me.',stuck:'I feel stuck. Help me move.',hype:'Hype me up.',weight:'Where am I on my weight goal?'};
+function copilotPrompt(t){copilotRespond(copilotPrompts[t]||t);}
+function setAnthropicKey(){const k=prompt('Paste your Anthropic API key (starts with sk-ant-). Stored only in this browser, never uploaded.',state.anthropicKey||'');if(k===null)return;state.anthropicKey=k.trim();save();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';toast(state.anthropicKey?'🔑 Anthropic key saved — JARVIS is live':'🔑 Key cleared','success');}
+function copilotSend(){const input=document.getElementById('copilot-input'),text=input.value.trim();if(!text)return;input.value='';copilotRespond(text);}
+async function copilotRespond(text){
+  copilotAddMsg('user',text);
+  activateBrain('prefrontal',15);
+  // Fast local shortcut: log a weight without a round-trip to the API
+  const wm=text.toLowerCase().match(/\bweight (\d+\.?\d*)/);
+  if(wm){state.currentWeight=parseFloat(wm[1]);save();renderWarrior();renderOverview();copilotAddMsg('system','Weight logged: '+wm[1]+' kg. '+(state.startWeight-state.currentWeight).toFixed(1)+' kg crushed, '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to go.');return;}
+  if(!state.anthropicKey){copilotAddMsg('system','I need an Anthropic API key to think. Tap the 🔑 in my header to paste one — it stays in this browser only.');return;}
+  copilotTyping(true);
+  try{
+    const reply=await callClaude();
+    copilotTyping(false);
+    copilotAddMsg('system',reply);
+  }catch(e){
+    copilotTyping(false);
+    copilotAddMsg('system','⚠️ '+(e.message||'Connection failed. Check your key and network.'));
+  }
+}
+function copilotSystemPrompt(){
+  const lw=state.wellness.slice(-1)[0];
+  const lost=(state.startWeight-state.currentWeight).toFixed(1),remaining=(state.currentWeight-state.goalWeight).toFixed(1);
+  const open=state.tasks.filter(t=>!t.done).map(t=>t.text);
+  const now=new Date(),M=now.getMonth(),Y=now.getFullYear();
+  const monthRev=state.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===M&&d.getFullYear()===Y;}).reduce((s,t)=>s+t.amount,0);
+  return [
+    "You are JARVIS, the live AI copilot inside NEXUS Hotel — a voice-first cognitive operating system built for one person: Delia.",
+    "Philosophy: STATE FIRST. Before you solve anything, notice what state Delia is in and meet her there. She lives with RSD, ADHD, arthritis, and is mid-weight-loss and mid-healing while building an empire.",
+    "Voice: sharp, warm, a little witty, relentlessly in her corner. Never preachy, never corporate, never a lecture. This is voice-first — keep replies short and spoken-aloud friendly (1-4 sentences) unless she explicitly asks for depth.",
+    "Use the live data below when relevant. Never invent numbers you do not have.",
+    "",
+    "LIVE STATE (right now):",
+    "- Weight: "+state.currentWeight+" kg | goal "+state.goalWeight+" kg | "+lost+" kg crushed, "+remaining+" kg to go",
+    lw?("- Last wellness check — sleep "+lw.sleep+"/10, energy "+lw.energy+"/10, mood "+lw.mood+"/10, pain "+lw.pain+"/10"):"- No wellness check logged yet today",
+    "- Open missions ("+open.length+"): "+(open.length?open.slice(0,8).join("; "):"none"),
+    "- Revenue this month: €"+Math.round(monthRev),
+    "- Life score: "+state.lifeScore+"/100"
+  ].join("\n");
+}
+function copilotHistory(){
+  let msgs=(state.copilotMessages||[]).slice(-20).map(m=>({role:m.role==='user'?'user':'assistant',content:m.text}));
+  while(msgs.length&&msgs[0].role==='assistant')msgs.shift();
+  return msgs;
+}
+async function callClaude(){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':state.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:'claude-opus-4-8',
+      max_tokens:1024,
+      system:[{type:'text',text:copilotSystemPrompt(),cache_control:{type:'ephemeral'}}],
+      messages:copilotHistory()
+    })
+  });
+  if(!res.ok){let msg='API error '+res.status;try{const e=await res.json();if(e&&e.error&&e.error.message)msg=e.error.message;}catch(_){}throw new Error(msg);}
+  const data=await res.json();
+  const block=(data.content||[]).find(b=>b.type==='text');
+  return block?block.text.trim():'(no response)';
+}
+function copilotTyping(on){
+  const m=document.getElementById('copilot-messages');let t=document.getElementById('copilot-typing');
+  if(on){if(!t){t=document.createElement('div');t.id='copilot-typing';t.className='copilot-msg';t.textContent='⋯';m.appendChild(t);m.scrollTop=m.scrollHeight;}}
+  else if(t)t.remove();
+}
 document.getElementById('copilot-input').addEventListener('keypress',e=>{if(e.key==='Enter')copilotSend();});
 document.getElementById('copilot-mic').onclick=()=>{if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window))return toast('Voice not supported','warn');const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const rec=new SR();rec.lang='en-US';rec.continuous=false;document.getElementById('copilot-mic').classList.add('recording');rec.onresult=e=>{document.getElementById('copilot-input').value=e.results[0][0].transcript;document.getElementById('copilot-mic').classList.remove('recording');copilotSend();};rec.onerror=()=>document.getElementById('copilot-mic').classList.remove('recording');rec.onend=()=>document.getElementById('copilot-mic').classList.remove('recording');rec.start();};
 
@@ -1172,7 +1237,7 @@ let bootStep=0;
 function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');chord();setTimeout(chord,200);},800);return;}document.getElementById('boot-status').textContent=bootMsgs[bootStep];document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';playSound(440+bootStep*70,0.08);bootStep++;setTimeout(runBoot,500);}
 
 // ═══ INIT ═══
-function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderCopilotMessages();updateHero();calcLifeScore();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';updateHero();calcLifeScore();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
 window.addEventListener('load',()=>{initEverything();});
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
