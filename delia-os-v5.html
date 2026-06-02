@@ -494,6 +494,12 @@ body.view-wing main.grid{padding-top:5.5rem;}
 .cmdk-item .ck-ico{font-size:1.2rem;}
 .cmdk-item.sel,.cmdk-item:hover{background:rgba(0,255,255,0.12);color:#fff;box-shadow:inset 0 0 22px var(--accent-glow);}
 .cmdk-item .ck-tag{margin-left:auto;font-size:0.56rem;font-family:'Orbitron',sans-serif;letter-spacing:0.12em;color:var(--accent);opacity:0.7;}
+#camera-overlay{position:fixed;inset:0;z-index:650;background:rgba(0,3,8,0.96);display:none;flex-direction:column;align-items:center;justify-content:center;}
+#camera-overlay.open{display:flex;}
+#camera-video{max-width:92vw;max-height:74vh;border-radius:14px;border:1px solid var(--border-bright);box-shadow:0 0 70px var(--accent);background:#000;}
+.cam-bar{display:flex;gap:0.6rem;margin-top:1.2rem;flex-wrap:wrap;justify-content:center;}
+.cam-btn{padding:0.7rem 1.2rem;background:rgba(0,255,255,0.1);border:1px solid var(--border-bright);color:var(--accent);border-radius:10px;font-family:'Orbitron';letter-spacing:0.1em;cursor:pointer;}
+.cam-btn.close{background:rgba(255,0,68,0.15);border-color:var(--danger);color:var(--danger);}
 </style>
 </head>
 <body>
@@ -685,13 +691,7 @@ body.view-wing main.grid{padding-top:5.5rem;}
     <div class="giants-grid" id="giants-grid"></div>
     <div class="giants-upload-row">
       <label class="giants-upload-btn">📁 UPLOAD AUDIO<input type="file" id="giant-file" accept="audio/*" multiple></label>
-      <select id="giant-select" style="background:rgba(0,255,255,0.06);border:1px solid var(--border);color:#fff;padding:0.55rem;border-radius:8px;font-size:0.72rem;font-family:inherit;">
-        <option value="elon">🚀 Elon Musk</option>
-        <option value="beast">🔥 Mr Beast</option>
-        <option value="tony">⚡ Tony Robbins</option>
-        <option value="joe">🧬 Joe Dispenza</option>
-        <option value="dalai">🕊️ Dalai Lama</option>
-      </select>
+      <select id="giant-select" style="background:rgba(0,255,255,0.06);border:1px solid var(--border);color:#fff;padding:0.55rem;border-radius:8px;font-size:0.72rem;font-family:inherit;"></select>
     </div>
     <div class="giants-quote" id="giants-quote">🎯 "When something's important enough, you do it even if the odds aren't in your favor." — Elon Musk</div>
     <audio id="giants-audio" style="width:100%;margin-top:0.7rem;display:none;" controls></audio>
@@ -706,11 +706,11 @@ body.view-wing main.grid{padding-top:5.5rem;}
         <button class="btn-primary" onclick="loadYouTube()">PLAY</button>
       </div>
       <div class="music-mode-grid">
-        <div class="music-mode" onclick="playPreset('panpipes')">🎍 PAN PIPES</div>
-        <div class="music-mode" onclick="playPreset('forest')">🌲 FOREST</div>
+        <div class="music-mode" onclick="playPreset('stark')">⚡ STARK</div>
+        <div class="music-mode" onclick="playPreset('drive')">🔥 DRIVE</div>
         <div class="music-mode" onclick="playPreset('focus')">🎯 FOCUS</div>
         <div class="music-mode" onclick="playPreset('cosmic')">🌌 COSMIC</div>
-        <div class="music-mode" onclick="playPreset('deepcalm')">🕊️ DEEP CALM</div>
+        <div class="music-mode" onclick="playPreset('deepcalm')">🕊️ CALM</div>
         <div class="music-mode" onclick="playPreset('rock')">🎸 ROCK</div>
       </div>
       <div class="music-now-playing" id="music-now" onclick="stopMusic()" style="cursor:pointer;" title="Tap to stop">🔇 SILENCE — Pick a mode or paste a URL</div>
@@ -833,6 +833,14 @@ body.view-wing main.grid{padding-top:5.5rem;}
         <div id="brief-news"><div style="color:var(--text-dim);font-size:0.75rem;">Loading…</div></div>
       </div>
     </div>
+    <div class="lab-col-title" style="margin-top:1.3rem;">📍 LOCATION MAP</div>
+    <div id="brief-map" style="border-radius:10px;overflow:hidden;min-height:120px;background:rgba(0,255,255,0.05);"><div style="padding:1rem;color:var(--text-dim);font-size:0.75rem;">Allow location to load the map…</div></div>
+    <div class="lab-col-title" style="margin-top:1.3rem;">📺 LIVE VIDEO · STOCKS · TECH · ROBOTICS</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;">
+      <div class="conn-node" onclick="openVid('stocks')"><div class="cn-icon">📈</div><div class="cn-name">STOCKS LIVE</div><div class="cn-status">watch ↗</div></div>
+      <div class="conn-node" onclick="openVid('tech')"><div class="cn-icon">💻</div><div class="cn-name">TECH NEWS</div><div class="cn-status">watch ↗</div></div>
+      <div class="conn-node" onclick="openVid('robotics')"><div class="cn-icon">🤖</div><div class="cn-name">ROBOTICS / AI</div><div class="cn-status">watch ↗</div></div>
+    </div>
   </section>
   <!-- SAVA NEXUS PIPELINE -->
   <section class="widget col-12" data-wing="business">
@@ -919,6 +927,15 @@ body.view-wing main.grid{padding-top:5.5rem;}
 </div>
 
 <!-- CO-PILOT -->
+<div id="camera-overlay">
+  <video id="camera-video" autoplay playsinline muted></video>
+  <div class="cam-bar">
+    <button class="cam-btn" onclick="openCamera('environment')">🔄 REAR</button>
+    <button class="cam-btn" onclick="openCamera('user')">🤳 FRONT</button>
+    <button class="cam-btn" onclick="snapPhoto()">📸 SNAP</button>
+    <button class="cam-btn close" onclick="closeCamera()">✕ CLOSE</button>
+  </div>
+</div>
 <div id="cmdk-overlay" onclick="if(event.target===this)closeCmdK()">
   <div id="cmdk">
     <input id="cmdk-input" placeholder="Jump to… (type a wing or action)" oninput="renderCmdK(this.value)" autocomplete="off">
@@ -1083,6 +1100,15 @@ const state=Object.assign({
 },stored);
 if(state.lastReset!==new Date().toDateString()){state.brainActivity={prefrontal:0,hippocampus:0,amygdala:0,cerebellum:0,temporal:0,occipital:0,motor:0,dmn:0,reward:0};state.lastReset=new Date().toDateString();}
 function save(){const cleanState={...state};localStorage.setItem('deliaOSv5',JSON.stringify(cleanState));}
+// ═══ MENTOR ROSTER (force-update, preserve uploaded audio) ═══
+const NEXUS_MENTORS={
+  beast:{name:'Mr Beast',icon:'🔥',audio:null,quotes:["I've worked harder than anyone I know for over a decade. Hard work always wins.","Stop watching content. Start creating it.","If you don't quit, you eventually win."]},
+  tony:{name:'Tony Robbins',icon:'⚡',audio:null,quotes:["The only impossible journey is the one you never begin.","Where focus goes, energy flows.","Your past does not equal your future."]},
+  carnegie:{name:'Dale Carnegie',icon:'🤝',audio:null,quotes:["You can make more friends in two months by becoming interested in other people than in two years trying to get people interested in you.","Discouragement and failure are two of the surest stepping stones to success.","Inaction breeds doubt and fear. Action breeds confidence and courage."]},
+  nightingale:{name:'Earl Nightingale',icon:'🌅',audio:null,quotes:["We become what we think about.","Success is the progressive realization of a worthy ideal.","Our attitude toward life determines life's attitude toward us."]},
+  katie:{name:'Katie Kelly',icon:'💎',audio:null,quotes:["Bet on yourself — nobody else sees the vision the way you do.","Build the life only you can imagine.","Keep going — future you is already proud."]}
+};
+if(state.mentorsV!==1){const ng=JSON.parse(JSON.stringify(NEXUS_MENTORS));Object.keys(ng).forEach(k=>{if(state.giants&&state.giants[k]&&state.giants[k].audio)ng[k].audio=state.giants[k].audio;});state.giants=ng;state.mentorsV=1;save();}
 
 // ═══ UTILS ═══
 function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;document.getElementById('toast-container').appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(130%)';setTimeout(()=>t.remove(),500);},4500);}
@@ -1327,6 +1353,7 @@ function renderGiants(){
     const playing=g.audio?'':' giant-card-empty';
     grid.innerHTML+=`<div class="giant-card${g.playing?' playing':''}" onclick="playGiant('${key}')"><span class="giant-icon">${g.icon}</span><div class="giant-name">${g.name}</div><div class="giant-status">${g.audio?'📁 LOADED':'📥 UPLOAD'}</div></div>`;
   });
+  const sel=document.getElementById('giant-select');if(sel)sel.innerHTML=Object.entries(state.giants).map(([k,g])=>'<option value="'+k+'">'+g.icon+' '+g.name+'</option>').join('');
 }
 function playGiant(key){
   const g=state.giants[key];
@@ -1359,7 +1386,8 @@ let musicNodes=null;
 function stopMusic(){if(panTimer){clearTimeout(panTimer);panTimer=null;}if(musicNodes){musicNodes.forEach(n=>{try{n.stop&&n.stop();}catch(e){}try{n.disconnect&&n.disconnect();}catch(e){}});musicNodes=null;}if(window.ytPlayer&&ytPlayer.destroy){try{ytPlayer.destroy();}catch(e){}ytPlayer=null;}const emb=document.getElementById('yt-embed');if(emb){emb.classList.remove('active');emb.innerHTML='';}document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';window.coherenceMode=false;state.musicMode='silence';save();}
 function playPreset(p){
   if(p==='rock'||p==='rebel')return loadRock();
-  const pr=MUSIC_PRESETS[p]||MUSIC_PRESETS.panpipes;
+  if(p==='stark'||p==='drive')return playCinematic(p);
+  const pr=MUSIC_PRESETS[p]||MUSIC_PRESETS.forest;
   stopMusic();
   const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());
   if(ctx.state==='suspended')ctx.resume();
@@ -1376,6 +1404,20 @@ function playPreset(p){
   toast('🎵 '+pr.label,'success');
 }
 function loadRock(){stopMusic();window.open('https://www.youtube.com/results?search_query=rock+music+radio+live','_blank','noopener');const mn=document.getElementById('music-now');if(mn)mn.textContent='🎸 ROCK → opened on YouTube';toast('🎸 Rock can’t be synthesised — opened YouTube. Or paste any track URL below.','witty');}
+function starkStinger(){const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());if(ctx.state==='suspended')ctx.resume();const t0=ctx.currentTime;
+  const hit=(freqs,when,dur,gain)=>{freqs.forEach(f=>{const o=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain();o.type='sawtooth';o2.type='sawtooth';o.frequency.value=f;o2.frequency.value=f*1.006;g.gain.setValueAtTime(0.0001,when);g.gain.exponentialRampToValueAtTime(gain,when+0.05);g.gain.exponentialRampToValueAtTime(0.0001,when+dur);o.connect(g);o2.connect(g);g.connect(ctx.destination);o.start(when);o2.start(when);o.stop(when+dur+0.05);o2.stop(when+dur+0.05);});};
+  const sub=ctx.createOscillator(),sg=ctx.createGain();sub.type='sine';sub.frequency.setValueAtTime(95,t0);sub.frequency.exponentialRampToValueAtTime(45,t0+0.7);sg.gain.setValueAtTime(0.24,t0);sg.gain.exponentialRampToValueAtTime(0.001,t0+0.9);sub.connect(sg);sg.connect(ctx.destination);sub.start(t0);sub.stop(t0+1);
+  hit([110,164.81],t0,0.5,0.10);hit([146.83,220],t0+0.5,0.5,0.11);hit([164.81,246.94,329.63],t0+1.0,1.1,0.12);hit([220,329.63,440],t0+1.6,1.7,0.13);}
+function playCinematic(p){
+  stopMusic();const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());if(ctx.state==='suspended')ctx.resume();
+  const master=ctx.createGain();master.gain.setValueAtTime(0.0001,ctx.currentTime);master.gain.exponentialRampToValueAtTime(0.8,ctx.currentTime+1.5);master.connect(ctx.destination);window._musicMaster=master;
+  const root=p==='drive'?98:82.4;
+  const pad=ctx.createOscillator(),pad5=ctx.createOscillator(),pg=ctx.createGain(),lp=ctx.createBiquadFilter();pad.type='sawtooth';pad5.type='sawtooth';pad.frequency.value=root;pad5.frequency.value=root*1.5;lp.type='lowpass';lp.frequency.value=650;pg.gain.value=0.06;pad.connect(lp);pad5.connect(lp);lp.connect(pg);pg.connect(master);pad.start();pad5.start();
+  const bass=ctx.createOscillator(),bg=ctx.createGain(),lfo=ctx.createOscillator(),lfoG=ctx.createGain();bass.type='triangle';bass.frequency.value=root/2;lfo.type='square';lfo.frequency.value=p==='drive'?4:2.4;lfoG.gain.value=0.08;lfo.connect(lfoG);lfoG.connect(bg.gain);bg.gain.value=0.05;bass.connect(bg);bg.connect(master);bass.start();lfo.start();
+  musicNodes=[pad,pad5,pg,lp,bass,bg,lfo,lfoG,master];window.coherenceMode=true;
+  const scale=[0,7,12,3,15,19];const step=()=>{const semi=scale[Math.floor(Math.random()*scale.length)];_flute(_mf(root*2,semi),1.1,0.085);panTimer=setTimeout(step,1300+Math.random()*1500);};step();
+  state.musicMode=p;save();document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));if(typeof event!=='undefined'&&event&&event.target&&event.target.classList)event.target.classList.add('active');
+  document.getElementById('music-now').textContent='▶ '+(p==='drive'?'🔥 DRIVE':'⚡ STARK MODE')+'  (tap to stop)';toast('🎵 '+(p==='drive'?'DRIVE':'STARK MODE'),'success');}
 let ytApiLoading=false,ytPlayer=null;
 function ensureYTApi(cb){if(window.YT&&window.YT.Player)return cb();if(!ytApiLoading){ytApiLoading=true;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);}const iv=setInterval(()=>{if(window.YT&&window.YT.Player){clearInterval(iv);cb();}},150);setTimeout(()=>clearInterval(iv),8000);}
 function ytEmbedError(code,id){const reason=(code===101||code===150||code===153)?'the owner blocked embedding':(code===100)?'video not found or private':(code===2)?'invalid video link':'it can’t be embedded';const emb=document.getElementById('yt-embed');if(emb)emb.innerHTML='<div style="padding:0.7rem;font-size:0.78rem;color:var(--text-dim);">⚠️ Can’t embed — '+reason+'. <a href="https://www.youtube.com/watch?v='+id+'" target="_blank" rel="noopener" style="color:var(--accent);">Open on YouTube ↗</a><br>Tip: many videos block embedding — pick a binaural mode above for reliable in-app audio.</div>';const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';toast('⚠️ Video blocks embedding — fallback shown','warn');}
@@ -1606,7 +1648,7 @@ document.getElementById('export-data').onclick=exportData;
 addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('cmdk-overlay').classList.contains('open')?closeCmdK():openCmdK();return;}
   if(document.getElementById('cmdk-overlay').classList.contains('open')){if(e.key==='Escape')closeCmdK();else if(e.key==='ArrowDown'){e.preventDefault();cmdkMove(1);}else if(e.key==='ArrowUp'){e.preventDefault();cmdkMove(-1);}else if(e.key==='Enter'){e.preventDefault();cmdkEnter();}return;}
-  if(e.key==='Escape'){closeCmdK();closeDump();closeRSD();closeElevenLabs();document.getElementById('copilot-panel').classList.remove('open');exitFocus();return;}
+  if(e.key==='Escape'){closeCmdK();closeCamera();closeDump();closeRSD();closeElevenLabs();document.getElementById('copilot-panel').classList.remove('open');exitFocus();return;}
 });
 
 // ═══ LIFE SCORE ═══
@@ -1616,19 +1658,27 @@ function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&ne
 function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}ensureMic();document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();powerUp();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
 const bootMsgs=['NEURAL LINK INITIALISING...','LOADING 25 WINGS...','OBSERVATORY TOWER: ONLINE','AGENT TEAM: STANDING BY','BIOMETRIC SENSORS: SCANNING...','JARVIS COPILOT: ENGAGED','NEXUS ONLINE'];
 let bootStep=0;
-function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();setTimeout(()=>{try{playPreset('panpipes');toast('🎍 Pan pipes online — clap to pulse the core','witty');}catch(e){}},1900);loadWeather();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
+function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();try{starkStinger();}catch(e){}setTimeout(()=>{try{playPreset('stark');toast('⚡ Stark mode online — clap to pulse the core','witty');}catch(e){}},2600);loadWeather();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[110,164.81,220,246.94,329.63,440,523.25];playSound(bootNotes[bootStep%bootNotes.length],0.18,'sawtooth',0.08);playSound(bootNotes[bootStep%bootNotes.length]*2,0.1,'triangle',0.05);if(bootStep%2===0){lightning();playSound(55,0.25,'sine',0.14);}bootStep++;setTimeout(runBoot,440);}
 
 // ═══ INIT ═══
 function initEverything(){initParticles();initStarfield();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderPeptides();renderStateDashboard();renderPipeline();renderContent();renderComms();initPainLogging();renderPainPoints();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
 // ═══ STARFIELD (deep space) ═══
 function initStarfield(){const c=document.getElementById('starfield');if(!c)return;const x=c.getContext('2d');function sz(){c.width=innerWidth;c.height=innerHeight;}sz();addEventListener('resize',sz);
-  const stars=Array.from({length:240},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+0.3,tw:Math.random()*6.28,sp:Math.random()*0.02+0.004,dx:(Math.random()-0.5)*0.00005}));
-  const names=['ORION','SIRIUS','VEGA','POLARIS','ANDROMEDA','CASSIOPEIA','LYRA','RIGEL','BETELGEUSE','PLEIADES','URSA MAJOR','DRACO','CYGNUS','ALTAIR','ARCTURUS','PERSEUS','PEGASUS','AQUILA'].map(n=>({n,x:Math.random(),y:Math.random()}));
-  const consts=[];for(let k=0;k<6;k++){const cx=Math.random(),cy=Math.random();consts.push(Array.from({length:4+(Math.random()*3|0)},()=>({x:cx+(Math.random()-0.5)*0.13,y:cy+(Math.random()-0.5)*0.13})));}
+  const stars=Array.from({length:260},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+0.3,tw:Math.random()*6.28,sp:Math.random()*0.02+0.004,dx:(Math.random()-0.5)*0.00004}));
+  const CONS=[
+    {n:'ORION',p:[[0,0],[0.5,0.06],[0.16,0.42],[0.34,0.46],[0.5,0.46],[0.08,0.95],[0.6,0.86]]},
+    {n:'URSA MAJOR',p:[[0,0.25],[0.22,0.3],[0.45,0.34],[0.66,0.48],[0.66,0.72],[0.9,0.62],[0.9,0.88]]},
+    {n:'CASSIOPEIA',p:[[0,0.1],[0.25,0.5],[0.5,0.12],[0.75,0.52],[1,0.1]]},
+    {n:'CYGNUS',p:[[0.5,0],[0.5,1],[0.5,0.32],[0.08,0.5],[0.92,0.46]]},
+    {n:'LYRA',p:[[0.5,0],[0.18,0.45],[0.4,0.95],[0.78,0.6],[0.5,0]]},
+    {n:'LEO',p:[[0,0.35],[0.28,0.22],[0.5,0.38],[0.46,0.64],[0.2,0.72],[0.72,0.12]]},
+    {n:'SCORPIUS',p:[[0,0.05],[0.18,0.2],[0.34,0.45],[0.42,0.7],[0.64,0.86],[0.84,0.8]]},
+    {n:'PERSEUS',p:[[0.1,0],[0.32,0.32],[0.5,0.5],[0.4,0.82],[0.7,0.66],[0.86,0.96]]}
+  ];
+  CONS.forEach((co,i)=>{co.ax=0.06+(i%4)*0.245+Math.random()*0.05;co.ay=0.08+Math.floor(i/4)*0.46+Math.random()*0.05;co.s=0.12+Math.random()*0.05;});
   (function draw(){x.clearRect(0,0,c.width,c.height);
-    x.lineWidth=0.6;x.strokeStyle='rgba(0,229,255,0.16)';consts.forEach(p=>{x.beginPath();p.forEach((q,i)=>{const px=q.x*c.width,py=q.y*c.height;i?x.lineTo(px,py):x.moveTo(px,py);});x.stroke();x.fillStyle='rgba(130,220,255,0.7)';p.forEach(q=>{x.beginPath();x.arc(q.x*c.width,q.y*c.height,1.4,0,6.3);x.fill();});});
+    CONS.forEach(co=>{const pts=co.p.map(q=>[(co.ax+q[0]*co.s)*c.width,(co.ay+q[1]*co.s*1.25)*c.height]);x.strokeStyle='rgba(0,229,255,0.18)';x.lineWidth=0.7;x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.stroke();x.fillStyle='rgba(150,225,255,0.85)';pts.forEach(p=>{x.beginPath();x.arc(p[0],p[1],1.6,0,6.3);x.fill();});x.font='10px Orbitron,monospace';x.fillStyle='rgba(0,229,255,0.34)';x.fillText(co.n,pts[0][0],pts[0][1]-7);});
     stars.forEach(s=>{s.tw+=s.sp;s.x+=s.dx;if(s.x<0)s.x=1;if(s.x>1)s.x=0;const a=0.3+Math.abs(Math.sin(s.tw))*0.6;x.fillStyle='rgba(185,220,255,'+a.toFixed(2)+')';x.beginPath();x.arc(s.x*c.width,s.y*c.height,s.r,0,6.3);x.fill();});
-    x.font='9px Orbitron,monospace';x.fillStyle='rgba(0,229,255,0.14)';names.forEach(l=>x.fillText(l.n,l.x*c.width,l.y*c.height));
     requestAnimationFrame(draw);})();}
 // ═══ BRAIN LEARNING INFO ═══
 const BRAIN_INFO={prefrontal:{t:'PREFRONTAL CORTEX',f:'Planning, decisions, impulse control & deep focus.',b:'Driven by HRV + focus — peaks in deep work.'},motor:{t:'MOTOR CORTEX',f:'Plans & fires voluntary movement.',b:'Driven by activity / steps (Apple Watch).'},parietal:{t:'PARIETAL LOBE',f:'Spatial sense, numbers & attention.',b:'Driven by analytical / financial work.'},occipital:{t:'OCCIPITAL LOBE',f:'Visual processing & mental imagery.',b:'Driven by creative / content sessions.'},temporal:{t:'TEMPORAL LOBE · R',f:'Hearing, language & memory.',b:'Driven by communication & learning.'},temporal2:{t:'TEMPORAL LOBE · L',f:'Language, naming & verbal memory.',b:'Driven by reading & writing.'},cerebellum:{t:'CEREBELLUM',f:'Balance, coordination & motor timing.',b:'Driven by training strain (WHOOP).'},hippocampus:{t:'HIPPOCAMPUS',f:'Forms & recalls memories.',b:'Driven by sleep — consolidates overnight.'},amygdala:{t:'AMYGDALA',f:'Emotion, threat & the RSD response.',b:'Spikes when HRV drops or mood falls.'},reward:{t:'REWARD CENTRE',f:'Dopamine, drive & the feeling of a win.',b:'Lights up when you complete goals.'},dmn:{t:'DEFAULT MODE NETWORK',f:'Reflection, daydreaming & rest-state insight.',b:'Active in meditation / coherence mode.'}};
@@ -1643,8 +1693,19 @@ function cmdkEnter(){const it=cmdkFiltered[cmdkSel];if(it){closeCmdK();it.act();
 // ═══ WEATHER + INTEL BRIEFING (free, no-key APIs) ═══
 function wxIcon(c){if(c===0)return '☀️';if(c<3)return '🌤️';if(c<50)return '☁️';if(c<70)return '🌧️';if(c<80)return '❄️';return '⛈️';}
 function wxText(c){if(c===0)return 'Clear sky';if(c<3)return 'Partly cloudy';if(c<50)return 'Cloudy / foggy';if(c<70)return 'Rain';if(c<80)return 'Snow';return 'Storms';}
-function loadWeather(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(pos=>{const la=pos.coords.latitude,lo=pos.coords.longitude;fetch('https://api.open-meteo.com/v1/forecast?latitude='+la+'&longitude='+lo+'&current=temperature_2m,weather_code&timezone=auto').then(r=>r.json()).then(d=>{const t=Math.round(d.current.temperature_2m),code=d.current.weather_code,ico=wxIcon(code);const chip=document.getElementById('wx-chip');if(chip)chip.innerHTML=ico+' '+t+'°';const big=document.getElementById('brief-weather');if(big)big.innerHTML='<div style="font-size:2.4rem;font-family:JetBrains Mono;">'+ico+' '+t+'°C</div><div style="color:var(--text-dim);font-size:0.7rem;">'+wxText(code)+' · your location</div>';}).catch(()=>{});},()=>{const chip=document.getElementById('wx-chip');if(chip)chip.innerHTML='🌍 —';});}
+function loadWeather(){if(!navigator.geolocation){const big=document.getElementById('brief-weather');if(big)big.innerHTML='<div style="color:var(--text-dim);font-size:0.75rem;">Geolocation not available on this browser.</div>';return;}
+  navigator.geolocation.getCurrentPosition(pos=>{const la=pos.coords.latitude,lo=pos.coords.longitude;
+    const map=document.getElementById('brief-map');if(map){const dd=0.02;map.innerHTML='<iframe width="100%" height="240" style="border:0;border-radius:10px;display:block;" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox='+(lo-dd)+'%2C'+(la-dd)+'%2C'+(lo+dd)+'%2C'+(la+dd)+'&layer=mapnik&marker='+la+'%2C'+lo+'"></iframe>';}
+    fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+la+'&longitude='+lo+'&localityLanguage=en').then(r=>r.json()).then(g=>{window._locName=[g.city||g.locality,g.principalSubdivision,g.countryCode].filter(Boolean).join(', ');const s=document.getElementById('wx-loc');if(s)s.textContent=window._locName;}).catch(()=>{});
+    fetch('https://api.open-meteo.com/v1/forecast?latitude='+la+'&longitude='+lo+'&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto').then(r=>r.json()).then(d=>{const cu=d.current,t=Math.round(cu.temperature_2m),feels=Math.round(cu.apparent_temperature),code=cu.weather_code,ico=wxIcon(code);const chip=document.getElementById('wx-chip');if(chip)chip.innerHTML=ico+' '+t+'°';const big=document.getElementById('brief-weather');if(big)big.innerHTML='<div style="font-size:2.4rem;font-family:JetBrains Mono;">'+ico+' '+t+'°C</div><div style="color:var(--text-dim);font-size:0.72rem;">'+wxText(code)+' · feels '+feels+'° · <span id="wx-loc">'+(window._locName||'your location')+'</span></div><div style="color:var(--text-faint);font-size:0.64rem;margin-top:0.2rem;">💨 '+Math.round(cu.wind_speed_10m)+' km/h · 💧 '+cu.relative_humidity_2m+'%</div>';}).catch(()=>{const big=document.getElementById('brief-weather');if(big)big.innerHTML='<div style="color:var(--danger);font-size:0.75rem;">Weather fetch failed.</div>';});
+  },()=>{const chip=document.getElementById('wx-chip');if(chip)chip.innerHTML='🌍 —';const big=document.getElementById('brief-weather');if(big)big.innerHTML='<div style="color:var(--text-dim);font-size:0.75rem;">📍 Allow location access (and use the https site) for accurate weather + map.</div>';},{enableHighAccuracy:true,timeout:10000,maximumAge:300000});}
 function loadBriefing(){loadWeather();loadTechNews();loadMarket();}
+function openVid(topic){const q={stocks:'stock market news live today',tech:'tech news today live',robotics:'robotics ai breakthroughs news'}[topic]||'news';window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(q),'_blank','noopener');toast('📺 Opening '+topic+' video','success');}
+// ═══ LIVE CAMERA (phone / webcam / DJI) ═══
+let camStream=null;
+function openCamera(facing){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return toast('📷 Camera not supported here','warn');if(camStream)camStream.getTracks().forEach(t=>t.stop());navigator.mediaDevices.getUserMedia({video:facing?{facingMode:{ideal:facing}}:true,audio:false}).then(s=>{camStream=s;const v=document.getElementById('camera-video');v.srcObject=s;v.play();document.getElementById('camera-overlay').classList.add('open');toast('📷 Camera live','success');}).catch(()=>toast('📷 Camera blocked or unavailable — allow it in the browser','warn'));}
+function closeCamera(){const ov=document.getElementById('camera-overlay');if(ov)ov.classList.remove('open');if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}const v=document.getElementById('camera-video');if(v)v.srcObject=null;}
+function snapPhoto(){const v=document.getElementById('camera-video');if(!v||!v.videoWidth)return;const cv=document.createElement('canvas');cv.width=v.videoWidth;cv.height=v.videoHeight;cv.getContext('2d').drawImage(v,0,0);const a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='nexus-snap-'+Date.now()+'.png';a.click();toast('📸 Photo saved','success');chord();}
 function loadTechNews(){const el=document.getElementById('brief-news');if(!el)return;el.innerHTML='<div style="color:var(--text-dim);font-size:0.75rem;">Loading tech headlines…</div>';fetch('https://hacker-news.firebaseio.com/v0/topstories.json').then(r=>r.json()).then(ids=>Promise.all(ids.slice(0,7).map(id=>fetch('https://hacker-news.firebaseio.com/v0/item/'+id+'.json').then(r=>r.json())))).then(items=>{el.innerHTML=items.filter(i=>i&&i.title).map(i=>'<a href="'+(i.url||'https://news.ycombinator.com/item?id='+i.id)+'" target="_blank" rel="noopener" class="pep-card" style="text-decoration:none;color:#fff;display:flex;">📰 <span style="flex:1;">'+i.title+'</span><span style="color:var(--accent);font-size:0.66rem;">▲'+(i.score||0)+'</span></a>').join('');}).catch(()=>{el.innerHTML='<div style="color:var(--danger);font-size:0.75rem;">Couldn’t load headlines.</div>';});}
 function loadMarket(){const el=document.getElementById('brief-market');if(!el)return;el.innerHTML='<div style="color:var(--text-dim);font-size:0.75rem;">Loading market…</div>';fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true').then(r=>r.json()).then(d=>{const row=(n,o)=>{const ch=o.usd_24h_change||0,c=ch>=0?'#00ff88':'#ff0044';return '<div class="pep-card"><span style="flex:1;">'+n+'</span><span style="font-family:JetBrains Mono;">$'+Math.round(o.usd).toLocaleString()+'</span><span style="color:'+c+';font-size:0.7rem;">'+(ch>=0?'▲':'▼')+Math.abs(ch).toFixed(1)+'%</span></div>';};let html=row('₿ Bitcoin',d.bitcoin)+row('Ξ Ethereum',d.ethereum);const key=state.apiKeys&&state.apiKeys.finnhub;if(key){Promise.all(['AAPL','NVDA','TSLA','MSFT'].map(s=>fetch('https://finnhub.io/api/v1/quote?symbol='+s+'&token='+key).then(r=>r.json()).then(q=>({s,q})))).then(rs=>{html+=rs.map(({s,q})=>{const ch=q.dp||0,c=ch>=0?'#00ff88':'#ff0044';return '<div class="pep-card"><span style="flex:1;">'+s+'</span><span style="font-family:JetBrains Mono;">$'+(q.c||0).toFixed(2)+'</span><span style="color:'+c+';font-size:0.7rem;">'+(ch>=0?'▲':'▼')+Math.abs(ch).toFixed(1)+'%</span></div>';}).join('');el.innerHTML=html;}).catch(()=>{el.innerHTML=html;});}else{html+='<div style="color:var(--text-dim);font-size:0.66rem;margin-top:0.5rem;">📈 Add a free Finnhub key in 🔌 Connections for live AAPL / NVDA / TSLA / MSFT.</div>';el.innerHTML=html;}}).catch(()=>{el.innerHTML='<div style="color:var(--danger);font-size:0.75rem;">Couldn’t load market.</div>';});}
 // ═══ HOTEL NAVIGATION ═══
@@ -1687,15 +1748,17 @@ function resizeBrain(){if(!brainRenderer||!brainContainer)return;const w=brainCo
 const CONN_NODES=[
   {id:'anthropic',name:'ANTHROPIC',icon:'🧠',use:'special'},{id:'elevenlabs',name:'ELEVENLABS',icon:'🗣️',use:'special'},{id:'supabase',name:'SUPABASE',icon:'🗄️',use:'special'},
   {id:'suno',name:'SUNO',icon:'🎼',use:'key'},{id:'notion',name:'NOTION',icon:'📔',use:'key'},{id:'finnhub',name:'FINNHUB STOCKS',icon:'📈',use:'key'},{id:'youtube',name:'YOUTUBE',icon:'▶️',use:'none'},{id:'obsidian',name:'OBSIDIAN',icon:'🔮',use:'local'},
-  {id:'whoop',name:'WHOOP',icon:'💓',use:'oauth'},{id:'muse',name:'MUSE EEG',icon:'🧘',use:'ble'},{id:'spotify',name:'SPOTIFY',icon:'🎧',use:'oauth'},{id:'gcal',name:'GOOGLE CAL',icon:'📅',use:'oauth'},{id:'gmail',name:'GMAIL',icon:'✉️',use:'oauth'},{id:'stripe',name:'STRIPE',icon:'💳',use:'oauth'},{id:'xero',name:'XERO',icon:'📊',use:'oauth'},{id:'revolut',name:'REVOLUT',icon:'🏦',use:'oauth'},{id:'meta',name:'META',icon:'📱',use:'oauth'},{id:'notebooklm',name:'NOTEBOOKLM',icon:'📚',use:'oauth'}
+  {id:'whoop',name:'WHOOP',icon:'💓',use:'oauth'},{id:'muse',name:'MUSE EEG',icon:'🧘',use:'ble'},{id:'spotify',name:'SPOTIFY',icon:'🎧',use:'oauth'},{id:'gcal',name:'GOOGLE CAL',icon:'📅',use:'oauth'},{id:'gmail',name:'GMAIL',icon:'✉️',use:'oauth'},{id:'stripe',name:'STRIPE',icon:'💳',use:'oauth'},{id:'xero',name:'XERO',icon:'📊',use:'oauth'},{id:'revolut',name:'REVOLUT',icon:'🏦',use:'oauth'},{id:'meta',name:'META',icon:'📱',use:'oauth'},{id:'instagram',name:'INSTAGRAM',icon:'📸',use:'oauth'},{id:'facebook',name:'FACEBOOK ADS',icon:'👥',use:'oauth'},{id:'linkedin',name:'LINKEDIN',icon:'💼',use:'oauth'},{id:'x',name:'X / TWITTER',icon:'✖️',use:'oauth'},{id:'tiktok',name:'TIKTOK',icon:'🎬',use:'oauth'},{id:'amazon',name:'AMAZON',icon:'📦',use:'oauth'},{id:'yahoo',name:'YAHOO FINANCE',icon:'📉',use:'oauth'},{id:'s24',name:'S24 ULTRA CAM',icon:'📱',use:'camera'},{id:'djicam',name:'DJI / WEBCAM',icon:'📷',use:'camera'},{id:'djidrone',name:'DJI DRONE',icon:'🚁',use:'oauth'},{id:'notebooklm',name:'NOTEBOOKLM',icon:'📚',use:'oauth'}
 ];
 function connStatus(n){if(n.id==='anthropic')return state.anthropicKey?'live':'ready';if(n.id==='elevenlabs')return state.elevenLabsKey?'live':'ready';if(n.id==='supabase')return supabaseConfigured()?'live':'ready';if(n.use==='none')return 'live';if(n.use==='key')return(state.apiKeys&&state.apiKeys[n.id])?'live':'ready';return 'ready';}
-function statusLabel(n){const s=connStatus(n);if(s==='live')return 'CONNECTED';if(n.use==='oauth')return 'NEEDS BACKEND';if(n.use==='ble')return 'NEEDS BLUETOOTH';if(n.use==='local')return 'LOCAL ONLY';return 'TAP TO ADD KEY';}
+function statusLabel(n){const s=connStatus(n);if(s==='live')return 'CONNECTED';if(n.use==='camera')return 'TAP TO OPEN';if(n.use==='oauth')return 'NEEDS BACKEND';if(n.use==='ble')return 'NEEDS BLUETOOTH';if(n.use==='local')return 'LOCAL ONLY';return 'TAP TO ADD KEY';}
 function renderConnections(){const g=document.getElementById('conn-grid');if(!g)return;g.innerHTML=CONN_NODES.map(n=>'<div class="conn-node '+connStatus(n)+'" onclick="connectNode(\''+n.id+'\')"><span class="cn-dot"></span><div class="cn-icon">'+n.icon+'</div><div class="cn-name">'+n.name+'</div><div class="cn-status">'+statusLabel(n)+'</div></div>').join('');}
 function connectNode(id){const n=CONN_NODES.find(x=>x.id===id);if(!n)return;
   if(id==='anthropic'){setAnthropicKey();renderConnections();return;}
   if(id==='supabase'){setSupabase();renderConnections();return;}
   if(id==='elevenlabs'){document.getElementById('el-toggle').click();return;}
+  if(n.use==='camera')return openCamera('environment');
+  if(id==='djidrone')return toast('🚁 DJI drone needs the DJI Mobile SDK (a phone bridge app) — web can’t reach it directly. Ready to wire to a companion app.','warn');
   if(n.use==='oauth')return toast('🔌 '+n.name+' needs a backend OAuth flow — ready to connect later','warn');
   if(n.use==='ble')return toast('🧘 Muse connects via Web Bluetooth — coming to Biohacking Lab','warn');
   if(n.use==='local')return toast('🔮 Obsidian is local-only (vault on disk)','warn');
