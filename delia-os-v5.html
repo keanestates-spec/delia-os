@@ -1189,7 +1189,7 @@ async function speak(text){
   // Fallback to Mac voice (deep male preference)
   if('speechSynthesis' in window){
     if(!availableVoices||!availableVoices.length)loadVoices();
-    const u=new SpeechSynthesisUtterance(text);
+    const u=new SpeechSynthesisUtterance(text);window._utt=u;
     u.rate=1.0;u.pitch=1.08;u.volume=1.0;
     const preferred=['Samantha','Karen','Moira','Tessa','Fiona','Victoria','Serena','Allison','Susan'];
     for(const name of preferred){const v=availableVoices.find(x=>x.name.includes(name)&&x.lang.startsWith('en'));if(v){u.voice=v;break;}}
@@ -1220,12 +1220,14 @@ function initClapDetection(){
 function onClap(){lightning();bassBoom();window.coherenceMode=true;Object.keys(state.brainActivity).forEach(k=>activateBrain(k,18));toast('👏 COHERENCE PULSE','witty');setTimeout(()=>{if(!musicNodes)window.coherenceMode=false;},2600);}
 // ═══ HANDS-FREE VOICE (say "JARVIS ...") ═══
 let alwaysRec=null,alwaysOn=false;
-function startAlwaysListening(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR||alwaysRec)return;alwaysRec=new SR();alwaysRec.lang='en-US';alwaysRec.continuous=true;alwaysRec.interimResults=true;
-  alwaysRec.onresult=e=>{if(window._jarvisSpeaking)return;for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;const low=e.results[i][0].transcript.trim().toLowerCase();const m=low.match(/\b(?:hey )?(?:jarvis|nexus)\b[ ,.:-]*(.*)/);if(m){const cmd=m[1].trim();if(cmd.length>1){document.getElementById('copilot-panel').classList.add('open');renderCopilotMessages();copilotRespond(cmd);}else{toast('🎙️ JARVIS — say your command','witty');playSound(880,0.08);}}}};
-  alwaysRec.onend=()=>{if(alwaysOn){try{alwaysRec.start();}catch(e){setTimeout(()=>{try{alwaysRec.start();}catch(_){}},500);}}};
-  alwaysRec.onerror=()=>{};
-  alwaysOn=true;try{alwaysRec.start();}catch(e){}const w=document.getElementById('conn-wave');if(w)w.classList.remove('idle');updateListenBtn();toast('👂 Hands-free ON — just say “JARVIS …”','success');}
-function stopAlwaysListening(){alwaysOn=false;if(alwaysRec){try{alwaysRec.stop();}catch(e){}}const w=document.getElementById('conn-wave');if(w)w.classList.add('idle');updateListenBtn();toast('👂 Hands-free off','warn');}
+function openCopilotForVoice(){const p=document.getElementById('copilot-panel');if(p&&!p.classList.contains('open')){p.classList.add('open');renderCopilotMessages();}}
+function startAlwaysListening(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR||alwaysRec)return;alwaysRec=new SR();alwaysRec.lang='en-US';alwaysRec.continuous=true;alwaysRec.interimResults=true;let last='';
+  alwaysRec.onresult=e=>{if(window._jarvisSpeaking)return;for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;const raw=e.results[i][0].transcript.trim();const low=raw.toLowerCase();const panelOpen=document.getElementById('copilot-panel').classList.contains('open');const wk=low.match(/\b(hey |ok )?(jarvis|jervis|jarvas|jarviss|jervais|travis|service|nexus|harvest)\b[ ,.:!?-]*/);let cmd='';if(wk){cmd=raw.slice(low.indexOf(wk[0])+wk[0].length).trim();}else if(panelOpen){cmd=raw;}if(wk&&cmd.length<2){openCopilotForVoice();toast('🎙️ JARVIS here — go ahead, Queen','witty');playSound(880,0.08);continue;}if(cmd.length>1&&cmd!==last){last=cmd;openCopilotForVoice();copilotRespond(cmd);setTimeout(()=>{if(last===cmd)last='';},5000);}}};
+  const kick=()=>{if(alwaysOn){try{alwaysRec.start();}catch(e){}}};
+  alwaysRec.onend=kick;alwaysRec.onerror=ev=>{if(ev&&ev.error==='not-allowed'){alwaysOn=false;clearInterval(window._listenWatch);toast('🎙️ Mic blocked — click the camera/mic icon in the address bar and Allow','warn');updateListenBtn();}};
+  alwaysOn=true;try{alwaysRec.start();}catch(e){}clearInterval(window._listenWatch);window._listenWatch=setInterval(kick,4000);
+  const w=document.getElementById('conn-wave');if(w)w.classList.remove('idle');updateListenBtn();toast('👂 Hands-free ON — say “JARVIS …”, or open me and just talk','success');}
+function stopAlwaysListening(){alwaysOn=false;clearInterval(window._listenWatch);if(alwaysRec){try{alwaysRec.stop();}catch(e){}}const w=document.getElementById('conn-wave');if(w)w.classList.add('idle');updateListenBtn();toast('👂 Hands-free off','warn');}
 function toggleAlwaysListening(){if(alwaysOn)stopAlwaysListening();else ensureMic().then(ok=>{if(ok)startAlwaysListening();});}
 function updateListenBtn(){const b=document.getElementById('listen-btn');if(b)b.style.opacity=alwaysOn?'1':'0.5';}
 function lightning(){const el=document.getElementById('lightning');el.innerHTML='';let svg=`<svg width="100%" height="100%" style="position:absolute;inset:0;">`;const lines=3+Math.floor(Math.random()*3);for(let i=0;i<lines;i++){const x=Math.random()*100;let path=`M ${x}% 0`;let y=0;while(y<100){y+=8+Math.random()*6;path+=` L ${x+(Math.random()-0.5)*20}% ${y}%`;}svg+=`<path d="${path}" stroke="rgba(0,255,255,1)" stroke-width="2.5" fill="none" filter="url(#g)"/>`;}svg+=`<defs><filter id="g"><feGaussianBlur stdDeviation="3"/></filter></defs></svg>`;el.innerHTML=svg;el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),600);}
