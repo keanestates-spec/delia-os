@@ -455,6 +455,18 @@ body.view-wing main.grid{padding-top:5.5rem;}
 .lab-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 16px var(--accent-glow);}
 .lab-col-title{font-family:'Orbitron',sans-serif;font-size:0.66rem;letter-spacing:0.15em;color:var(--accent);margin-bottom:0.7rem;text-shadow:0 0 12px var(--accent);}
 @media(max-width:760px){.qa-icons{display:none;}}
+.state-cards{grid-column:span 12;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;}
+.state-card{background:rgba(2,6,18,0.8);border:1px solid var(--border);border-radius:14px;padding:1.3rem;text-align:center;transition:all 0.25s;}
+.state-card:hover{transform:translateY(-3px);}
+.sc-title{font-family:'Orbitron',sans-serif;font-size:0.58rem;letter-spacing:0.15em;color:var(--text-dim);}
+.sc-val{font-family:'JetBrains Mono',monospace;font-size:2.3rem;font-weight:700;margin:0.4rem 0;line-height:1;}
+.sc-sub{font-size:0.6rem;color:var(--text-faint);letter-spacing:0.08em;text-transform:uppercase;}
+.state-note{grid-column:span 12;margin-top:0.5rem;font-size:0.66rem;color:var(--text-dim);letter-spacing:0.05em;}
+#pain-layer{position:absolute;inset:0;pointer-events:none;z-index:6;}
+#pain-layer .pain-marker{pointer-events:auto;cursor:pointer;}
+#pain-hint{position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);font-family:'Orbitron',sans-serif;font-size:0.52rem;letter-spacing:0.16em;color:var(--text-faint);z-index:6;pointer-events:none;}
+#warrior-ghost{filter:drop-shadow(0 0 6px #ffd700);}
+#warrior-label{position:absolute;top:0.5rem;right:0.5rem;font-family:'Orbitron',sans-serif;font-size:0.54rem;letter-spacing:0.1em;color:#ffd700;text-shadow:0 0 12px #ffd700;z-index:6;}
 </style>
 </head>
 <body>
@@ -586,12 +598,21 @@ body.view-wing main.grid{padding-top:5.5rem;}
         <line x1="115" y1="220" x2="120" y2="340" stroke="url(#bodyGrad)" stroke-width="3.5" filter="url(#glow)"/>
         <ellipse cx="80" cy="350" rx="11" ry="6" fill="rgba(0,255,255,0.35)" stroke="#00ffff" stroke-width="1.5"/>
         <ellipse cx="120" cy="350" rx="11" ry="6" fill="rgba(0,255,255,0.35)" stroke="#00ffff" stroke-width="1.5"/>
+        <!-- 84kg WARRIOR GHOST (slimmer future self) -->
+        <g id="warrior-ghost" transform="translate(100,0) scale(0.76,0.97) translate(-100,0)" fill="none" stroke="#ffd700" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 3">
+          <circle cx="100" cy="40" r="22"/>
+          <path d="M 70,85 Q 100,80 130,85 L 135,180 Q 100,185 65,180 Z"/>
+          <line x1="70" y1="90" x2="50" y2="180"/>
+          <line x1="130" y1="90" x2="150" y2="180"/>
+          <path d="M 65,180 L 135,180 L 130,220 L 70,220 Z"/>
+          <line x1="85" y1="220" x2="80" y2="340"/>
+          <line x1="115" y1="220" x2="120" y2="340"/>
+        </g>
       </svg>
-      <!-- Pain markers -->
-      <div class="pain-marker" style="left:38%;top:62%;" title="Left Knee"></div>
-      <div class="pain-marker" style="left:58%;top:62%;" title="Right Knee"></div>
-      <div class="pain-marker" style="left:72%;top:22%;" title="Right Shoulder"></div>
-      <div class="pain-marker" style="left:40%;top:88%;" title="Left Foot"></div>
+      <!-- Warrior ghost label + live pain layer -->
+      <div id="warrior-label">⚡ 45KG TO WARRIOR</div>
+      <div id="pain-layer"></div>
+      <div id="pain-hint">TAP BODY TO LOG PAIN</div>
       <!-- Vital stats -->
       <div class="body-stat" style="top:12%;right:5%;" id="vital-weight">⚖️ 129 KG</div>
       <div class="body-stat" style="top:25%;right:5%;" id="vital-heart">🫀 68 BPM</div>
@@ -764,7 +785,13 @@ body.view-wing main.grid{padding-top:5.5rem;}
     <ul id="rev-list" style="list-style:none;max-height:200px;overflow-y:auto;margin-top:1rem;"></ul>
   </section>
 
-<!-- PEPTIDE GARAGE -->
+<!-- STATE DASHBOARD -->
+  <section class="widget col-12" data-wing="state">
+    <div class="widget-header"><span class="widget-title">📊 STATE DASHBOARD // NERVOUS SYSTEM</span><span class="widget-icon">🫁</span></div>
+    <div class="state-cards" id="state-cards"></div>
+    <div class="state-note">⊘ HRV · Recovery · Strain need WHOOP — connect it in 🔌 Connections. Energy/Sleep/RSD update from your wellness logs.</div>
+  </section>
+  <!-- PEPTIDE GARAGE -->
   <section class="widget col-12" data-wing="peptides">
     <div class="widget-header"><span class="widget-title">💉 PEPTIDE GARAGE // PROTOCOLS & STACK</span><span class="widget-icon">🧬</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.6rem;">
@@ -920,7 +947,7 @@ const state=Object.assign({
   theme:'teal',voiceOn:true,musicMode:'silence',
   elevenLabsKey:'',elevenLabsVoice:'pNInz6obpgDQGcFmaJgB',
   anthropicKey:'',
-  supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],
+  supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],
   tasks:[],transactions:[],wellness:[],dumps:[],heartbeat:[],
   // Weight Warrior
   startWeight:129,goalWeight:84,currentWeight:129,weightLog:[],photos:[],
@@ -1152,6 +1179,7 @@ function updateBodyScanner(){
   document.getElementById('vital-score').textContent='📊 SCORE '+state.lifeScore;
   document.getElementById('vital-tasks').textContent='✓ TASKS '+state.tasks.filter(t=>!t.done).length;
   document.getElementById('vital-revenue').textContent='💰 €'+state.transactions.reduce((s,t)=>s+t.amount,0).toLocaleString();
+  const wl=document.getElementById('warrior-label');if(wl)wl.textContent='⚡ '+Math.max(0,(state.currentWeight-state.goalWeight)).toFixed(0)+'KG TO WARRIOR';
 }
 
 // ═══ WEIGHT WARRIOR ═══
@@ -1491,7 +1519,7 @@ let bootStep=0;
 function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
 
 // ═══ INIT ═══
-function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderPeptides();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderPeptides();renderStateDashboard();initPainLogging();renderPainPoints();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
 // ═══ HOTEL NAVIGATION ═══
 const WINGS=[
   {id:'intel',name:'INTELLIGENCE',icon:'🛰️',cls:'analytical',region:'prefrontal'},
@@ -1504,6 +1532,7 @@ const WINGS=[
   {id:'optimisation',name:'HUMAN OPT',icon:'⚡',cls:'optimisation',region:'cerebellum'},
   {id:'adhd',name:'ADHD CENTRE',icon:'🧩',cls:'optimisation',region:'amygdala'},
   {id:'peptides',name:'PEPTIDE GARAGE',icon:'💉',cls:'optimisation',region:'dmn'},
+  {id:'state',name:'STATE',icon:'📊',cls:'optimisation',region:''},
   {id:'connections',name:'CONNECTIONS',icon:'🔌',cls:'analytical',region:'hippocampus'}
 ];
 const WING_KEYWORDS=[['MISSION CONTROL','intel'],['COUNCIL OF GIANTS','intel'],['PROPERTY','business'],['BUSINESS METRICS','business'],['FINANCIAL','finance'],['SOUNDTRACK','music'],['BIO SCANNER','biohacking'],['MEDICAL','biohacking'],['WELLNESS','biohacking'],['WEIGHT WARRIOR','optimisation'],['ADOPTION','optimisation'],['RSD','adhd'],['MISSIONS','adhd'],['HEARTBEAT','adhd'],['NEURAL CORE','brain']];
@@ -1516,6 +1545,7 @@ function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('
   document.getElementById('breadcrumb').innerHTML='NEXUS HOTEL / <b>'+(wing?wing.name:w.toUpperCase())+'</b>';
   if(wing&&wing.region)activateBrain(wing.region,40);
   if(w==='connections')renderConnections();
+  if(w==='state')renderStateDashboard();
   window.scrollTo(0,0);chord();
 }
 function goHome(){currentWing='bridge';document.body.classList.add('view-bridge');document.body.classList.remove('view-wing');document.querySelectorAll('main.grid .widget').forEach(el=>{el.style.display='';});layoutWingRing();setTimeout(resizeBrain,80);}
@@ -1543,6 +1573,27 @@ function connectNode(id){const n=CONN_NODES.find(x=>x.id===id);if(!n)return;
 // ═══ POLISH ═══
 function updateLifeColor(){const el=document.getElementById('life-score-num');if(!el)return;const s=state.lifeScore||0;let c='#fff',g='0 0 16px rgba(255,255,255,0.6)';if(s>=900){c='#ff00ff';g='0 0 28px #ff00ff';}else if(s>=600){c='#ffd700';g='0 0 24px #ffd700';}else if(s>=300){c='#00ffff';g='0 0 22px #00ffff';}el.style.color=c;el.style.textShadow=g;}
 function updateStateDot(){const d=document.getElementById('state-dot');if(!d)return;const lw=state.wellness.slice(-1)[0];let cls='';if(lw){if(lw.mood<=3||lw.energy<=2)cls='crit';else if(lw.mood<=5||lw.energy<=4)cls='warn';}d.className=cls;d.title='System state: '+(cls==='crit'?'CRITICAL':cls==='warn'?'WARNING':'ACTIVE');}
+// ═══ STATE DASHBOARD ═══
+function renderStateDashboard(){
+  const el=document.getElementById('state-cards');if(!el)return;
+  const lw=state.wellness.slice(-1)[0];const whoop=state.apiKeys&&state.apiKeys.whoop;
+  const sc=(v,good,ok)=>v>=good?'#00ff88':v>=ok?'#ffaa00':'#ff0044';
+  const card=(t,v,sub,c)=>'<div class="state-card" style="border-color:'+c+';box-shadow:0 0 24px '+c+'2e;"><div class="sc-title">'+t+'</div><div class="sc-val" style="color:'+c+';text-shadow:0 0 16px '+c+';">'+v+'</div><div class="sc-sub">'+sub+'</div></div>';
+  const energy=lw?lw.energy:null, sleep=lw?lw.sleep*10:null;
+  let rsd=lw?Math.round((((10-lw.mood)+(10-lw.energy)+(10-lw.sleep))/30)*100):null;
+  el.innerHTML=[
+    card('ENERGY',energy!=null?energy+'/10':'—',energy!=null?'last log':'log wellness',energy!=null?sc(energy,7,4):'#555'),
+    card('SLEEP SCORE',sleep!=null?sleep:'—',sleep!=null?'last night':'log wellness',sleep!=null?sc(sleep,85,70):'#555'),
+    card('RSD RISK',rsd!=null?rsd+'%':'—','sleep·mood·energy',rsd==null?'#555':(rsd<30?'#00ff88':rsd<55?'#ffaa00':'#ff0044')),
+    card('HRV',whoop?'—':'⊘',whoop?'ms':'connect WHOOP','#555'),
+    card('RECOVERY',whoop?'—':'⊘',whoop?'%':'connect WHOOP','#555'),
+    card('STRAIN',whoop?'—':'⊘',whoop?'daily':'connect WHOOP','#555')
+  ].join('');
+}
+// ═══ PAIN LOGGING ═══
+function initPainLogging(){const bs=document.getElementById('body-scanner');if(!bs||bs.dataset.painInit)return;bs.dataset.painInit='1';bs.addEventListener('click',e=>{if(e.target.classList.contains('pain-marker'))return;const r=bs.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*100,y=(e.clientY-r.top)/r.height*100;if(x<5||x>95||y<3||y>97)return;const raw=prompt('Pain intensity 1-10 at this point?');if(raw===null)return;const intensity=Math.max(1,Math.min(10,parseInt(raw)||5));state.painPoints=state.painPoints||[];state.painPoints.push({x:+x.toFixed(1),y:+y.toFixed(1),intensity,date:Date.now()});save();renderPainPoints();toast('🔴 Pain logged ('+intensity+'/10)','warn');});}
+function renderPainPoints(){const layer=document.getElementById('pain-layer');if(!layer)return;state.painPoints=state.painPoints||[];layer.innerHTML=state.painPoints.map((p,i)=>{const c=p.intensity>=7?'#ff0044':p.intensity>=4?'#ffaa00':'#00ff88';return '<div class="pain-marker" style="left:'+p.x+'%;top:'+p.y+'%;background:'+c+';box-shadow:0 0 12px '+c+';" title="Pain '+p.intensity+'/10 — tap to clear" onclick="clearPain('+i+')"></div>';}).join('');const hint=document.getElementById('pain-hint');if(hint)hint.style.display=state.painPoints.length?'none':'';}
+function clearPain(i){state.painPoints.splice(i,1);save();renderPainPoints();toast('Pain point cleared','success');}
 // ═══ PEPTIDE GARAGE ═══
 function renderPeptides(){
   const pl=document.getElementById('pep-list');
