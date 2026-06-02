@@ -857,6 +857,31 @@ body.view-wing main.grid{padding-top:5.5rem;}
     </div>
     <div class="pipeline" id="pipeline"></div>
   </section>
+  <!-- WIN VAULT -->
+  <section class="widget col-12" data-wing="winvault">
+    <div class="widget-header"><span class="widget-title">🏆 WIN VAULT // BANK EVERY VICTORY</span><span class="widget-icon" id="win-count">0 wins</span></div>
+    <div style="display:flex;gap:0.4rem;margin-bottom:0.8rem;">
+      <input class="lab-input" id="win-text" placeholder="What did you win today? (anything counts)" style="flex:1;">
+      <button class="hero-btn" onclick="addWin()">+ BANK IT 🏆</button>
+    </div>
+    <div id="win-list"></div>
+  </section>
+  <!-- MORNING RITUAL -->
+  <section class="widget col-12" data-wing="ritual">
+    <div class="widget-header"><span class="widget-title">🌅 MORNING RITUAL // YOUR DAILY BRIEF</span><span class="widget-icon" onclick="renderRitual()" style="cursor:pointer;" title="Refresh">🔄</span></div>
+    <div id="ritual-card"></div>
+  </section>
+  <!-- GOAL THERMOMETER -->
+  <section class="widget col-12" data-wing="goals">
+    <div class="widget-header"><span class="widget-title">📈 GOAL THERMOMETER // PROGRESS</span><span class="widget-icon">🎯</span></div>
+    <div id="goal-list" style="margin-bottom:1rem;"></div>
+    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+      <input class="lab-input" id="goal-name" placeholder="New goal" style="flex:1;min-width:140px;">
+      <input class="lab-input" id="goal-current" type="number" placeholder="Now" style="width:90px;">
+      <input class="lab-input" id="goal-target" type="number" placeholder="Target" style="width:90px;">
+      <button class="hero-btn" onclick="addGoal()">+ ADD</button>
+    </div>
+  </section>
   <!-- BREATHWORK -->
   <section class="widget col-12" data-wing="breath">
     <div class="widget-header"><span class="widget-title">🌬️ BREATHWORK // NERVOUS SYSTEM RESET</span><span class="widget-icon">🫁</span></div>
@@ -1064,7 +1089,7 @@ const state=Object.assign({
   theme:'teal',voiceOn:true,musicMode:'silence',
   elevenLabsKey:'',elevenLabsVoice:'pNInz6obpgDQGcFmaJgB',
   anthropicKey:'',
-  supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],deals:[],contentIdeas:[],commsLog:[],
+  supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],deals:[],contentIdeas:[],commsLog:[],wins:[],goals:[],
   tasks:[],transactions:[],wellness:[],dumps:[],heartbeat:[],
   // Weight Warrior
   startWeight:129,goalWeight:84,currentWeight:129,weightLog:[],photos:[],
@@ -1696,7 +1721,7 @@ function checkEnv(){
 function initEverything(){
   const S=fn=>{try{fn();}catch(e){console.error('init step failed:',e);showInitError(e);}};
   S(checkEnv);
-  [initParticles,initStarfield,init3DBrain,renderTasks,renderRev,renderHeartbeat,renderBrainBalance,renderOverview,updateBodyScanner,renderWarrior,renderGiants,renderProperties,renderFinance,renderMedical,renderRSD,renderPeptides,renderStateDashboard,renderPipeline,renderContent,renderComms,initPainLogging,renderPainPoints,renderCopilotMessages].forEach(S);
+  [initParticles,initStarfield,init3DBrain,renderTasks,renderRev,renderHeartbeat,renderBrainBalance,renderOverview,updateBodyScanner,renderWarrior,renderGiants,renderProperties,renderFinance,renderMedical,renderRSD,renderPeptides,renderStateDashboard,renderPipeline,renderContent,renderComms,renderWins,renderRitual,renderGoals,initPainLogging,renderPainPoints,renderCopilotMessages].forEach(S);
   S(()=>{document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';});
   S(()=>{document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';});
   S(()=>{if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');});
@@ -1765,6 +1790,9 @@ const WINGS=[
   {id:'peptides',name:'PEPTIDE GARAGE',icon:'💉',cls:'optimisation',region:'dmn'},
   {id:'state',name:'STATE',icon:'📊',cls:'optimisation',region:''},
   {id:'breath',name:'BREATHWORK',icon:'🌬️',cls:'optimisation',region:''},
+  {id:'winvault',name:'WIN VAULT',icon:'🏆',cls:'optimisation',region:''},
+  {id:'ritual',name:'MORNING RITUAL',icon:'🌅',cls:'creative',region:''},
+  {id:'goals',name:'GOAL THERMOMETER',icon:'📈',cls:'analytical',region:''},
   {id:'connections',name:'CONNECTIONS',icon:'🔌',cls:'analytical',region:'hippocampus'}
 ];
 const WING_KEYWORDS=[['MISSION CONTROL','intel'],['COUNCIL OF GIANTS','intel'],['PROPERTY','business'],['BUSINESS METRICS','business'],['FINANCIAL','finance'],['SOUNDTRACK','music'],['BIO SCANNER','biohacking'],['MEDICAL','biohacking'],['WELLNESS','biohacking'],['WEIGHT WARRIOR','optimisation'],['ADOPTION','optimisation'],['RSD','adhd'],['MISSIONS','adhd'],['HEARTBEAT','adhd'],['NEURAL CORE','brain']];
@@ -1782,6 +1810,9 @@ function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('
   if(w==='content')renderContent();
   if(w==='comms')renderComms();
   if(w==='intel')loadBriefing();
+  if(w==='winvault')renderWins();
+  if(w==='ritual')renderRitual();
+  if(w==='goals')renderGoals();
   if(w!=='breath'&&breathTimer)stopBreath();
   window.scrollTo(0,0);chord();
 }
@@ -1835,6 +1866,29 @@ function renderPipeline(){const el=document.getElementById('pipeline');if(!el)re
 function addDeal(){const n=document.getElementById('deal-name').value.trim();if(!n)return;const v=parseFloat(document.getElementById('deal-value').value)||0;state.deals=state.deals||[];state.deals.push({name:n,value:v,stage:'lead'});save();document.getElementById('deal-name').value='';document.getElementById('deal-value').value='';renderPipeline();toast('🎯 Deal added: '+n,'success');chord();}
 function moveDeal(i,dir){const d=state.deals[i];if(!d)return;const idx=DEAL_STAGES.indexOf(d.stage)+dir;if(idx<0||idx>=DEAL_STAGES.length)return;d.stage=DEAL_STAGES[idx];save();renderPipeline();if(d.stage==='closed'){chord();playSound(1100,0.2);lightning();toast('🏆 '+d.name+' CLOSED — €'+(d.value||0).toLocaleString(),'success');activateBrain('reward',30);}}
 function delDeal(i){state.deals.splice(i,1);save();renderPipeline();}
+// ═══ WIN VAULT ═══
+function renderWins(){const el=document.getElementById('win-list');state.wins=state.wins||[];const wk=Date.now()-7*864e5;const cnt=document.getElementById('win-count');if(cnt)cnt.textContent=state.wins.length+' wins · '+state.wins.filter(w=>w.date>wk).length+' this week';if(!el)return;el.innerHTML=state.wins.length?state.wins.slice().reverse().map((w,ri)=>{const i=state.wins.length-1-ri;return '<div class="pep-card" style="border-color:#ffd700;box-shadow:0 0 18px rgba(255,215,0,0.15);"><span style="flex:1;">🏆 '+w.text+'</span><span style="color:var(--text-faint);font-size:0.62rem;">'+new Date(w.date).toLocaleDateString()+'</span><button class="deal-btn" style="color:var(--danger);" onclick="delWin('+i+')">✕</button></div>';}).join(''):'<div style="color:var(--text-dim);font-size:0.8rem;">No wins yet. Bank your first one — anything counts. 🏆</div>';}
+function addWin(){const t=document.getElementById('win-text').value.trim();if(!t)return;state.wins=state.wins||[];state.wins.push({text:t,date:Date.now()});save();document.getElementById('win-text').value='';renderWins();toast('🏆 WIN BANKED — '+t,'success');chord();playSound(1100,0.2);lightning();activateBrain('reward',30);}
+function delWin(i){state.wins.splice(i,1);save();renderWins();}
+// ═══ MORNING RITUAL ═══
+function renderRitual(){const el=document.getElementById('ritual-card');if(!el)return;const open=state.tasks.filter(t=>!t.done).slice(0,3);const g=Object.values(state.giants||{});const m=g[Math.floor(Math.random()*g.length)];const q=(m&&m.quotes&&m.quotes.length)?m.quotes[Math.floor(Math.random()*m.quotes.length)]:'';const lost=(state.startWeight-state.currentWeight).toFixed(1),rem=(state.currentWeight-state.goalWeight).toFixed(1);
+  el.innerHTML='<div style="font-family:Orbitron,sans-serif;font-size:1.15rem;color:var(--accent);text-shadow:0 0 18px var(--accent);margin-bottom:0.9rem;line-height:1.4;">'+getGreeting()+'</div>'
+  +'<div class="pep-card"><span style="flex:1;">⚡ Life Score</span><span style="font-family:JetBrains Mono,monospace;color:#ffd700;">'+state.lifeScore+'</span></div>'
+  +'<div class="pep-card"><span style="flex:1;">💪 Warrior journey</span><span style="font-family:JetBrains Mono,monospace;">'+lost+'kg down · '+rem+'kg to 84</span></div>'
+  +'<div class="lab-col-title" style="margin-top:1rem;">🎯 TODAY’S TOP 3</div>'+(open.length?open.map(t=>'<div class="pep-card">▢ '+t.text+'</div>').join(''):'<div style="color:var(--text-dim);font-size:0.78rem;">No missions yet — add some in the ADHD Centre.</div>')
+  +(m?'<div class="lab-col-title" style="margin-top:1rem;">'+(m.icon||'🦁')+' FROM '+m.name.toUpperCase()+'</div><div class="pep-card" style="font-style:italic;">“'+q+'”</div>':'')
+  +'<button class="hero-btn" style="margin-top:1rem;" onclick="hypeMe()">🔥 HYPE ME UP</button>';}
+// ═══ GOAL THERMOMETER ═══
+function renderGoals(){const el=document.getElementById('goal-list');if(!el)return;state.goals=state.goals||[];
+  const bar=(label,pct)=>{pct=Math.max(0,Math.min(100,pct||0));const c=pct>=100?'#00ff88':pct>=60?'#ffd700':'#00ffff';return '<div style="margin-bottom:1rem;"><div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:0.3rem;"><span>'+label+'</span><span style="font-family:JetBrains Mono,monospace;color:'+c+';">'+Math.round(pct)+'%</span></div><div style="height:14px;background:rgba(0,255,255,0.08);border-radius:8px;overflow:hidden;border:1px solid var(--border);"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#00ffff,'+c+');box-shadow:0 0 16px '+c+';transition:width 1s;"></div></div></div>';};
+  const total=state.startWeight-state.goalWeight,done=state.startWeight-state.currentWeight;
+  const now=new Date(),monthRev=state.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce((s,t)=>s+t.amount,0);
+  let html=bar('💪 Warrior Mode → 84kg ('+state.currentWeight+'kg now)',total?done/total*100:0);
+  html+=bar('💰 Revenue this month (€10k goal): €'+Math.round(monthRev),monthRev/100);
+  state.goals.forEach((gl,i)=>{html+='<div style="position:relative;">'+bar(gl.name+' ('+gl.current+'/'+gl.target+')',gl.target?gl.current/gl.target*100:0)+'<button class="deal-btn" style="position:absolute;top:0;right:0;color:var(--danger);" onclick="delGoal('+i+')">✕</button></div>';});
+  el.innerHTML=html;}
+function addGoal(){const n=document.getElementById('goal-name').value.trim();if(!n)return;state.goals=state.goals||[];state.goals.push({name:n,current:parseFloat(document.getElementById('goal-current').value)||0,target:parseFloat(document.getElementById('goal-target').value)||100});save();['goal-name','goal-current','goal-target'].forEach(id=>document.getElementById(id).value='');renderGoals();toast('🎯 Goal added','success');chord();}
+function delGoal(i){state.goals.splice(i,1);save();renderGoals();}
 // ═══ BREATHWORK ═══
 const BREATH_PATTERNS={box:[['Breathe in',4],['Hold',4],['Breathe out',4],['Hold',4]],relax:[['Breathe in',4],['Hold',7],['Breathe out',8]],calm:[['Breathe in',5],['Breathe out',5]]};
 let breathTimer=null,breathPat='box';
