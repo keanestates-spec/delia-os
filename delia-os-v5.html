@@ -895,8 +895,8 @@ body.view-wing main.grid{padding-top:5.5rem;}
   <!-- ANATOMY LAB -->
   <section class="widget col-12" data-wing="anatomy">
     <div class="widget-header"><span class="widget-title">🧍 ANATOMY LAB // 3D BODY · LEARN WHAT’S WHAT</span><span class="widget-icon">🫀</span></div>
-    <div id="anatomy-container" style="width:100%;height:560px;position:relative;border-radius:14px;overflow:hidden;background:radial-gradient(circle at center,rgba(0,170,255,0.18),rgba(255,0,255,0.05) 50%,transparent 72%);box-shadow:inset 0 0 80px rgba(0,170,255,0.15);"></div>
-    <p style="color:var(--text-dim);font-size:0.72rem;margin-top:0.6rem;">Drag to rotate. Hover any glowing organ to learn what it does. The heart beats; the brain sits inside the head.</p>
+    <div id="anatomy-container" style="width:100%;height:600px;position:relative;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 0 60px rgba(0,170,255,0.25);"><iframe id="anatomy-frame" title="Human Body Anatomy" frameborder="0" allowfullscreen allow="autoplay;fullscreen;xr-spatial-tracking" style="width:100%;height:100%;border:0;display:block;"></iframe></div>
+    <p style="color:var(--text-dim);font-size:0.72rem;margin-top:0.6rem;">Real 3D human anatomy — drag to rotate, scroll to zoom, double-click to focus. Model: <a href="https://sketchfab.com/3d-models/human-body-4e2217df08ac4f1386bd3dfc5a70944b" target="_blank" rel="noopener" style="color:var(--accent);">“Human Body” by dung2606</a> (CC-BY).</p>
   </section>
   <!-- BREATHWORK -->
   <section class="widget col-12" data-wing="breath">
@@ -1847,6 +1847,7 @@ function initAnatomy(){if(anatomyInit){setTimeout(resizeAnatomy,60);return;}anaC
   (function ana(){requestAnimationFrame(ana);if(currentWing!=='anatomy')return;if(!drag)ry+=0.004;anaGroup.rotation.y=ry;if(anaHeart)anaHeart.scale.setScalar(1+Math.sin(Date.now()*0.006)*0.13);anaRenderer.render(anaScene,anaCam);})();
   addEventListener('resize',resizeAnatomy);setTimeout(resizeAnatomy,200);}
 function resizeAnatomy(){if(!anaRenderer||!anaCont)return;const w=anaCont.clientWidth,h=anaCont.clientHeight;if(w&&h){anaCam.aspect=w/h;anaCam.updateProjectionMatrix();anaRenderer.setSize(w,h);}}
+function loadAnatomyEmbed(){const f=document.getElementById('anatomy-frame');if(f&&!f.src)f.src='https://sketchfab.com/models/4e2217df08ac4f1386bd3dfc5a70944b/embed?autospin=0.3&autostart=1&ui_theme=dark&ui_infos=0&ui_watermark=0&dnt=1';}
 // ═══ COMMAND PALETTE (⌘K) ═══
 function cmdkItems(){const items=[{ico:'🧠',label:'BRAIN HOME',tag:'GO',act:goHome}];WINGS.forEach(w=>items.push({ico:w.icon,label:w.name,tag:'WING',act:()=>showWing(w.id)}));items.push({ico:'💬',label:'OPEN JARVIS',tag:'AI',act:toggleCopilot},{ico:'🎯',label:'FOCUS · 25 MIN',tag:'DO',act:()=>startFocus(25)},{ico:'🎍',label:'PLAY PAN PIPES',tag:'AUDIO',act:()=>playPreset('panpipes')},{ico:'🔇',label:'STOP MUSIC',tag:'AUDIO',act:stopMusic},{ico:'🔄',label:'REFRESH BRIEFING',tag:'INTEL',act:loadBriefing});return items;}
 let cmdkSel=0,cmdkFiltered=[];
@@ -1913,7 +1914,7 @@ function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('
   if(w==='winvault')renderWins();
   if(w==='ritual')renderRitual();
   if(w==='goals')renderGoals();
-  if(w==='anatomy'){try{initAnatomy();}catch(e){}setTimeout(resizeAnatomy,120);}
+  if(w==='anatomy')loadAnatomyEmbed();
   if(w!=='breath'&&breathTimer)stopBreath();
   window.scrollTo(0,0);chord();
 }
