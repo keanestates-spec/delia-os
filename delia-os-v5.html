@@ -499,6 +499,15 @@ body.view-wing main.grid{padding-top:5.5rem;}
 #breath-text{font-family:'Orbitron',sans-serif;font-size:1.1rem;letter-spacing:0.1em;color:var(--accent);text-shadow:0 0 16px var(--accent);min-height:3.4rem;}
 .breath-pat{display:inline-block;padding:0.5rem 0.9rem;margin:0.2rem;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:0.62rem;font-family:'Orbitron',sans-serif;letter-spacing:0.08em;color:var(--text-dim);}
 .breath-pat.active{background:var(--accent);color:var(--bg-0);box-shadow:0 0 22px var(--accent);}
+#rooms-overlay{position:fixed;inset:0;z-index:610;background:rgba(0,3,8,0.85);backdrop-filter:blur(10px);display:none;align-items:flex-start;justify-content:center;padding:7vh 1rem 2rem;overflow:auto;}
+#rooms-overlay.open{display:flex;}
+#rooms-panel{width:min(740px,94vw);background:rgba(2,6,18,0.97);border:1px solid var(--border-bright);border-radius:18px;box-shadow:0 0 90px var(--accent);padding:1.6rem;}
+#rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:0.8rem;}
+.room-tile{background:rgba(0,255,255,0.06);border:1px solid var(--border);border-radius:12px;padding:1rem 0.6rem;text-align:center;cursor:pointer;transition:all 0.2s;}
+.room-tile:hover{border-color:var(--border-bright);box-shadow:0 0 28px var(--accent-glow);transform:translateY(-3px);}
+.rt-ico{font-size:1.8rem;}
+.rt-name{font-family:'Orbitron',sans-serif;font-size:0.56rem;letter-spacing:0.05em;color:var(--text-dim);margin-top:0.4rem;line-height:1.3;}
+.room-tile:hover .rt-name{color:var(--accent);}
 #camera-overlay{position:fixed;inset:0;z-index:650;background:rgba(0,3,8,0.96);display:none;flex-direction:column;align-items:center;justify-content:center;}
 #camera-overlay.open{display:flex;}
 #camera-video{max-width:92vw;max-height:74vh;border-radius:14px;border:1px solid var(--border-bright);box-shadow:0 0 70px var(--accent);background:#000;}
@@ -552,6 +561,7 @@ body.view-wing main.grid{padding-top:5.5rem;}
     </div>
   </div>
   <div class="topbar-right">
+    <button class="topbar-btn" onclick="openRooms()" style="border-color:var(--border-bright);color:var(--accent);box-shadow:0 0 18px var(--accent-glow);margin-right:0.4rem;">☰ ROOMS</button>
     <span id="wx-chip" title="Weather (your location)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--accent);text-shadow:0 0 10px var(--accent);margin-right:0.4rem;cursor:pointer;" onclick="showWing('intel')">🌍 —</span>
     <button class="qa-icon" id="listen-btn" title="Hands-free voice — say JARVIS" onclick="toggleAlwaysListening()" style="margin-right:0.4rem;opacity:0.5;">👂</button>
     <button class="qa-icon" title="Command palette (⌘K)" onclick="openCmdK()" style="margin-right:0.4rem;">⌘</button>
@@ -978,6 +988,12 @@ body.view-wing main.grid{padding-top:5.5rem;}
 </div>
 
 <!-- CO-PILOT -->
+<div id="rooms-overlay" onclick="if(event.target===this)closeRooms()">
+  <div id="rooms-panel">
+    <div style="font-family:'Orbitron',sans-serif;color:var(--accent);letter-spacing:0.14em;margin-bottom:1.1rem;font-size:0.9rem;text-shadow:0 0 14px var(--accent);">🏨 NEXUS ROOMS</div>
+    <div id="rooms-grid"></div>
+  </div>
+</div>
 <div id="supabase-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(16px);z-index:700;display:none;align-items:center;justify-content:center;padding:1rem;">
   <div style="width:520px;max-width:94vw;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));border:1px solid var(--border-bright);border-radius:16px;padding:2rem;box-shadow:0 0 100px var(--accent);">
     <div style="font-family:'Orbitron',sans-serif;letter-spacing:0.1em;color:var(--accent);font-size:1rem;margin-bottom:1.2rem;text-shadow:0 0 14px var(--accent);">🗄️ CONNECT SUPABASE MEMORY</div>
@@ -1242,6 +1258,17 @@ function onClap(){lightning();bassBoom();window.coherenceMode=true;Object.keys(s
 // ═══ HANDS-FREE VOICE (say "JARVIS ...") ═══
 let alwaysRec=null,alwaysOn=false;
 function openCopilotForVoice(){const p=document.getElementById('copilot-panel');if(p&&!p.classList.contains('open')){p.classList.add('open');renderCopilotMessages();}}
+// ═══ TAP TO TALK (reliable in every browser incl. Safari) ═══
+let ptaActive=false;
+async function pushToTalk(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return toast('Voice not supported here — try Chrome','warn');if(ptaActive)return;if(!await ensureMic())return;ptaActive=true;
+  const wasOn=alwaysOn;if(alwaysRec){try{alwaysRec.stop();}catch(e){}}
+  const rec=new SR();rec.lang='en-US';rec.interimResults=true;rec.continuous=false;
+  const hint=document.getElementById('copilot-hint'),mic=document.getElementById('copilot-mic');openCopilotForVoice();if(mic)mic.classList.add('recording');if(hint)hint.textContent='🎤 LISTENING…';playSound(880,0.1);
+  let finalT='';
+  rec.onresult=e=>{let interim='';finalT='';for(let i=0;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalT+=r[0].transcript;else interim+=r[0].transcript;}if(hint)hint.textContent='🎤 '+(((finalT+interim).trim()).slice(-34)||'…');};
+  rec.onerror=()=>{};
+  rec.onend=()=>{ptaActive=false;if(mic)mic.classList.remove('recording');if(hint)hint.innerHTML='ASK&nbsp;JARVIS';const t=finalT.trim();if(t.length>1){copilotRespond(t);}else{toast('🎤 Didn’t catch that — tap and speak again','warn');}if(wasOn){alwaysOn=true;setTimeout(()=>{try{alwaysRec&&alwaysRec.start();}catch(e){}},400);}};
+  try{rec.start();}catch(e){ptaActive=false;if(mic)mic.classList.remove('recording');if(hint)hint.innerHTML='ASK&nbsp;JARVIS';}}
 function startAlwaysListening(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR||alwaysRec)return;alwaysRec=new SR();alwaysRec.lang='en-US';alwaysRec.continuous=true;alwaysRec.interimResults=true;let last='';
   alwaysRec.onresult=e=>{if(window._jarvisSpeaking)return;let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(!r.isFinal){interim+=r[0].transcript;continue;}const raw=r[0].transcript.trim();const low=raw.toLowerCase();const panelOpen=document.getElementById('copilot-panel').classList.contains('open');const wk=low.match(/\b(hey |ok )?(jarvis|jervis|jarvas|jarviss|jervais|travis|service|nexus|harvest)\b[ ,.:!?-]*/);let cmd='';if(wk){cmd=raw.slice(low.indexOf(wk[0])+wk[0].length).trim();}else if(panelOpen){cmd=raw;}if(wk&&cmd.length<2){openCopilotForVoice();toast('🎙️ JARVIS here — go ahead, Queen','witty');playSound(880,0.08);continue;}if(cmd.length>1&&cmd!==last){last=cmd;openCopilotForVoice();copilotRespond(cmd);setTimeout(()=>{if(last===cmd)last='';},5000);}}const hint=document.getElementById('copilot-hint');if(hint)hint.innerHTML=interim?('🎙️ '+interim.trim().slice(-34)):'ASK&nbsp;JARVIS';};
   const kick=()=>{if(alwaysOn){try{alwaysRec.start();}catch(e){}}};
@@ -1679,7 +1706,7 @@ function copilotTyping(on){
 }
 document.getElementById('copilot-input').addEventListener('keypress',e=>{if(e.key==='Enter')copilotSend();});
 let copilotRec=null;
-document.getElementById('copilot-mic').onclick=async()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return toast('Voice not supported','warn');if(!await ensureMic())return;const mic=document.getElementById('copilot-mic');if(!copilotRec){copilotRec=new SR();copilotRec.lang='en-US';copilotRec.continuous=false;copilotRec.interimResults=false;copilotRec.onresult=e=>{document.getElementById('copilot-input').value=e.results[0][0].transcript;copilotSend();};copilotRec.onend=()=>mic.classList.remove('recording');copilotRec.onerror=()=>mic.classList.remove('recording');}mic.classList.add('recording');try{copilotRec.start();}catch(e){mic.classList.remove('recording');}};
+document.getElementById('copilot-mic').onclick=pushToTalk;
 
 // ═══ BRAIN DUMP ═══
 let dumpCat='raw';
@@ -1713,7 +1740,7 @@ document.getElementById('export-data').onclick=exportData;
 addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('cmdk-overlay').classList.contains('open')?closeCmdK():openCmdK();return;}
   if(document.getElementById('cmdk-overlay').classList.contains('open')){if(e.key==='Escape')closeCmdK();else if(e.key==='ArrowDown'){e.preventDefault();cmdkMove(1);}else if(e.key==='ArrowUp'){e.preventDefault();cmdkMove(-1);}else if(e.key==='Enter'){e.preventDefault();cmdkEnter();}return;}
-  if(e.key==='Escape'){closeCmdK();closeCamera();closeSupabaseModal();closeDump();closeRSD();closeElevenLabs();document.getElementById('copilot-panel').classList.remove('open');exitFocus();return;}
+  if(e.key==='Escape'){closeCmdK();closeRooms();closeCamera();closeSupabaseModal();closeDump();closeRSD();closeElevenLabs();document.getElementById('copilot-panel').classList.remove('open');exitFocus();return;}
 });
 
 // ═══ LIFE SCORE ═══
@@ -1734,6 +1761,13 @@ function checkEnv(){
     const b=document.createElement('div');b.id='env-warn';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99998;background:linear-gradient(90deg,#ff0044,#ff7a00);color:#fff;font:700 12px Orbitron,sans-serif;letter-spacing:0.04em;padding:11px 14px;text-align:center;cursor:pointer;box-shadow:0 4px 30px rgba(255,0,68,0.5);';
     b.innerHTML='🎙️ Voice · Mic · Weather · Camera need the LIVE web link (not a local file). Tap to copy → paste in your browser.';
     b.onclick=()=>{const u='https://keanestates-spec.github.io/delia-os/delia-os-v5.html';if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>toast('🔗 Link copied — paste it in your browser','success'));else prompt('Copy this link:',u);};
+    document.body.appendChild(b);return;
+  }
+  const ua=navigator.userAgent;const isChromium=/(chrome|crios|edg)/i.test(ua)&&!/(fxios|firefox)/i.test(ua);
+  if(!isChromium&&!document.getElementById('browser-warn')){
+    const b=document.createElement('div');b.id='browser-warn';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99997;background:linear-gradient(90deg,#7a2bff,#00b3ff);color:#fff;font:700 12px Orbitron,sans-serif;letter-spacing:0.03em;padding:11px 14px;text-align:center;cursor:pointer;box-shadow:0 4px 30px rgba(120,40,255,0.5);';
+    b.innerHTML='🎙️ For FULLY hands-free voice, open this in CHROME — Safari/Firefox block always-on mic. Tap to copy this link → open in Chrome.';
+    b.onclick=()=>{const u=location.href;if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>toast('🔗 Link copied — now open it in Chrome','success'));else prompt('Open this in Chrome:',u);b.remove();};
     document.body.appendChild(b);
   }
 }
@@ -1821,6 +1855,8 @@ function closeCmdK(){document.getElementById('cmdk-overlay').classList.remove('o
 function renderCmdK(q){q=(q||'').toLowerCase();cmdkFiltered=cmdkItems().filter(it=>it.label.toLowerCase().includes(q));cmdkSel=0;const l=document.getElementById('cmdk-list');l.innerHTML=cmdkFiltered.map((it,i)=>'<div class="cmdk-item'+(i===0?' sel':'')+'" data-i="'+i+'"><span class="ck-ico">'+it.ico+'</span><span>'+it.label+'</span><span class="ck-tag">'+it.tag+'</span></div>').join('')||'<div class="cmdk-item">No matches</div>';l.querySelectorAll('.cmdk-item').forEach(el=>{el.onclick=()=>{const it=cmdkFiltered[+el.dataset.i];if(it){closeCmdK();it.act();}};});}
 function cmdkMove(d){if(!cmdkFiltered.length)return;cmdkSel=(cmdkSel+d+cmdkFiltered.length)%cmdkFiltered.length;document.querySelectorAll('#cmdk-list .cmdk-item').forEach((el,i)=>el.classList.toggle('sel',i===cmdkSel));}
 function cmdkEnter(){const it=cmdkFiltered[cmdkSel];if(it){closeCmdK();it.act();}}
+function openRooms(){const ov=document.getElementById('rooms-overlay');const g=document.getElementById('rooms-grid');g.innerHTML='<div class="room-tile" onclick="goHome();closeRooms();"><div class="rt-ico">🧠</div><div class="rt-name">BRAIN HOME</div></div>'+WINGS.map(w=>'<div class="room-tile" onclick="showWing(\''+w.id+'\');closeRooms();"><div class="rt-ico">'+w.icon+'</div><div class="rt-name">'+w.name+'</div></div>').join('');ov.classList.add('open');}
+function closeRooms(){const ov=document.getElementById('rooms-overlay');if(ov)ov.classList.remove('open');}
 // ═══ WEATHER + INTEL BRIEFING (free, no-key APIs) ═══
 function wxIcon(c){if(c===0)return '☀️';if(c<3)return '🌤️';if(c<50)return '☁️';if(c<70)return '🌧️';if(c<80)return '❄️';return '⛈️';}
 function wxText(c){if(c===0)return 'Clear sky';if(c<3)return 'Partly cloudy';if(c<50)return 'Cloudy / foggy';if(c<70)return 'Rain';if(c<80)return 'Snow';return 'Storms';}
