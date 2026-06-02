@@ -403,6 +403,48 @@ button:hover,.topbar-btn:hover,.copilot-suggest-btn:hover,.hero-btn:hover{color:
 #conn-wave.idle span{animation-play-state:paused;height:2px;opacity:0.4;}
 @keyframes waveBar{0%,100%{height:3px;}50%{height:12px;}}
 @media(max-width:900px){#conn-hud{display:none;}}
+/* ═══ HOTEL / WINGS ═══ */
+#bridge{display:none;position:fixed;left:0;right:0;top:0;bottom:0;z-index:55;flex-direction:column;align-items:center;justify-content:center;padding:5rem 1rem 6rem;}
+body.view-bridge #bridge{display:flex;}
+body.view-bridge .hero,body.view-bridge main.grid,body.view-wing .hero,body.view-wing #bridge{display:none;}
+#bridge-title{font-family:'Orbitron',sans-serif;font-size:0.66rem;letter-spacing:0.45em;color:var(--accent);text-shadow:0 0 22px var(--accent);margin-bottom:0.3rem;opacity:0.85;}
+#bridge-brain{position:relative;width:min(52vh,520px);height:min(52vh,520px);max-width:88vw;}
+#bridge-brain #brain-container{width:100%!important;height:100%!important;background:radial-gradient(circle at center,rgba(0,255,255,0.28),rgba(255,0,255,0.08) 45%,transparent 72%)!important;}
+#bridge-balance{margin-top:0.6rem;width:min(52vh,520px);max-width:88vw;}
+#wing-ring{position:absolute;inset:0;pointer-events:none;}
+.wing-panel{position:absolute;pointer-events:auto;width:124px;padding:0.7rem 0.5rem;background:rgba(2,6,18,0.86);border:1px solid var(--border);border-radius:12px;text-align:center;cursor:pointer;backdrop-filter:blur(14px);transition:all 0.25s;box-shadow:0 0 24px rgba(0,255,255,0.12);}
+.wing-panel:hover{border-color:var(--border-bright);box-shadow:0 0 48px var(--accent-glow);}
+.wing-panel .wp-icon{font-size:1.5rem;filter:drop-shadow(0 0 10px var(--accent));}
+.wing-panel .wp-name{font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.08em;color:var(--text-dim);margin-top:0.3rem;line-height:1.3;}
+.wing-panel:hover .wp-name{color:var(--accent);}
+.wing-panel.analytical{border-color:rgba(0,229,255,0.45);}
+.wing-panel.creative{border-color:rgba(255,0,255,0.45);}
+.wing-panel.optimisation{border-color:rgba(0,255,136,0.45);}
+#back-bar{display:none;position:fixed;top:70px;left:0;right:0;z-index:90;align-items:center;gap:0.9rem;padding:0.55rem 1.5rem;background:rgba(2,6,18,0.92);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);}
+body.view-wing #back-bar{display:flex;}
+.back-home{font-family:'Orbitron',sans-serif;font-size:0.64rem;letter-spacing:0.14em;color:var(--accent);background:rgba(0,255,255,0.1);border:1px solid var(--border-bright);padding:0.5rem 0.9rem;border-radius:9px;cursor:pointer;transition:all 0.2s;}
+.back-home:hover{box-shadow:0 0 28px var(--accent-glow);transform:translateY(-1px);}
+#breadcrumb{font-family:'Orbitron',sans-serif;font-size:0.64rem;letter-spacing:0.2em;color:var(--text-dim);}
+#breadcrumb b{color:var(--accent);text-shadow:0 0 12px var(--accent);}
+body.view-wing main.grid{padding-top:5.5rem;}
+.wing-empty{grid-column:span 12;text-align:center;padding:4rem 2rem;color:var(--text-dim);}
+.wing-empty .we-icon{font-size:3.2rem;filter:drop-shadow(0 0 18px var(--accent));}
+.wing-empty h3{font-family:'Orbitron',sans-serif;color:var(--accent);margin:1rem 0 0.5rem;letter-spacing:0.2em;}
+.conn-grid{grid-column:span 12;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;}
+.conn-node{background:rgba(2,6,18,0.8);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;}
+.conn-node:hover{border-color:var(--border-bright);box-shadow:0 0 35px var(--accent-glow);transform:translateY(-3px);}
+.conn-node .cn-dot{position:absolute;top:0.7rem;right:0.7rem;width:9px;height:9px;border-radius:50%;background:#555;}
+.conn-node.live .cn-dot{background:#00ff88;box-shadow:0 0 10px #00ff88;}
+.conn-node.ready .cn-dot{background:#ffaa00;box-shadow:0 0 10px #ffaa00;}
+.conn-node.err .cn-dot{background:#ff0044;box-shadow:0 0 10px #ff0044;}
+.conn-node .cn-icon{font-size:1.8rem;}
+.conn-node .cn-name{font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:0.08em;margin-top:0.4rem;color:#fff;}
+.conn-node .cn-status{font-size:0.52rem;letter-spacing:0.1em;margin-top:0.25rem;color:var(--text-dim);text-transform:uppercase;}
+#state-dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#00ff88;box-shadow:0 0 12px #00ff88;animation:statePulse 2s ease-in-out infinite;vertical-align:middle;margin-right:0.5rem;}
+#state-dot.warn{background:#ffaa00;box-shadow:0 0 12px #ffaa00;}
+#state-dot.crit{background:#ff0044;box-shadow:0 0 12px #ff0044;}
+@keyframes statePulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+@media(max-width:820px){#wing-ring{position:static;display:grid;grid-template-columns:repeat(2,1fr);gap:0.6rem;margin-top:1.5rem;width:90vw;}.wing-panel{position:static!important;width:auto;transform:none!important;}}
 </style>
 </head>
 <body>
@@ -414,7 +456,7 @@ button:hover,.topbar-btn:hover,.copilot-suggest-btn:hover,.hero-btn:hover{color:
 <div id="start-screen">
   <div class="start-rings"><div class="start-ring"></div><div class="start-ring"></div><div class="start-ring"></div></div>
   <div class="start-logo">NEXUS<span class="accent"> HOTEL</span></div>
-  <div class="start-sub">REBEL EDITION // v5</div>
+  <div class="start-sub">COMMAND BRIDGE</div>
   <div class="start-tagline">🤘 BUILT FOR LEGENDS · BY YOU · FOR YOU 🤘</div>
   <button class="start-btn" onclick="initiate()">⚡ ENGAGE THE EMPIRE ⚡</button>
   <div class="start-hint">One click unlocks music + voice · This is YOUR command center</div>
@@ -437,7 +479,7 @@ button:hover,.topbar-btn:hover,.copilot-suggest-btn:hover,.hero-btn:hover{color:
 
 <!-- TOP BAR -->
 <header class="topbar">
-  <div class="logo">DELIA<span class="accent">-OS</span></div>
+  <div class="logo">NEXUS<span class="accent"> HOTEL</span></div>
   <div class="topbar-center">
     <div class="life-score">
       <svg class="life-score-ring" viewBox="0 0 36 36">
@@ -448,6 +490,7 @@ button:hover,.topbar-btn:hover,.copilot-suggest-btn:hover,.hero-btn:hover{color:
     </div>
   </div>
   <div class="topbar-right">
+    <span id="state-dot" title="System state"></span>
     <button class="topbar-btn" id="theme-toggle">⬢ THEME</button>
     <button class="topbar-btn active" id="audio-toggle">🔊 VOICE</button>
     <button class="topbar-btn" id="el-toggle">🎙️ 11LABS</button>
@@ -455,6 +498,20 @@ button:hover,.topbar-btn:hover,.copilot-suggest-btn:hover,.hero-btn:hover{color:
     <div style="text-align:right;"><div class="topbar-time" id="topbar-time">--:--</div><div class="topbar-date" id="topbar-date">---</div></div>
   </div>
 </header>
+
+<!-- BRIDGE (HOME) -->
+<div id="bridge">
+  <div id="bridge-title">NEURAL COMMAND BRIDGE · DRAG TO ROTATE · TAP A REGION OR WING</div>
+  <div id="bridge-brain"></div>
+  <div id="wing-ring"></div>
+  <div id="bridge-balance"></div>
+</div>
+
+<!-- WING BACK BAR -->
+<div id="back-bar">
+  <button class="back-home" onclick="goHome()">🧠 BRAIN HOME</button>
+  <div id="breadcrumb">NEXUS HOTEL</div>
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -689,6 +746,20 @@ button:hover,.topbar-btn:hover,.copilot-suggest-btn:hover,.hero-btn:hover{color:
     <ul id="rev-list" style="list-style:none;max-height:200px;overflow-y:auto;margin-top:1rem;"></ul>
   </section>
 
+<!-- CONNECTIONS HUB -->
+  <section class="widget col-12" data-wing="connections">
+    <div class="widget-header"><span class="widget-title">🔌 CONNECTIONS // INTEGRATION HUB</span><span class="widget-icon">🛰️</span></div>
+    <p style="color:var(--text-dim);font-size:0.78rem;margin-bottom:1.2rem;letter-spacing:0.05em;">Tap a node to connect. 🟢 live · 🟠 ready / needs backend · keys stored only in this browser.</p>
+    <div class="conn-grid" id="conn-grid"></div>
+  </section>
+  <!-- CONTENT STUDIO (room being built) -->
+  <section class="widget col-12" data-wing="content">
+    <div class="wing-empty"><div class="we-icon">🎬</div><h3>CONTENT STUDIO</h3><p>Campaigns, HeyGen twin, content calendar & voice-to-content capture. Room under construction — wire HeyGen / Meta keys in Connections to bring it online.</p></div>
+  </section>
+  <!-- COMMUNICATIONS (room being built) -->
+  <section class="widget col-12" data-wing="comms">
+    <div class="wing-empty"><div class="we-icon">📡</div><h3>COMMUNICATIONS</h3><p>Gmail, Calendar & messages. Room under construction — connect Gmail / Google Calendar in Connections (needs backend OAuth) to bring it online.</p></div>
+  </section>
 </main>
 
 <!-- DOCK -->
@@ -807,7 +878,7 @@ const state=Object.assign({
   theme:'teal',voiceOn:true,musicMode:'silence',
   elevenLabsKey:'',elevenLabsVoice:'pNInz6obpgDQGcFmaJgB',
   anthropicKey:'',
-  supabaseUrl:'',supabaseKey:'',
+  supabaseUrl:'',supabaseKey:'',apiKeys:{},
   tasks:[],transactions:[],wellness:[],dumps:[],heartbeat:[],
   // Weight Warrior
   startWeight:129,goalWeight:84,currentWeight:129,weightLog:[],photos:[],
@@ -983,7 +1054,17 @@ function init3DBrain(){
   const pt2=new THREE.PointLight(0xff00ff,1.6);pt2.position.set(-3,-3,3);brainScene.add(pt2);
   const pt3=new THREE.PointLight(0xffffff,1.0);pt3.position.set(0,0,4);brainScene.add(pt3);
   let isDragging=false,prevX=0,prevY=0,rotX=0,rotY=0;
-  brainRenderer.domElement.addEventListener('mousedown',e=>{isDragging=true;prevX=e.clientX;prevY=e.clientY;});
+  brainRenderer.domElement.style.cursor='pointer';
+  let downX=0,downY=0;const ray=new THREE.Raycaster(),mouseV=new THREE.Vector2();
+  brainRenderer.domElement.addEventListener('mousedown',e=>{isDragging=true;prevX=e.clientX;prevY=e.clientY;downX=e.clientX;downY=e.clientY;});
+  brainRenderer.domElement.addEventListener('click',e=>{
+    if(Math.abs(e.clientX-downX)>6||Math.abs(e.clientY-downY)>6)return;
+    const rect=brainRenderer.domElement.getBoundingClientRect();
+    mouseV.x=((e.clientX-rect.left)/rect.width)*2-1;mouseV.y=-((e.clientY-rect.top)/rect.height)*2+1;
+    ray.setFromCamera(mouseV,brainCamera);
+    const hits=ray.intersectObjects(Object.values(brainRegions));
+    if(hits.length&&typeof regionToWing==='function'){const wing=regionToWing(hits[0].object.userData.name);if(wing)showWing(wing);}
+  });
   addEventListener('mouseup',()=>isDragging=false);
   addEventListener('mousemove',e=>{if(!isDragging)return;rotY+=(e.clientX-prevX)*0.008;rotX+=(e.clientY-prevY)*0.008;prevX=e.clientX;prevY=e.clientY;});
   const tempVec=new THREE.Vector3();
@@ -995,7 +1076,7 @@ function activateBrain(region,amt=10){state.brainActivity[region]=Math.min(100,(
 function renderBrainBalance(){const r=[{key:'prefrontal',label:'PREFRONTAL CORTEX'},{key:'hippocampus',label:'HIPPOCAMPUS'},{key:'amygdala',label:'AMYGDALA'},{key:'reward',label:'REWARD CENTER'}];document.getElementById('brain-balance').innerHTML=r.map(x=>{const v=state.brainActivity[x.key]||0;return `<div class="brain-bar-row"><div class="brain-bar-label">${x.label}</div><div class="brain-bar-track"><div class="brain-bar-fill" style="width:${v}%"></div></div><div class="brain-bar-val">${v}%</div></div>`;}).join('');}
 
 // ═══ TIME ═══
-function tick(){const d=new Date();document.getElementById('topbar-time').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');const days=['SUN','MON','TUE','WED','THU','FRI','SAT'],months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];document.getElementById('topbar-date').textContent=days[d.getDay()]+' '+months[d.getMonth()]+' '+d.getDate();}
+function tick(){const d=new Date();document.getElementById('topbar-time').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');const days=['SUN','MON','TUE','WED','THU','FRI','SAT'],months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];document.getElementById('topbar-date').textContent=days[d.getDay()]+' '+months[d.getMonth()]+' '+d.getDate();}
 setInterval(tick,1000);tick();
 
 // ═══ COLLECTIVE OVERVIEW ═══
@@ -1359,7 +1440,7 @@ document.getElementById('export-data').onclick=exportData;
 addEventListener('keydown',e=>{if(e.key==='Escape'){closeDump();closeRSD();closeElevenLabs();document.getElementById('copilot-panel').classList.remove('open');exitFocus();return;}});
 
 // ═══ LIFE SCORE ═══
-function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&new Date(lw.date).toDateString()===new Date().toDateString())s+=15;if(lw)s+=(lw.mood+lw.energy+lw.sleep-15);if(state.heartbeat.find(h=>new Date(h.date).toDateString()===new Date().toDateString()))s+=10;s+=Math.min(15,state.tasks.filter(t=>t.done).length*3);const mr=state.transactions.filter(t=>{const d=new Date(t.date);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).reduce((sm,t)=>sm+t.amount,0);if(mr>0)s+=10;const lost=state.startWeight-state.currentWeight;if(lost>0)s+=Math.min(10,lost);s=Math.max(0,Math.min(100,s));state.lifeScore=s;save();document.getElementById('life-score-num').textContent=s;document.getElementById('life-ring').setAttribute('stroke-dashoffset',94.2-(s/100)*94.2);updateBodyScanner();}
+function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&new Date(lw.date).toDateString()===new Date().toDateString())s+=15;if(lw)s+=(lw.mood+lw.energy+lw.sleep-15);if(state.heartbeat.find(h=>new Date(h.date).toDateString()===new Date().toDateString()))s+=10;s+=Math.min(15,state.tasks.filter(t=>t.done).length*3);const mr=state.transactions.filter(t=>{const d=new Date(t.date);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).reduce((sm,t)=>sm+t.amount,0);if(mr>0)s+=10;const lost=state.startWeight-state.currentWeight;if(lost>0)s+=Math.min(10,lost);s=Math.max(0,Math.min(100,s));state.lifeScore=s;save();document.getElementById('life-score-num').textContent=s;document.getElementById('life-ring').setAttribute('stroke-dashoffset',94.2-(s/100)*94.2);updateBodyScanner();updateLifeColor();updateStateDot();}
 
 // ═══ BOOT ═══
 function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}ensureMic();document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();powerUp();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
@@ -1368,7 +1449,58 @@ let bootStep=0;
 function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
 
 // ═══ INIT ═══
-function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+// ═══ HOTEL NAVIGATION ═══
+const WINGS=[
+  {id:'intel',name:'INTELLIGENCE',icon:'🛰️',cls:'analytical',region:'prefrontal'},
+  {id:'business',name:'BUSINESS OPS',icon:'🏛️',cls:'analytical',region:'temporal2'},
+  {id:'finance',name:'FINANCIAL NS',icon:'💰',cls:'analytical',region:'parietal'},
+  {id:'comms',name:'COMMS',icon:'📡',cls:'analytical',region:'temporal'},
+  {id:'content',name:'CONTENT',icon:'🎬',cls:'creative',region:'occipital'},
+  {id:'music',name:'MUSIC STUDIO',icon:'🎵',cls:'creative',region:'reward'},
+  {id:'biohacking',name:'BIOHACK LAB',icon:'🧬',cls:'optimisation',region:'motor'},
+  {id:'optimisation',name:'HUMAN OPT',icon:'⚡',cls:'optimisation',region:'cerebellum'},
+  {id:'adhd',name:'ADHD CENTRE',icon:'🧩',cls:'optimisation',region:'amygdala'},
+  {id:'connections',name:'CONNECTIONS',icon:'🔌',cls:'analytical',region:'hippocampus'}
+];
+const WING_KEYWORDS=[['MISSION CONTROL','intel'],['COUNCIL OF GIANTS','intel'],['PROPERTY','business'],['BUSINESS METRICS','business'],['FINANCIAL','finance'],['SOUNDTRACK','music'],['BIO SCANNER','biohacking'],['MEDICAL','biohacking'],['WELLNESS','biohacking'],['WEIGHT WARRIOR','optimisation'],['ADOPTION','optimisation'],['RSD','adhd'],['MISSIONS','adhd'],['HEARTBEAT','adhd'],['NEURAL CORE','brain']];
+function tagWidgets(){document.querySelectorAll('main.grid .widget').forEach(el=>{if(el.dataset.wing)return;const t=((el.querySelector('.widget-title')||{}).textContent||'').toUpperCase();let wing='intel';for(const[k,w]of WING_KEYWORDS){if(t.includes(k)){wing=w;break;}}el.dataset.wing=wing;});}
+function regionToWing(rn){const w=WINGS.find(x=>x.region===rn);return w?w.id:null;}
+let currentWing='bridge';
+function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('view-bridge');document.body.classList.add('view-wing');
+  document.querySelectorAll('main.grid .widget').forEach(el=>{el.style.display=(el.dataset.wing===w)?'':'none';});
+  const wing=WINGS.find(x=>x.id===w);
+  document.getElementById('breadcrumb').innerHTML='NEXUS HOTEL / <b>'+(wing?wing.name:w.toUpperCase())+'</b>';
+  if(wing&&wing.region)activateBrain(wing.region,40);
+  if(w==='connections')renderConnections();
+  window.scrollTo(0,0);chord();
+}
+function goHome(){currentWing='bridge';document.body.classList.add('view-bridge');document.body.classList.remove('view-wing');document.querySelectorAll('main.grid .widget').forEach(el=>{el.style.display='';});layoutWingRing();setTimeout(resizeBrain,80);}
+function buildWingRing(){const ring=document.getElementById('wing-ring');if(!ring)return;ring.innerHTML='';WINGS.forEach(w=>{const p=document.createElement('div');p.className='wing-panel '+w.cls;p.dataset.wing=w.id;p.innerHTML='<div class="wp-icon">'+w.icon+'</div><div class="wp-name">'+w.name+'</div>';p.onclick=()=>showWing(w.id);ring.appendChild(p);});layoutWingRing();}
+function layoutWingRing(){const panels=document.querySelectorAll('#wing-ring .wing-panel');const n=panels.length;const desktop=innerWidth>820;panels.forEach((p,i)=>{if(!desktop){p.style.left='';p.style.top='';p.style.transform='';return;}const ang=(-90+18+i*(360/n))*Math.PI/180;p.style.left=(50+32*Math.cos(ang))+'%';p.style.top=(50+37*Math.sin(ang))+'%';p.style.transform='translate(-50%,-50%)';});}
+function resizeBrain(){if(!brainRenderer||!brainContainer)return;const w=brainContainer.clientWidth,h=brainContainer.clientHeight;if(w&&h){brainCamera.aspect=w/h;brainCamera.updateProjectionMatrix();brainRenderer.setSize(w,h);}}
+// ═══ CONNECTIONS HUB ═══
+const CONN_NODES=[
+  {id:'anthropic',name:'ANTHROPIC',icon:'🧠',use:'special'},{id:'elevenlabs',name:'ELEVENLABS',icon:'🗣️',use:'special'},{id:'supabase',name:'SUPABASE',icon:'🗄️',use:'special'},
+  {id:'suno',name:'SUNO',icon:'🎼',use:'key'},{id:'notion',name:'NOTION',icon:'📔',use:'key'},{id:'youtube',name:'YOUTUBE',icon:'▶️',use:'none'},{id:'obsidian',name:'OBSIDIAN',icon:'🔮',use:'local'},
+  {id:'whoop',name:'WHOOP',icon:'💓',use:'oauth'},{id:'muse',name:'MUSE EEG',icon:'🧘',use:'ble'},{id:'spotify',name:'SPOTIFY',icon:'🎧',use:'oauth'},{id:'gcal',name:'GOOGLE CAL',icon:'📅',use:'oauth'},{id:'gmail',name:'GMAIL',icon:'✉️',use:'oauth'},{id:'stripe',name:'STRIPE',icon:'💳',use:'oauth'},{id:'xero',name:'XERO',icon:'📊',use:'oauth'},{id:'revolut',name:'REVOLUT',icon:'🏦',use:'oauth'},{id:'meta',name:'META',icon:'📱',use:'oauth'},{id:'notebooklm',name:'NOTEBOOKLM',icon:'📚',use:'oauth'}
+];
+function connStatus(n){if(n.id==='anthropic')return state.anthropicKey?'live':'ready';if(n.id==='elevenlabs')return state.elevenLabsKey?'live':'ready';if(n.id==='supabase')return supabaseConfigured()?'live':'ready';if(n.use==='none')return 'live';if(n.use==='key')return(state.apiKeys&&state.apiKeys[n.id])?'live':'ready';return 'ready';}
+function statusLabel(n){const s=connStatus(n);if(s==='live')return 'CONNECTED';if(n.use==='oauth')return 'NEEDS BACKEND';if(n.use==='ble')return 'NEEDS BLUETOOTH';if(n.use==='local')return 'LOCAL ONLY';return 'TAP TO ADD KEY';}
+function renderConnections(){const g=document.getElementById('conn-grid');if(!g)return;g.innerHTML=CONN_NODES.map(n=>'<div class="conn-node '+connStatus(n)+'" onclick="connectNode(\''+n.id+'\')"><span class="cn-dot"></span><div class="cn-icon">'+n.icon+'</div><div class="cn-name">'+n.name+'</div><div class="cn-status">'+statusLabel(n)+'</div></div>').join('');}
+function connectNode(id){const n=CONN_NODES.find(x=>x.id===id);if(!n)return;
+  if(id==='anthropic'){setAnthropicKey();renderConnections();return;}
+  if(id==='supabase'){setSupabase();renderConnections();return;}
+  if(id==='elevenlabs'){document.getElementById('el-toggle').click();return;}
+  if(n.use==='oauth')return toast('🔌 '+n.name+' needs a backend OAuth flow — ready to connect later','warn');
+  if(n.use==='ble')return toast('🧘 Muse connects via Web Bluetooth — coming to Biohacking Lab','warn');
+  if(n.use==='local')return toast('🔮 Obsidian is local-only (vault on disk)','warn');
+  if(n.use==='none')return toast('▶️ YouTube needs no key — paste URLs in Music Studio','success');
+  const k=prompt('Paste your '+n.name+' API key (stored only in this browser):',(state.apiKeys&&state.apiKeys[id])||'');if(k===null)return;state.apiKeys=state.apiKeys||{};state.apiKeys[id]=k.trim();save();renderConnections();toast('🔌 '+n.name+(k.trim()?' key saved':' cleared'),'success');}
+// ═══ POLISH ═══
+function updateLifeColor(){const el=document.getElementById('life-score-num');if(!el)return;const s=state.lifeScore||0;let c='#fff',g='0 0 16px rgba(255,255,255,0.6)';if(s>=900){c='#ff00ff';g='0 0 28px #ff00ff';}else if(s>=600){c='#ffd700';g='0 0 24px #ffd700';}else if(s>=300){c='#00ffff';g='0 0 22px #00ffff';}el.style.color=c;el.style.textShadow=g;}
+function updateStateDot(){const d=document.getElementById('state-dot');if(!d)return;const lw=state.wellness.slice(-1)[0];let cls='';if(lw){if(lw.mood<=3||lw.energy<=2)cls='crit';else if(lw.mood<=5||lw.energy<=4)cls='warn';}d.className=cls;d.title='System state: '+(cls==='crit'?'CRITICAL':cls==='warn'?'WARNING':'ACTIVE');}
+function initHotel(){try{tagWidgets();const bc=document.getElementById('brain-container'),slot=document.getElementById('bridge-brain');if(bc&&slot)slot.appendChild(bc);const bb=document.getElementById('brain-balance'),bslot=document.getElementById('bridge-balance');if(bb&&bslot)bslot.appendChild(bb);buildWingRing();goHome();setTimeout(resizeBrain,150);addEventListener('resize',()=>{if(currentWing==='bridge'){layoutWingRing();resizeBrain();}});}catch(e){console.warn('initHotel failed',e);}}
 window.addEventListener('load',()=>{initEverything();});
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
