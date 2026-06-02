@@ -584,7 +584,7 @@ button:hover,.topbar-btn:hover,.copilot-suggest-btn:hover,.hero-btn:hover{color:
         <div class="music-mode" onclick="playPreset('zen')">🕊️ ZEN</div>
         <div class="music-mode" onclick="playPreset('rock')">🎸 ROCK</div>
       </div>
-      <div class="music-now-playing" id="music-now">🔇 SILENCE — Pick a mode or paste a URL</div>
+      <div class="music-now-playing" id="music-now" onclick="stopMusic()" style="cursor:pointer;" title="Tap to stop">🔇 SILENCE — Pick a mode or paste a URL</div>
       <div class="youtube-embed" id="yt-embed"></div>
     </div>
   </section>
@@ -912,6 +912,9 @@ function powerUp(){try{const ctx=window.audioCtx||(window.audioCtx=new(window.Au
   const o=ctx.createOscillator(),g=ctx.createGain();o.type='sawtooth';o.frequency.setValueAtTime(35,t);o.frequency.exponentialRampToValueAtTime(240,t+2.4);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.14,t+0.9);g.gain.exponentialRampToValueAtTime(0.001,t+2.6);o.connect(g);g.connect(ctx.destination);o.start();o.stop(t+2.7);
   const o2=ctx.createOscillator(),g2=ctx.createGain();o2.type='sine';o2.frequency.setValueAtTime(660,t);o2.frequency.exponentialRampToValueAtTime(1980,t+2.2);g2.gain.setValueAtTime(0.0001,t);g2.gain.exponentialRampToValueAtTime(0.05,t+1.1);g2.gain.exponentialRampToValueAtTime(0.001,t+2.5);o2.connect(g2);g2.connect(ctx.destination);o2.start();o2.stop(t+2.6);}catch(e){}}
 function victoryChord(){[523.25,659.25,783.99,1046.5].forEach((f,i)=>setTimeout(()=>playSound(f,0.55,'triangle',0.11),i*100));playSound(130.81,0.9,'sine',0.12);}
+// ═══ MIC PERMISSION (once per session) ═══
+let micStream=null,micGranted=false;
+async function ensureMic(){if(micGranted)return true;if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){micGranted=true;return true;}try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});micGranted=true;return true;}catch(e){toast('🎙️ Microphone blocked — allow it in your browser settings','warn');return false;}}
 function lightning(){const el=document.getElementById('lightning');el.innerHTML='';let svg=`<svg width="100%" height="100%" style="position:absolute;inset:0;">`;const lines=3+Math.floor(Math.random()*3);for(let i=0;i<lines;i++){const x=Math.random()*100;let path=`M ${x}% 0`;let y=0;while(y<100){y+=8+Math.random()*6;path+=` L ${x+(Math.random()-0.5)*20}% ${y}%`;}svg+=`<path d="${path}" stroke="rgba(0,255,255,1)" stroke-width="2.5" fill="none" filter="url(#g)"/>`;}svg+=`<defs><filter id="g"><feGaussianBlur stdDeviation="3"/></filter></defs></svg>`;el.innerHTML=svg;el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),600);}
 
 // ═══ CURSOR ═══
@@ -938,11 +941,17 @@ const brainRegionData=[
 ];
 function init3DBrain(){
   brainContainer=document.getElementById('brain-container');
+  if(!brainContainer||brainRenderer)return;
+  if(typeof THREE==='undefined')return void setTimeout(init3DBrain,200);
+  const _W=brainContainer.clientWidth||brainContainer.offsetWidth,_H=brainContainer.clientHeight||560;
+  if(!_W)return void setTimeout(init3DBrain,150);
   brainScene=new THREE.Scene();
-  brainCamera=new THREE.PerspectiveCamera(50,brainContainer.clientWidth/brainContainer.clientHeight,0.1,1000);
+  brainCamera=new THREE.PerspectiveCamera(50,_W/_H,0.1,1000);
   brainCamera.position.z=4.3;
   brainRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
-  brainRenderer.setSize(brainContainer.clientWidth,brainContainer.clientHeight);
+  brainRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  brainRenderer.setSize(_W,_H);
+  brainRenderer.domElement.style.cssText='position:absolute;inset:0;display:block;width:100%;height:100%;z-index:1;';
   brainContainer.appendChild(brainRenderer.domElement);
   brainGroup=new THREE.Group();
   brainRegionData.forEach(r=>{
@@ -979,7 +988,7 @@ function init3DBrain(){
   addEventListener('mousemove',e=>{if(!isDragging)return;rotY+=(e.clientX-prevX)*0.008;rotX+=(e.clientY-prevY)*0.008;prevX=e.clientX;prevY=e.clientY;});
   const tempVec=new THREE.Vector3();
   function updateLabels(){const rect=brainContainer.getBoundingClientRect();document.querySelectorAll('.brain-label').forEach(label=>{const region=brainRegions[label.dataset.region];if(!region)return;tempVec.setFromMatrixPosition(region.matrixWorld);tempVec.project(brainCamera);const x=(tempVec.x*0.5+0.5)*rect.width;const y=(-tempVec.y*0.5+0.5)*rect.height;label.style.left=x+'px';label.style.top=y+'px';label.style.opacity=tempVec.z<1?'1':'0';});}
-  function animate(){requestAnimationFrame(animate);if(!isDragging)rotY+=0.005;brainGroup.rotation.y=rotY;brainGroup.rotation.x=rotX*0.5;syn.rotation.y+=0.003;syn.rotation.x+=0.001;shell.rotation.y-=0.004;shell.rotation.z+=0.002;neuralLines.material.opacity=0.18+Math.abs(Math.sin(Date.now()*0.0022))*0.4;Object.entries(state.brainActivity).forEach(([name,val])=>{if(brainRegions[name]){const intensity=0.35+(val/100)*0.85;brainRegions[name].material.emissiveIntensity=intensity+Math.sin(Date.now()*0.005)*0.15*(val/100);brainRegions[name].material.opacity=0.75+(val/100)*0.25;}});brainScene.updateMatrixWorld();updateLabels();brainRenderer.render(brainScene,brainCamera);}animate();
+  function animate(){requestAnimationFrame(animate);if(!isDragging)rotY+=0.005;brainGroup.rotation.y=rotY;brainGroup.rotation.x=rotX*0.5;syn.rotation.y+=0.003;syn.rotation.x+=0.001;shell.rotation.y-=0.004;shell.rotation.z+=0.002;neuralLines.material.opacity=0.18+Math.abs(Math.sin(Date.now()*0.0022))*0.4;Object.entries(state.brainActivity).forEach(([name,val])=>{if(brainRegions[name]){const intensity=0.6+(val/100)*0.9;brainRegions[name].material.emissiveIntensity=intensity+Math.sin(Date.now()*0.005)*0.15*(val/100);brainRegions[name].material.opacity=0.82+(val/100)*0.18;}});brainScene.updateMatrixWorld();updateLabels();brainRenderer.render(brainScene,brainCamera);}animate();setTimeout(()=>{const w=brainContainer.clientWidth,h=brainContainer.clientHeight;if(w&&h){brainCamera.aspect=w/h;brainCamera.updateProjectionMatrix();brainRenderer.setSize(w,h);}},350);
   addEventListener('resize',()=>{if(!brainContainer.clientWidth)return;brainCamera.aspect=brainContainer.clientWidth/brainContainer.clientHeight;brainCamera.updateProjectionMatrix();brainRenderer.setSize(brainContainer.clientWidth,brainContainer.clientHeight);});
 }
 function activateBrain(region,amt=10){state.brainActivity[region]=Math.min(100,(state.brainActivity[region]||0)+amt);renderBrainBalance();save();if(brainRegions[region]){const m=brainRegions[region].material;m.emissiveIntensity=1.8;setTimeout(()=>m.emissiveIntensity=0.45,500);}}
@@ -1091,19 +1100,36 @@ const youtubePresets={
   rock:'https://www.youtube.com/embed/1w7OgIMMRc4?autoplay=1'
 };
 const presetNames={rebel:'🤘 REBEL MIX',focus:'🎯 DEEP FOCUS',motivation:'⚡ HYPE MODE',quantum:'🌌 QUANTUM',zen:'🕊️ ZEN',rock:'🎸 ROCK'};
+const musicProfiles={
+  rebel:{base:110,beat:14,wave:'sawtooth',label:'🤘 REBEL DRIVE · 14Hz'},
+  focus:{base:140,beat:10,wave:'sine',label:'🎯 ALPHA FOCUS · 10Hz'},
+  motivation:{base:160,beat:18,wave:'square',label:'⚡ GAMMA HYPE · 18Hz'},
+  quantum:{base:128,beat:7,wave:'sine',label:'🌌 THETA QUANTUM · 7Hz'},
+  zen:{base:96,beat:4,wave:'sine',label:'🕊️ DELTA ZEN · 4Hz'},
+  rock:{base:120,beat:16,wave:'triangle',label:'🎸 ROCK PULSE · 16Hz'}
+};
+let musicNodes=null;
+function stopMusic(){if(musicNodes){musicNodes.forEach(n=>{try{n.stop&&n.stop();}catch(e){}try{n.disconnect&&n.disconnect();}catch(e){}});musicNodes=null;}const emb=document.getElementById('yt-embed');if(emb){emb.classList.remove('active');emb.innerHTML='';}document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';state.musicMode='silence';save();}
 function playPreset(p){
-  const url=youtubePresets[p];
-  const embed=document.getElementById('yt-embed');
-  embed.innerHTML=`<iframe width="100%" height="80" src="${url}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-  embed.classList.add('active');
+  const prof=musicProfiles[p];if(!prof)return;
+  stopMusic();
+  const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());
+  if(ctx.state==='suspended')ctx.resume();
+  const master=ctx.createGain();master.gain.setValueAtTime(0.0001,ctx.currentTime);master.gain.exponentialRampToValueAtTime(0.09,ctx.currentTime+1.2);master.connect(ctx.destination);
+  const oL=ctx.createOscillator(),oR=ctx.createOscillator();oL.type=oR.type=prof.wave;oL.frequency.value=prof.base;oR.frequency.value=prof.base+prof.beat;
+  if(ctx.createStereoPanner){const pL=ctx.createStereoPanner(),pR=ctx.createStereoPanner();pL.pan.value=-1;pR.pan.value=1;oL.connect(pL);pL.connect(master);oR.connect(pR);pR.connect(master);musicNodes=[oL,oR,pL,pR,master];}else{oL.connect(master);oR.connect(master);musicNodes=[oL,oR,master];}
+  const pad=ctx.createOscillator();pad.type='sine';pad.frequency.value=prof.base/2;const padG=ctx.createGain();padG.gain.value=0.025;pad.connect(padG);padG.connect(ctx.destination);musicNodes.push(pad,padG);
+  oL.start();oR.start();pad.start();
+  state.musicMode=p;save();
   document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('music-now').textContent='▶ '+presetNames[p];
-  toast('🎵 '+presetNames[p],'success');
+  if(typeof event!=='undefined'&&event&&event.target&&event.target.classList)event.target.classList.add('active');
+  document.getElementById('music-now').textContent='▶ '+prof.label+'  (tap to stop)';
+  toast('🎵 '+prof.label,'success');
 }
 function loadYouTube(){
   const url=document.getElementById('music-url').value.trim();
   if(!url)return;
+  stopMusic();
   let id='';
   const m=url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
   if(m)id=m[1];
@@ -1298,7 +1324,8 @@ function copilotTyping(on){
   else if(t)t.remove();
 }
 document.getElementById('copilot-input').addEventListener('keypress',e=>{if(e.key==='Enter')copilotSend();});
-document.getElementById('copilot-mic').onclick=()=>{if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window))return toast('Voice not supported','warn');const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const rec=new SR();rec.lang='en-US';rec.continuous=false;document.getElementById('copilot-mic').classList.add('recording');rec.onresult=e=>{document.getElementById('copilot-input').value=e.results[0][0].transcript;document.getElementById('copilot-mic').classList.remove('recording');copilotSend();};rec.onerror=()=>document.getElementById('copilot-mic').classList.remove('recording');rec.onend=()=>document.getElementById('copilot-mic').classList.remove('recording');rec.start();};
+let copilotRec=null;
+document.getElementById('copilot-mic').onclick=async()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return toast('Voice not supported','warn');if(!await ensureMic())return;const mic=document.getElementById('copilot-mic');if(!copilotRec){copilotRec=new SR();copilotRec.lang='en-US';copilotRec.continuous=false;copilotRec.interimResults=false;copilotRec.onresult=e=>{document.getElementById('copilot-input').value=e.results[0][0].transcript;copilotSend();};copilotRec.onend=()=>mic.classList.remove('recording');copilotRec.onerror=()=>mic.classList.remove('recording');}mic.classList.add('recording');try{copilotRec.start();}catch(e){mic.classList.remove('recording');}};
 
 // ═══ BRAIN DUMP ═══
 let dumpCat='raw';
@@ -1306,7 +1333,8 @@ document.querySelectorAll('.dump-cat').forEach(c=>c.onclick=()=>{document.queryS
 function openDump(){document.getElementById('brain-dump').classList.add('open');setTimeout(()=>document.getElementById('dump-text').focus(),100);activateBrain('dmn',15);}
 function closeDump(){document.getElementById('brain-dump').classList.remove('open');document.getElementById('dump-text').value='';}
 function saveDump(){const t=document.getElementById('dump-text').value.trim();if(!t)return;state.dumps.push({text:t,cat:dumpCat,date:Date.now()});save();if(dumpCat==='task'||(dumpCat==='raw'&&t.length<60)){state.tasks.push({text:t,done:false});renderTasks();}renderOverview();toast('⚡ Captured — your brain is lighter','success');chord();activateBrain('hippocampus',20);activateBrain('dmn',25);closeDump();}
-function dumpVoice(){if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window))return toast('Voice not supported','warn');const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const rec=new SR();rec.lang='en-US';rec.continuous=true;rec.interimResults=true;let final='';rec.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)final+=e.results[i][0].transcript+' ';else interim+=e.results[i][0].transcript;}document.getElementById('dump-text').value=final+interim;};rec.start();setTimeout(()=>rec.stop(),30000);}
+let dumpRec=null;
+async function dumpVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return toast('Voice not supported','warn');if(!await ensureMic())return;if(!dumpRec){dumpRec=new SR();dumpRec.lang='en-US';dumpRec.continuous=true;dumpRec.interimResults=true;dumpRec.onresult=e=>{let out='';for(let i=0;i<e.results.length;i++)out+=e.results[i][0].transcript+(e.results[i].isFinal?' ':'');document.getElementById('dump-text').value=out;};}try{dumpRec.start();toast('🎙️ Listening...','success');}catch(e){}setTimeout(()=>{try{dumpRec.stop();}catch(e){}},30000);}
 
 // ═══ ELEVENLABS ═══
 document.getElementById('el-toggle').onclick=()=>{document.getElementById('elevenlabs-modal').classList.add('open');document.getElementById('el-key').value=state.elevenLabsKey;document.getElementById('el-voice').value=state.elevenLabsVoice;};
@@ -1334,7 +1362,7 @@ addEventListener('keydown',e=>{if(e.key==='Escape'){closeDump();closeRSD();close
 function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&new Date(lw.date).toDateString()===new Date().toDateString())s+=15;if(lw)s+=(lw.mood+lw.energy+lw.sleep-15);if(state.heartbeat.find(h=>new Date(h.date).toDateString()===new Date().toDateString()))s+=10;s+=Math.min(15,state.tasks.filter(t=>t.done).length*3);const mr=state.transactions.filter(t=>{const d=new Date(t.date);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).reduce((sm,t)=>sm+t.amount,0);if(mr>0)s+=10;const lost=state.startWeight-state.currentWeight;if(lost>0)s+=Math.min(10,lost);s=Math.max(0,Math.min(100,s));state.lifeScore=s;save();document.getElementById('life-score-num').textContent=s;document.getElementById('life-ring').setAttribute('stroke-dashoffset',94.2-(s/100)*94.2);updateBodyScanner();}
 
 // ═══ BOOT ═══
-function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();powerUp();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
+function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}ensureMic();document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();powerUp();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
 const bootMsgs=['NEURAL LINK INITIALISING...','LOADING 25 WINGS...','OBSERVATORY TOWER: ONLINE','AGENT TEAM: STANDING BY','BIOMETRIC SENSORS: SCANNING...','JARVIS COPILOT: ENGAGED','NEXUS ONLINE'];
 let bootStep=0;
 function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
