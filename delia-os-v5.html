@@ -1115,10 +1115,10 @@ function toast(msg,type=''){const t=document.createElement('div');t.className='t
 
 // ═══ GREETINGS — REBEL ATTITUDE ═══
 const greetings={
-  morning:["Good morning Delia. Watch out world... she up! All systems engaged.","Rise and conquer, Delia. The empire is hungry. Let's feed it.","Morning legend. Yesterday's Delia is no match for today's. Let's go.","Welcome back, boss. The universe is on notice. Your move.","Morning Delia. 45 kilos to crush, an empire to build. Standard Tuesday.","Top of the morning. Stark Industries called — they want their energy back."],
-  afternoon:["Afternoon Delia. Halfway through. Time to make the second half legendary.","Welcome back boss. The day's not over and neither are you.","Afternoon checkpoint. Rebel mode still engaged. Keep building.","Good afternoon. Empire status: still rising. Let's stack wins."],
-  evening:["Evening Delia. Reflection mode online. Today taught you something. Let's name it.","Welcome back boss. Quiet work hits different. The lab is yours.","Good evening. Most people are done. You're just getting started."],
-  late:["Late session detected. Genius or unhinged? Both. Let's go.","Burning the midnight oil, Delia. Stark would approve.","Welcome back night owl. The world sleeps. The empire grows."]
+  morning:["Morning Queen. Watch out world… SHE'S UP. Somebody warn the competition.","Rise and slay, Delia. The empire skipped breakfast — let's go feed it.","Good morning legend. Yesterday's Delia just rang… she's terrified of you now.","Up and at 'em, boss. The universe filed a complaint about your energy. Ignore it.","Morning Delia. 45 kilos to evict and an empire to run. Casual.","Top of the morning, CEO of Everything. Coffee, then world domination. In that order."],
+  afternoon:["Afternoon, boss lady. Halftime. Score's good but let's run up the numbers.","Back already? The to-do list saw you coming and started sweating.","Afternoon checkpoint: still iconic, still unbothered, still building. Carry on.","Good afternoon, your majesty. Empire status: up and to the right. More."],
+  evening:["Evening Delia. The lab's quiet, the genius is loud. Let's cook.","Welcome back, boss. Everyone else clocked out. You're just warming up — show-off.","Good evening, legend. Plot twist incoming: you, winning. Again."],
+  late:["Late-night session detected. Genius or unhinged? You said 'yes'. Respect.","Burning the midnight oil, Queen. Even the moon's taking notes.","Night owl mode: ON. World's asleep, empire's awake, you're unstoppable. Hydrate though."]
 };
 function getGreeting(){const h=new Date().getHours();let b;if(h>=6&&h<12)b=greetings.morning;else if(h>=12&&h<18)b=greetings.afternoon;else if(h>=18&&h<22)b=greetings.evening;else b=greetings.late;return b[Math.floor(Math.random()*b.length)];}
 
@@ -1144,8 +1144,8 @@ async function speak(text){
   // Fallback to Mac voice (deep male preference)
   if('speechSynthesis' in window){
     const u=new SpeechSynthesisUtterance(text);
-    u.rate=0.92;u.pitch=0.75;u.volume=1.0;
-    const preferred=['Daniel','Alex','Fred','Oliver','Aaron','Albert','Arthur'];
+    u.rate=1.0;u.pitch=1.08;u.volume=1.0;
+    const preferred=['Samantha','Karen','Moira','Tessa','Fiona','Victoria','Serena','Allison','Susan'];
     for(const name of preferred){const v=availableVoices.find(x=>x.name.includes(name)&&x.lang.startsWith('en'));if(v){u.voice=v;break;}}
     speechSynthesis.cancel();speechSynthesis.speak(u);
   }
@@ -1573,10 +1573,10 @@ function copilotSystemPrompt(){
   const now=new Date(),M=now.getMonth(),Y=now.getFullYear();
   const monthRev=state.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===M&&d.getFullYear()===Y;}).reduce((s,t)=>s+t.amount,0);
   return [
-    "You are JARVIS, the live AI copilot inside NEXUS Hotel — a voice-first cognitive operating system built for one person: Delia.",
-    "Philosophy: STATE FIRST. Before you solve anything, notice what state Delia is in and meet her there. She lives with RSD, ADHD, arthritis, and is mid-weight-loss and mid-healing while building an empire.",
-    "Voice: sharp, warm, a little witty, relentlessly in her corner. Never preachy, never corporate, never a lecture. This is voice-first — keep replies short and spoken-aloud friendly (1-4 sentences) unless she explicitly asks for depth.",
-    "Use the live data below when relevant. Never invent numbers you do not have.",
+    "You are JARVIS — Delia's personal AI hype-man inside NEXUS Hotel, her voice-first command center. Delia is a WOMAN building an empire. Treat her like the boss / queen she is — she/her, always.",
+    "Personality: FUNNY and HIGH-ENERGY. You're her ride-or-die hype-man — quick jokes, playful roasts (with love), huge celebrations, Tony-Stark-meets-stand-up energy. Make her laugh AND make her move. Never preachy, never corporate, never a lecture, never a therapist voice.",
+    "But you're genuinely useful, not just loud — STATE FIRST: clock what state Delia's in and meet her there. She lives with RSD, ADHD and arthritis, mid weight-loss and mid-healing while building the empire. When she's low: dial the jokes down, the warmth up, keep it gentle. When she's winning: absolutely lose your mind hyping her.",
+    "This is voice-first — keep replies short and punchy for speaking out loud (1-3 sentences) unless she asks for depth. Use the live data below; never invent numbers you don't have.",
     "",
     "LIVE STATE (right now):",
     "- Weight: "+state.currentWeight+" kg | goal "+state.goalWeight+" kg | "+lost+" kg crushed, "+remaining+" kg to go",
