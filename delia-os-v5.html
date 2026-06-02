@@ -508,6 +508,9 @@ body.view-wing main.grid{padding-top:5.5rem;}
 .rt-ico{font-size:1.8rem;}
 .rt-name{font-family:'Orbitron',sans-serif;font-size:0.56rem;letter-spacing:0.05em;color:var(--text-dim);margin-top:0.4rem;line-height:1.3;}
 .room-tile:hover .rt-name{color:var(--accent);}
+.topbar{flex-wrap:wrap;gap:0.4rem;row-gap:0.4rem;}
+.topbar-right{flex-wrap:wrap;gap:0.35rem;justify-content:flex-end;}
+@media(max-width:680px){.qa-icons{display:flex;}.topbar-btn{padding:0.5rem 0.7rem;font-size:0.62rem;}}
 #camera-overlay{position:fixed;inset:0;z-index:650;background:rgba(0,3,8,0.96);display:none;flex-direction:column;align-items:center;justify-content:center;}
 #camera-overlay.open{display:flex;}
 #camera-video{max-width:92vw;max-height:74vh;border-radius:14px;border:1px solid var(--border-bright);box-shadow:0 0 70px var(--accent);background:#000;}
@@ -585,7 +588,7 @@ body.view-wing main.grid{padding-top:5.5rem;}
 <!-- BRIDGE (HOME) -->
 <div id="bridge">
   <div id="bridge-greeting">WELCOME BACK, DELIA</div>
-  <div id="bridge-title">NEURAL COMMAND BRIDGE · DRAG TO ROTATE · TAP A REGION OR WING · 👏 CLAP TO PULSE</div>
+  <div id="bridge-title">NEURAL COMMAND BRIDGE · DRAG TO ROTATE · 👏 CLAP TO FIRE IT UP · ☰ ROOMS</div>
   <div id="bridge-brain"></div>
   <div id="wing-ring"></div>
   <div id="bridge-balance"></div>
@@ -896,7 +899,7 @@ body.view-wing main.grid{padding-top:5.5rem;}
   <section class="widget col-12" data-wing="anatomy">
     <div class="widget-header"><span class="widget-title">🧍 ANATOMY LAB // 3D BODY · LEARN WHAT’S WHAT</span><span class="widget-icon">🫀</span></div>
     <div id="anatomy-container" style="width:100%;height:600px;position:relative;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 0 60px rgba(0,170,255,0.25);"><iframe id="anatomy-frame" title="Human Body Anatomy" frameborder="0" allowfullscreen allow="autoplay;fullscreen;xr-spatial-tracking" style="width:100%;height:100%;border:0;display:block;"></iframe></div>
-    <p style="color:var(--text-dim);font-size:0.72rem;margin-top:0.6rem;">Real 3D human anatomy — drag to rotate, scroll to zoom, double-click to focus. Model: <a href="https://sketchfab.com/3d-models/human-body-4e2217df08ac4f1386bd3dfc5a70944b" target="_blank" rel="noopener" style="color:var(--accent);">“Human Body” by dung2606</a> (CC-BY).</p>
+    <p style="color:var(--text-dim);font-size:0.72rem;margin-top:0.6rem;">Real 3D anatomy — drag to rotate, scroll to zoom. <b>Click the numbered labels</b> to learn each organ; some can be made see-through. Model: <a href="https://sketchfab.com/3d-models/abdomen-anatomy-ed05d3b7b49b4014a09d7a9d62e4f421" target="_blank" rel="noopener" style="color:var(--accent);">Abdomen Anatomy by E-learning UMCG</a> (CC).</p>
   </section>
   <!-- BREATHWORK -->
   <section class="widget col-12" data-wing="breath">
@@ -1244,7 +1247,7 @@ function powerUp(){try{const ctx=window.audioCtx||(window.audioCtx=new(window.Au
 function victoryChord(){[523.25,659.25,783.99,1046.5].forEach((f,i)=>setTimeout(()=>playSound(f,0.55,'triangle',0.11),i*100));playSound(130.81,0.9,'sine',0.12);}
 // ═══ MIC PERMISSION (once per session) ═══
 let micStream=null,micGranted=false;
-async function ensureMic(){if(micGranted)return true;if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){micGranted=true;startAlwaysListening();return true;}try{const s=await navigator.mediaDevices.getUserMedia({audio:true});micGranted=true;s.getTracks().forEach(t=>t.stop());startAlwaysListening();return true;}catch(e){toast('🎙️ Mic blocked — click the camera/mic icon in the address bar → Allow → refresh','warn');return false;}}
+async function ensureMic(){if(micGranted)return true;if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){micGranted=true;return true;}try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});micGranted=true;initClapDetection();startAlwaysListening();return true;}catch(e){toast('🎙️ Mic blocked — click the camera/mic icon in the address bar → Allow → refresh','warn');return false;}}
 function initClapDetection(){
   if(!micStream||window._clapInit)return;window._clapInit=true;
   try{
@@ -1254,7 +1257,7 @@ function initClapDetection(){
     (function loop(){requestAnimationFrame(loop);an.getByteTimeDomainData(data);let peak=0;for(let i=0;i<data.length;i++){const v=Math.abs(data[i]-128);if(v>peak)peak=v;}const now=Date.now();if(peak>72&&now-last>650){last=now;onClap();}})();
   }catch(e){}
 }
-function onClap(){lightning();bassBoom();window.coherenceMode=true;Object.keys(state.brainActivity).forEach(k=>activateBrain(k,18));toast('👏 COHERENCE PULSE','witty');setTimeout(()=>{if(!musicNodes)window.coherenceMode=false;},2600);}
+function onClap(){lightning();bassBoom();chord();window.coherenceMode=true;Object.keys(state.brainActivity).forEach(k=>activateBrain(k,22));const hype=['Watch out world!','Let’s GO, Queen!','Yes Delia!','Fire it UP!','Boom — she’s up!','Empire mode: ON.'];speak(hype[Math.floor(Math.random()*hype.length)]);toast('👏 '+hype[Math.floor(Math.random()*hype.length)],'witty');setTimeout(()=>{if(!musicNodes)window.coherenceMode=false;},3000);}
 // ═══ HANDS-FREE VOICE (say "JARVIS ...") ═══
 let alwaysRec=null,alwaysOn=false;
 function openCopilotForVoice(){const p=document.getElementById('copilot-panel');if(p&&!p.classList.contains('open')){p.classList.add('open');renderCopilotMessages();}}
@@ -1750,7 +1753,7 @@ function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&ne
 function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}ensureMic();document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();powerUp();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
 const bootMsgs=['NEURAL LINK INITIALISING...','LOADING 25 WINGS...','OBSERVATORY TOWER: ONLINE','AGENT TEAM: STANDING BY','BIOMETRIC SENSORS: SCANNING...','JARVIS COPILOT: ENGAGED','NEXUS ONLINE'];
 let bootStep=0;
-function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();loadWeather();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[110,164.81,220,246.94,329.63,440,523.25];playSound(bootNotes[bootStep%bootNotes.length],0.18,'sawtooth',0.08);playSound(bootNotes[bootStep%bootNotes.length]*2,0.1,'triangle',0.05);if(bootStep%2===0){lightning();playSound(55,0.25,'sine',0.14);}bootStep++;setTimeout(runBoot,440);}
+function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),900);toast('🦾 '+g,'witty');victoryChord();try{starkStinger();}catch(e){}setTimeout(()=>{try{playPreset('stark');toast('⚡ Music up · 👏 CLAP to fire it up','witty');}catch(e){}},2400);loadWeather();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[110,164.81,220,246.94,329.63,440,523.25];playSound(bootNotes[bootStep%bootNotes.length],0.18,'sawtooth',0.08);playSound(bootNotes[bootStep%bootNotes.length]*2,0.1,'triangle',0.05);if(bootStep%2===0){lightning();playSound(55,0.25,'sine',0.14);}bootStep++;setTimeout(runBoot,440);}
 
 // ═══ INIT ═══
 function showInitError(e){const msg=(e&&e.message)?e.message:(''+e);window._errSeen=window._errSeen||new Set();if(window._errSeen.has(msg))return;window._errSeen.add(msg);let b=document.getElementById('init-err');if(!b){b=document.createElement('div');b.id='init-err';b.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:99999;background:rgba(120,0,20,0.95);color:#fff;font:11px monospace;padding:8px 12px;max-height:34vh;overflow:auto;border-top:2px solid #ff0044;';b.title='tap to dismiss';b.onclick=()=>b.remove();document.body.appendChild(b);}if(b.childElementCount>=10)return;const where=(e&&e.stack)?(' — '+(e.stack.split('\n')[1]||'').trim()):'';const d=document.createElement('div');d.textContent='⚠ '+msg+where;b.appendChild(d);}
@@ -1847,7 +1850,7 @@ function initAnatomy(){if(anatomyInit){setTimeout(resizeAnatomy,60);return;}anaC
   (function ana(){requestAnimationFrame(ana);if(currentWing!=='anatomy')return;if(!drag)ry+=0.004;anaGroup.rotation.y=ry;if(anaHeart)anaHeart.scale.setScalar(1+Math.sin(Date.now()*0.006)*0.13);anaRenderer.render(anaScene,anaCam);})();
   addEventListener('resize',resizeAnatomy);setTimeout(resizeAnatomy,200);}
 function resizeAnatomy(){if(!anaRenderer||!anaCont)return;const w=anaCont.clientWidth,h=anaCont.clientHeight;if(w&&h){anaCam.aspect=w/h;anaCam.updateProjectionMatrix();anaRenderer.setSize(w,h);}}
-function loadAnatomyEmbed(){const f=document.getElementById('anatomy-frame');if(f&&!f.src)f.src='https://sketchfab.com/models/4e2217df08ac4f1386bd3dfc5a70944b/embed?autospin=0.3&autostart=1&ui_theme=dark&ui_infos=0&ui_watermark=0&dnt=1';}
+function loadAnatomyEmbed(){const f=document.getElementById('anatomy-frame');if(f&&!f.src)f.src='https://sketchfab.com/models/ed05d3b7b49b4014a09d7a9d62e4f421/embed?autostart=1&autospin=0.2&ui_theme=dark&ui_annotations=1&ui_infos=0&ui_watermark=0&ui_stop=0&dnt=1';}
 // ═══ COMMAND PALETTE (⌘K) ═══
 function cmdkItems(){const items=[{ico:'🧠',label:'BRAIN HOME',tag:'GO',act:goHome}];WINGS.forEach(w=>items.push({ico:w.icon,label:w.name,tag:'WING',act:()=>showWing(w.id)}));items.push({ico:'💬',label:'OPEN JARVIS',tag:'AI',act:toggleCopilot},{ico:'🎯',label:'FOCUS · 25 MIN',tag:'DO',act:()=>startFocus(25)},{ico:'🎍',label:'PLAY PAN PIPES',tag:'AUDIO',act:()=>playPreset('panpipes')},{ico:'🔇',label:'STOP MUSIC',tag:'AUDIO',act:stopMusic},{ico:'🔄',label:'REFRESH BRIEFING',tag:'INTEL',act:loadBriefing});return items;}
 let cmdkSel=0,cmdkFiltered=[];
@@ -1919,8 +1922,9 @@ function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('
   window.scrollTo(0,0);chord();
 }
 function goHome(){currentWing='bridge';document.body.classList.add('view-bridge');document.body.classList.remove('view-wing');document.querySelectorAll('main.grid .widget').forEach(el=>{el.style.display='';});layoutWingRing();setTimeout(resizeBrain,80);}
-function buildWingRing(){const ring=document.getElementById('wing-ring');if(!ring)return;ring.innerHTML='';WINGS.forEach(w=>{const p=document.createElement('div');p.className='wing-panel '+w.cls;p.dataset.wing=w.id;p.innerHTML='<div class="wp-icon">'+w.icon+'</div><div class="wp-name">'+w.name+'</div>';p.onclick=()=>showWing(w.id);ring.appendChild(p);});layoutWingRing();}
-function layoutWingRing(){const panels=document.querySelectorAll('#wing-ring .wing-panel');const n=panels.length;const desktop=innerWidth>820;panels.forEach((p,i)=>{if(!desktop){p.style.left='';p.style.top='';p.style.transform='';return;}const ang=(-90+18+i*(360/n))*Math.PI/180;p.style.left=(50+32*Math.cos(ang))+'%';p.style.top=(50+37*Math.sin(ang))+'%';p.style.transform='translate(-50%,-50%)';});}
+const RING_IDS=['intel','business','finance','biohacking','anatomy','breath','music','connections'];
+function buildWingRing(){const ring=document.getElementById('wing-ring');if(!ring)return;ring.innerHTML='';WINGS.filter(w=>RING_IDS.includes(w.id)).forEach(w=>{const p=document.createElement('div');p.className='wing-panel '+w.cls;p.dataset.wing=w.id;p.innerHTML='<div class="wp-icon">'+w.icon+'</div><div class="wp-name">'+w.name+'</div>';p.onclick=()=>showWing(w.id);ring.appendChild(p);});const more=document.createElement('div');more.className='wing-panel analytical';more.dataset.wing='_more';more.innerHTML='<div class="wp-icon">☰</div><div class="wp-name">ALL ROOMS</div>';more.onclick=openRooms;ring.appendChild(more);layoutWingRing();}
+function layoutWingRing(){const panels=document.querySelectorAll('#wing-ring .wing-panel');const n=panels.length;const desktop=innerWidth>900;panels.forEach((p,i)=>{if(!desktop){p.style.left='';p.style.top='';p.style.transform='';return;}const ang=(-90+i*(360/n))*Math.PI/180;p.style.left=(50+38*Math.cos(ang))+'%';p.style.top=(50+42*Math.sin(ang))+'%';p.style.transform='translate(-50%,-50%)';});}
 function resizeBrain(){if(!brainRenderer||!brainContainer)return;const w=brainContainer.clientWidth,h=brainContainer.clientHeight;if(w&&h){brainCamera.aspect=w/h;brainCamera.updateProjectionMatrix();brainRenderer.setSize(w,h);}}
 // ═══ CONNECTIONS HUB ═══
 const CONN_NODES=[
