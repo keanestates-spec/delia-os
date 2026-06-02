@@ -882,6 +882,12 @@ body.view-wing main.grid{padding-top:5.5rem;}
       <button class="hero-btn" onclick="addGoal()">+ ADD</button>
     </div>
   </section>
+  <!-- ANATOMY LAB -->
+  <section class="widget col-12" data-wing="anatomy">
+    <div class="widget-header"><span class="widget-title">🧍 ANATOMY LAB // 3D BODY · LEARN WHAT’S WHAT</span><span class="widget-icon">🫀</span></div>
+    <div id="anatomy-container" style="width:100%;height:560px;position:relative;border-radius:14px;overflow:hidden;background:radial-gradient(circle at center,rgba(0,170,255,0.18),rgba(255,0,255,0.05) 50%,transparent 72%);box-shadow:inset 0 0 80px rgba(0,170,255,0.15);"></div>
+    <p style="color:var(--text-dim);font-size:0.72rem;margin-top:0.6rem;">Drag to rotate. Hover any glowing organ to learn what it does. The heart beats; the brain sits inside the head.</p>
+  </section>
   <!-- BREATHWORK -->
   <section class="widget col-12" data-wing="breath">
     <div class="widget-header"><span class="widget-title">🌬️ BREATHWORK // NERVOUS SYSTEM RESET</span><span class="widget-icon">🫁</span></div>
@@ -1763,6 +1769,50 @@ function initStarfield(){const c=document.getElementById('starfield');if(!c)retu
     requestAnimationFrame(draw);})();}
 // ═══ BRAIN LEARNING INFO ═══
 const BRAIN_INFO={prefrontal:{t:'PREFRONTAL CORTEX',f:'Planning, decisions, impulse control & deep focus.',b:'Driven by HRV + focus — peaks in deep work.'},motor:{t:'MOTOR CORTEX',f:'Plans & fires voluntary movement.',b:'Driven by activity / steps (Apple Watch).'},parietal:{t:'PARIETAL LOBE',f:'Spatial sense, numbers & attention.',b:'Driven by analytical / financial work.'},occipital:{t:'OCCIPITAL LOBE',f:'Visual processing & mental imagery.',b:'Driven by creative / content sessions.'},temporal:{t:'TEMPORAL LOBE · R',f:'Hearing, language & memory.',b:'Driven by communication & learning.'},temporal2:{t:'TEMPORAL LOBE · L',f:'Language, naming & verbal memory.',b:'Driven by reading & writing.'},cerebellum:{t:'CEREBELLUM',f:'Balance, coordination & motor timing.',b:'Driven by training strain (WHOOP).'},hippocampus:{t:'HIPPOCAMPUS',f:'Forms & recalls memories.',b:'Driven by sleep — consolidates overnight.'},amygdala:{t:'AMYGDALA',f:'Emotion, threat & the RSD response.',b:'Spikes when HRV drops or mood falls.'},reward:{t:'REWARD CENTRE',f:'Dopamine, drive & the feeling of a win.',b:'Lights up when you complete goals.'},dmn:{t:'DEFAULT MODE NETWORK',f:'Reflection, daydreaming & rest-state insight.',b:'Active in meditation / coherence mode.'}};
+// ═══ ANATOMY LAB (3D body) ═══
+const ORGAN_INFO={
+  brain:{t:'BRAIN',f:'Your command center — thought, emotion, and control of everything else.',c:0x00ffff},
+  heart:{t:'HEART',f:'Pumps blood & oxygen through your whole body — ~100,000 beats a day.',c:0xff0044},
+  lung:{t:'LUNGS',f:'Trade oxygen for CO₂. Every breath you take fuels every cell.',c:0x66ddff},
+  liver:{t:'LIVER',f:'Detoxes your blood, processes nutrients, and stores energy.',c:0xffaa00},
+  stomach:{t:'STOMACH',f:'Breaks food into fuel with acid and enzymes.',c:0xff8800},
+  kidney:{t:'KIDNEYS',f:'Filter your blood, balance fluids and minerals.',c:0xaa66ff},
+  intestine:{t:'INTESTINES',f:'Absorb nutrients & water — your “second brain” (gut).',c:0x00ff88},
+  spine:{t:'SPINE',f:'Protects the nerve highway and holds you upright.',c:0xffffff}
+};
+let anatomyInit=false,anaScene,anaCam,anaRenderer,anaGroup,anaCont,anaHeart;
+function initAnatomy(){if(anatomyInit){setTimeout(resizeAnatomy,60);return;}anaCont=document.getElementById('anatomy-container');if(!anaCont||typeof THREE==='undefined')return;const W=anaCont.clientWidth||500,H=anaCont.clientHeight||560;if(!W){setTimeout(initAnatomy,150);return;}anatomyInit=true;
+  anaScene=new THREE.Scene();anaCam=new THREE.PerspectiveCamera(50,W/H,0.1,100);anaCam.position.set(0,0,8.5);
+  anaRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true});anaRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));anaRenderer.setSize(W,H);anaRenderer.domElement.style.cssText='position:absolute;inset:0;width:100%;height:100%;cursor:grab;';anaCont.appendChild(anaRenderer.domElement);
+  anaGroup=new THREE.Group();anaScene.add(anaGroup);
+  const bodyMat=new THREE.MeshBasicMaterial({color:0x33ccff,wireframe:true,transparent:true,opacity:0.13});
+  const add=(geo,x,y,z,rz)=>{const m=new THREE.Mesh(geo,bodyMat);m.position.set(x,y,z);if(rz)m.rotation.z=rz;anaGroup.add(m);};
+  add(new THREE.SphereGeometry(0.85,20,16),0,2.7,0);
+  add(new THREE.CylinderGeometry(1.0,0.82,2.6,22,1,true),0,0.9,0);
+  add(new THREE.CylinderGeometry(0.82,0.6,1.1,20,1,true),0,-0.65,0);
+  add(new THREE.CylinderGeometry(0.18,0.13,2.5,10),-1.25,0.9,0,0.28);
+  add(new THREE.CylinderGeometry(0.18,0.13,2.5,10),1.25,0.9,0,-0.28);
+  add(new THREE.CylinderGeometry(0.24,0.16,2.7,12),-0.4,-2.5,0);
+  add(new THREE.CylinderGeometry(0.24,0.16,2.7,12),0.4,-2.5,0);
+  const organs=[];
+  const organ=(key,geo,pos,scale,colOverride)=>{const info=ORGAN_INFO[key];const c=colOverride||(info?info.c:0x00ffff);const m=new THREE.Mesh(geo,new THREE.MeshPhongMaterial({color:c,emissive:c,emissiveIntensity:0.6,transparent:true,opacity:0.93,shininess:120}));m.position.set(pos[0],pos[1],pos[2]);if(scale)m.scale.set(scale[0],scale[1],scale[2]);m.userData={organ:key};anaGroup.add(m);organs.push(m);return m;};
+  organ('brain',new THREE.SphereGeometry(0.5,24,20),[0,2.7,0]);
+  anaHeart=organ('heart',new THREE.SphereGeometry(0.3,16,16),[-0.18,1.45,0.25]);
+  organ('lung',new THREE.SphereGeometry(0.42,16,16),[-0.5,1.55,0],[0.7,1.1,0.6]);
+  organ('lung',new THREE.SphereGeometry(0.42,16,16),[0.5,1.55,0],[0.7,1.1,0.6]);
+  organ('liver',new THREE.SphereGeometry(0.42,16,16),[0.34,0.55,0.2],[1.25,0.8,0.8]);
+  organ('stomach',new THREE.SphereGeometry(0.3,16,16),[-0.35,0.6,0.2]);
+  organ('kidney',new THREE.SphereGeometry(0.2,14,14),[-0.45,0.05,-0.32]);
+  organ('kidney',new THREE.SphereGeometry(0.2,14,14),[0.45,0.05,-0.32]);
+  organ('intestine',new THREE.TorusGeometry(0.46,0.17,12,24),[0,-0.35,0.12]);
+  for(let i=0;i<9;i++)organ('spine',new THREE.SphereGeometry(0.11,10,10),[0,2.0-i*0.34,-0.55]);
+  anaScene.add(new THREE.AmbientLight(0xffffff,0.85));const pt=new THREE.PointLight(0x00ffff,1.6);pt.position.set(4,4,6);anaScene.add(pt);const pt2=new THREE.PointLight(0xff00ff,0.9);pt2.position.set(-4,-2,4);anaScene.add(pt2);
+  let drag=false,px=0,ry=0.5;anaRenderer.domElement.addEventListener('mousedown',e=>{drag=true;px=e.clientX;});addEventListener('mouseup',()=>drag=false);addEventListener('mousemove',e=>{if(drag){ry+=(e.clientX-px)*0.01;px=e.clientX;}});
+  const ray=new THREE.Raycaster(),mv=new THREE.Vector2();
+  anaRenderer.domElement.addEventListener('mousemove',e=>{const r=anaRenderer.domElement.getBoundingClientRect();mv.x=((e.clientX-r.left)/r.width)*2-1;mv.y=-((e.clientY-r.top)/r.height)*2+1;ray.setFromCamera(mv,anaCam);const hits=ray.intersectObjects(organs);const tip=document.getElementById('brain-tip');if(hits.length){const info=ORGAN_INFO[hits[0].object.userData.organ];if(info&&tip){tip.innerHTML='<div class="bt-title">'+info.t+'</div><div class="bt-fn">'+info.f+'</div>';tip.style.left=Math.min(e.clientX+16,innerWidth-260)+'px';tip.style.top=(e.clientY+16)+'px';tip.classList.add('show');}}else if(tip)tip.classList.remove('show');});
+  (function ana(){requestAnimationFrame(ana);if(currentWing!=='anatomy')return;if(!drag)ry+=0.004;anaGroup.rotation.y=ry;if(anaHeart)anaHeart.scale.setScalar(1+Math.sin(Date.now()*0.006)*0.13);anaRenderer.render(anaScene,anaCam);})();
+  addEventListener('resize',resizeAnatomy);setTimeout(resizeAnatomy,200);}
+function resizeAnatomy(){if(!anaRenderer||!anaCont)return;const w=anaCont.clientWidth,h=anaCont.clientHeight;if(w&&h){anaCam.aspect=w/h;anaCam.updateProjectionMatrix();anaRenderer.setSize(w,h);}}
 // ═══ COMMAND PALETTE (⌘K) ═══
 function cmdkItems(){const items=[{ico:'🧠',label:'BRAIN HOME',tag:'GO',act:goHome}];WINGS.forEach(w=>items.push({ico:w.icon,label:w.name,tag:'WING',act:()=>showWing(w.id)}));items.push({ico:'💬',label:'OPEN JARVIS',tag:'AI',act:toggleCopilot},{ico:'🎯',label:'FOCUS · 25 MIN',tag:'DO',act:()=>startFocus(25)},{ico:'🎍',label:'PLAY PAN PIPES',tag:'AUDIO',act:()=>playPreset('panpipes')},{ico:'🔇',label:'STOP MUSIC',tag:'AUDIO',act:stopMusic},{ico:'🔄',label:'REFRESH BRIEFING',tag:'INTEL',act:loadBriefing});return items;}
 let cmdkSel=0,cmdkFiltered=[];
@@ -1803,6 +1853,7 @@ const WINGS=[
   {id:'peptides',name:'PEPTIDE GARAGE',icon:'💉',cls:'optimisation',region:'dmn'},
   {id:'state',name:'STATE',icon:'📊',cls:'optimisation',region:''},
   {id:'breath',name:'BREATHWORK',icon:'🌬️',cls:'optimisation',region:''},
+  {id:'anatomy',name:'ANATOMY LAB',icon:'🧍',cls:'optimisation',region:''},
   {id:'winvault',name:'WIN VAULT',icon:'🏆',cls:'optimisation',region:''},
   {id:'ritual',name:'MORNING RITUAL',icon:'🌅',cls:'creative',region:''},
   {id:'goals',name:'GOAL THERMOMETER',icon:'📈',cls:'analytical',region:''},
@@ -1826,6 +1877,7 @@ function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('
   if(w==='winvault')renderWins();
   if(w==='ritual')renderRitual();
   if(w==='goals')renderGoals();
+  if(w==='anatomy'){try{initAnatomy();}catch(e){}setTimeout(resizeAnatomy,120);}
   if(w!=='breath'&&breathTimer)stopBreath();
   window.scrollTo(0,0);chord();
 }
