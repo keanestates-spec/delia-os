@@ -972,6 +972,21 @@ body.view-wing main.grid{padding-top:5.5rem;}
 </div>
 
 <!-- CO-PILOT -->
+<div id="supabase-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(16px);z-index:700;display:none;align-items:center;justify-content:center;padding:1rem;">
+  <div style="width:520px;max-width:94vw;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));border:1px solid var(--border-bright);border-radius:16px;padding:2rem;box-shadow:0 0 100px var(--accent);">
+    <div style="font-family:'Orbitron',sans-serif;letter-spacing:0.1em;color:var(--accent);font-size:1rem;margin-bottom:1.2rem;text-shadow:0 0 14px var(--accent);">🗄️ CONNECT SUPABASE MEMORY</div>
+    <label style="font-size:0.7rem;color:var(--text-dim);letter-spacing:0.05em;">PROJECT URL</label>
+    <input class="lab-input" id="sb-url" placeholder="https://xxxxxxxx.supabase.co" style="width:100%;margin:0.3rem 0 1.1rem;">
+    <label style="font-size:0.7rem;color:var(--text-dim);letter-spacing:0.05em;">ANON PUBLIC KEY (the long one)</label>
+    <textarea class="lab-input" id="sb-key" placeholder="paste the long anon key here…" style="width:100%;height:100px;margin:0.3rem 0 1.1rem;resize:vertical;font-family:monospace;font-size:0.7rem;line-height:1.4;"></textarea>
+    <div style="display:flex;gap:0.6rem;justify-content:flex-end;flex-wrap:wrap;">
+      <button class="hero-btn" onclick="closeSupabaseModal()" style="opacity:0.7;">CANCEL</button>
+      <button class="hero-btn" onclick="clearSupabaseModal()" style="color:var(--danger);border-color:var(--danger);">CLEAR</button>
+      <button class="hero-btn" onclick="saveSupabaseModal()">✓ CONNECT</button>
+    </div>
+    <p style="font-size:0.62rem;color:var(--text-faint);margin-top:1rem;line-height:1.5;">Find both in Supabase → Project Settings → API. Paste the URL and the <b>anon / public</b> key (not service_role). Safe in the browser — protected by Row Level Security.</p>
+  </div>
+</div>
 <div id="camera-overlay">
   <video id="camera-video" autoplay playsinline muted></video>
   <div class="cam-bar">
@@ -1565,16 +1580,10 @@ let copilotSessionId='sess_'+Date.now().toString(36)+Math.random().toString(36).
 function supabaseConfigured(){return !!(state.supabaseUrl&&state.supabaseKey);}
 function updateConnHud(){const set=(id,on)=>{const e=document.getElementById(id);if(e)e.className='conn-dot'+(on?' live':'');};set('conn-anthropic',!!state.anthropicKey);set('conn-supabase',supabaseConfigured());set('conn-voice',state.voiceOn);const w=document.getElementById('conn-wave');if(w)w.classList.toggle('idle',!state.voiceOn);}
 function setDbStatus(s){const d=document.getElementById('copilot-db-dot');if(!d)return;const map={off:['#555','Memory: not connected'],connecting:['#ffb020','Memory: connecting…'],ok:['#00e676','Memory: synced'],error:['#ff3b30','Memory: error — tap 🗄️ to check']};const v=map[s]||map.off;d.style.background=v[0];d.style.boxShadow=s==='off'?'none':'0 0 8px '+v[0];d.title=v[1];}
-function setSupabase(){
-  const url=prompt('Supabase Project URL (e.g. https://abcdefgh.supabase.co)',state.supabaseUrl||'');
-  if(url===null)return;
-  const key=prompt('Supabase anon public key (safe to use in browser — protected by Row Level Security)',state.supabaseKey||'');
-  if(key===null)return;
-  state.supabaseUrl=url.trim().replace(/\/+$/,'');state.supabaseKey=key.trim();save();updateConnHud();
-  document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';
-  if(supabaseConfigured()){setDbStatus('connecting');toast('🗄️ Supabase connected — loading memory...','success');loadCopilotHistory();}
-  else {setDbStatus('off');toast('🗄️ Supabase memory cleared','warn');}
-}
+function setSupabase(){const m=document.getElementById('supabase-modal');if(!m)return;document.getElementById('sb-url').value=state.supabaseUrl||'';document.getElementById('sb-key').value=state.supabaseKey||'';m.style.display='flex';setTimeout(()=>document.getElementById('sb-url').focus(),50);}
+function closeSupabaseModal(){const m=document.getElementById('supabase-modal');if(m)m.style.display='none';}
+function clearSupabaseModal(){document.getElementById('sb-url').value='';document.getElementById('sb-key').value='';}
+function saveSupabaseModal(){state.supabaseUrl=document.getElementById('sb-url').value.trim().replace(/\/+$/,'');state.supabaseKey=document.getElementById('sb-key').value.trim();save();updateConnHud();const btn=document.getElementById('copilot-db-btn');if(btn)btn.style.opacity=supabaseConfigured()?'1':'0.5';closeSupabaseModal();if(typeof renderConnections==='function')renderConnections();if(supabaseConfigured()){setDbStatus('connecting');toast('🗄️ Supabase connected — loading memory…','success');loadCopilotHistory();}else{setDbStatus('off');toast('🗄️ Supabase cleared','warn');}}
 async function pushToSupabase(role,text){
   if(!supabaseConfigured())return;
   try{
@@ -1698,7 +1707,7 @@ document.getElementById('export-data').onclick=exportData;
 addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('cmdk-overlay').classList.contains('open')?closeCmdK():openCmdK();return;}
   if(document.getElementById('cmdk-overlay').classList.contains('open')){if(e.key==='Escape')closeCmdK();else if(e.key==='ArrowDown'){e.preventDefault();cmdkMove(1);}else if(e.key==='ArrowUp'){e.preventDefault();cmdkMove(-1);}else if(e.key==='Enter'){e.preventDefault();cmdkEnter();}return;}
-  if(e.key==='Escape'){closeCmdK();closeCamera();closeDump();closeRSD();closeElevenLabs();document.getElementById('copilot-panel').classList.remove('open');exitFocus();return;}
+  if(e.key==='Escape'){closeCmdK();closeCamera();closeSupabaseModal();closeDump();closeRSD();closeElevenLabs();document.getElementById('copilot-panel').classList.remove('open');exitFocus();return;}
 });
 
 // ═══ LIFE SCORE ═══
