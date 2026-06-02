@@ -290,11 +290,16 @@ body{
 .dock-sep{width:1px;background:var(--border);margin:0.4rem 0.2rem;}
 
 /* CO-PILOT */
-#copilot{position:fixed;bottom:7rem;right:1.5rem;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--accent),var(--accent-2),#005a55);box-shadow:0 0 70px var(--accent),inset 0 0 40px rgba(255,255,255,0.4);cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center;animation:orbBreathe 2.5s ease-in-out infinite;transition:transform 0.2s;}
-#copilot:hover{transform:scale(1.18);}
-#copilot::after{content:'🦾';font-size:2.2rem;filter:drop-shadow(0 0 18px #fff);}
-@keyframes orbBreathe{0%,100%{box-shadow:0 0 70px var(--accent),inset 0 0 40px rgba(255,255,255,0.4);}50%{box-shadow:0 0 120px var(--accent),inset 0 0 60px rgba(255,255,255,0.7);}}
-#copilot-pulse{position:fixed;bottom:7rem;right:1.5rem;width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);pointer-events:none;z-index:199;animation:copilotPulse 2s infinite;}
+#copilot{position:fixed;bottom:6.5rem;right:1.8rem;width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 32% 26%,#fff,var(--accent) 36%,var(--accent-2) 78%,#400022);box-shadow:0 0 90px var(--accent),0 0 28px #fff,inset 0 0 45px rgba(255,255,255,0.55);cursor:pointer;z-index:260;display:flex;align-items:center;justify-content:center;animation:orbBreathe 2.2s ease-in-out infinite;transition:transform 0.25s cubic-bezier(.34,1.56,.64,1),box-shadow 0.25s;}
+#copilot:hover{transform:scale(1.22) rotate(8deg);box-shadow:0 0 150px var(--accent),0 0 60px #fff,inset 0 0 65px rgba(255,255,255,0.9);}
+#copilot:active{transform:scale(1.06);}
+#copilot::before{content:'';position:absolute;inset:-11px;border-radius:50%;border:2px dashed var(--accent);opacity:0.7;animation:ringRotate 8s linear infinite;}
+#copilot::after{content:'🦾';font-size:2.7rem;filter:drop-shadow(0 0 24px #fff);animation:orbFloat 3s ease-in-out infinite;}
+@keyframes orbBreathe{0%,100%{box-shadow:0 0 90px var(--accent),0 0 28px #fff,inset 0 0 45px rgba(255,255,255,0.55);}50%{box-shadow:0 0 155px var(--accent),0 0 50px #fff,inset 0 0 68px rgba(255,255,255,0.9);}}
+@keyframes orbFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+#copilot-hint{position:fixed;bottom:13rem;right:1.7rem;background:rgba(2,6,18,0.92);border:1px solid var(--border-bright);color:var(--accent);font-size:0.6rem;font-weight:700;letter-spacing:0.18rem;padding:0.35rem 0.7rem;border-radius:8px;z-index:260;pointer-events:none;text-shadow:0 0 10px var(--accent);box-shadow:0 0 28px var(--accent-glow);white-space:nowrap;animation:hintPulse 2.4s ease-in-out infinite;}
+@keyframes hintPulse{0%,100%{opacity:0.55;transform:translateY(0);}50%{opacity:1;transform:translateY(-3px);}}
+#copilot-pulse{position:fixed;bottom:6.5rem;right:1.8rem;width:96px;height:96px;border-radius:50%;border:2px solid var(--accent);pointer-events:none;z-index:255;animation:copilotPulse 2s infinite;}
 @keyframes copilotPulse{0%{transform:scale(1);opacity:0.9;}100%{transform:scale(2.3);opacity:0;}}
 #copilot-panel{position:fixed;bottom:7rem;right:1.5rem;width:430px;max-height:580px;background:rgba(2,6,18,0.98);backdrop-filter:blur(35px);border:1px solid var(--border-bright);border-radius:18px;z-index:201;display:none;flex-direction:column;box-shadow:0 0 120px var(--accent);}
 #copilot-panel.open{display:flex;animation:panelSlide 0.5s;}
@@ -359,6 +364,21 @@ kbd{background:rgba(0,255,255,0.18);padding:0.2rem 0.55rem;border-radius:5px;bor
 .photo-add{aspect-ratio:1;background:rgba(0,255,255,0.04);border:1px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);cursor:pointer;font-size:2rem;}
 .photo-add:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,255,255,0.08);}
 .photo-add input{display:none;}
+/* ═══ LIVING UPGRADE V6 ═══ */
+.boot-reactor{position:absolute;top:50%;left:50%;width:360px;height:360px;margin:-180px 0 0 -180px;border-radius:50%;border:2px solid var(--accent);box-shadow:0 0 90px var(--accent),inset 0 0 90px var(--accent-glow);opacity:0.55;animation:ringRotate 7s linear infinite;}
+.boot-reactor::before{content:'';position:absolute;inset:34px;border-radius:50%;border:1px dashed var(--accent-2);animation:ringRotate 10s linear infinite reverse;}
+.boot-reactor::after{content:'';position:absolute;inset:80px;border-radius:50%;border:1px solid var(--accent);animation:bootPulse 2s ease-in-out infinite;}
+@keyframes bootPulse{0%,100%{transform:scale(0.88);opacity:0.3;}50%{transform:scale(1.08);opacity:0.75;}}
+.boot-logo{position:relative;z-index:2;text-shadow:0 0 80px var(--accent),0 0 150px var(--accent);}
+.boot-status,.boot-bar{position:relative;z-index:2;}
+#brain-container{height:560px;background:radial-gradient(circle at center,rgba(0,255,255,0.24),rgba(255,0,255,0.07) 45%,transparent 72%);box-shadow:inset 0 0 90px rgba(0,255,255,0.16);animation:brainHalo 5s ease-in-out infinite;}
+@keyframes brainHalo{0%,100%{box-shadow:inset 0 0 70px rgba(0,255,255,0.12);}50%{box-shadow:inset 0 0 140px rgba(0,255,255,0.3);}}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 18% -10%,rgba(0,255,255,0.14),transparent 45%),radial-gradient(ellipse at 92% 110%,rgba(255,0,102,0.14),transparent 45%);animation:auroraShift 11s ease-in-out infinite;}
+@keyframes auroraShift{0%,100%{opacity:0.55;}50%{opacity:1;}}
+.widget:hover{box-shadow:0 0 85px var(--accent-glow),0 0 30px rgba(255,255,255,0.12);transform:translateY(-5px) scale(1.006);}
+.widget-icon{animation:iconFloat 4s ease-in-out infinite;}
+@keyframes iconFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+.topbar{box-shadow:0 0 70px rgba(0,255,255,0.4);}
 </style>
 </head>
 <body>
@@ -378,6 +398,7 @@ kbd{background:rgba(0,255,255,0.18);padding:0.2rem 0.55rem;border-radius:5px;bor
 
 <!-- BOOT -->
 <div id="boot">
+  <div class="boot-reactor"></div>
   <div class="boot-logo">DELIA<span class="accent">-OS</span></div>
   <div class="boot-status" id="boot-status">INITIALIZING REBEL CORE...</div>
   <div class="boot-bar"><div class="boot-bar-fill" id="boot-bar-fill"></div></div>
@@ -660,6 +681,7 @@ kbd{background:rgba(0,255,255,0.18);padding:0.2rem 0.55rem;border-radius:5px;bor
 
 <!-- CO-PILOT -->
 <div id="copilot-pulse"></div>
+<div id="copilot-hint">ASK&nbsp;JARVIS</div>
 <div id="copilot"></div>
 <div id="copilot-panel">
   <div class="copilot-header"><div class="copilot-title">🦾 JARVIS // CO-PILOT</div><div><span id="copilot-db-dot" title="Memory: not connected" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:0.45rem;vertical-align:middle;"></span><button class="copilot-close" id="copilot-db-btn" onclick="setSupabase()" title="Connect Supabase memory" style="margin-right:0.4rem;">🗄️</button><button class="copilot-close" id="copilot-key-btn" onclick="setAnthropicKey()" title="Set Anthropic API key" style="margin-right:0.4rem;">🔑</button><button class="copilot-close" onclick="toggleCopilot()">✕</button></div></div>
@@ -855,6 +877,10 @@ async function speak(text){
 function playSound(freq,dur=0.1,type='sine',gain=0.1){try{const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(gain,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+dur);}catch(e){}}
 function chord(){playSound(523,0.15);setTimeout(()=>playSound(659,0.15),60);setTimeout(()=>playSound(784,0.2),120);}
 function bassBoom(){playSound(60,0.5,'sawtooth',0.18);setTimeout(()=>playSound(80,0.4,'sawtooth',0.12),60);}
+function powerUp(){try{const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());const t=ctx.currentTime;
+  const o=ctx.createOscillator(),g=ctx.createGain();o.type='sawtooth';o.frequency.setValueAtTime(35,t);o.frequency.exponentialRampToValueAtTime(240,t+2.4);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.14,t+0.9);g.gain.exponentialRampToValueAtTime(0.001,t+2.6);o.connect(g);g.connect(ctx.destination);o.start();o.stop(t+2.7);
+  const o2=ctx.createOscillator(),g2=ctx.createGain();o2.type='sine';o2.frequency.setValueAtTime(660,t);o2.frequency.exponentialRampToValueAtTime(1980,t+2.2);g2.gain.setValueAtTime(0.0001,t);g2.gain.exponentialRampToValueAtTime(0.05,t+1.1);g2.gain.exponentialRampToValueAtTime(0.001,t+2.5);o2.connect(g2);g2.connect(ctx.destination);o2.start();o2.stop(t+2.6);}catch(e){}}
+function victoryChord(){[523.25,659.25,783.99,1046.5].forEach((f,i)=>setTimeout(()=>playSound(f,0.55,'triangle',0.11),i*100));playSound(130.81,0.9,'sine',0.12);}
 function lightning(){const el=document.getElementById('lightning');el.innerHTML='';let svg=`<svg width="100%" height="100%" style="position:absolute;inset:0;">`;const lines=3+Math.floor(Math.random()*3);for(let i=0;i<lines;i++){const x=Math.random()*100;let path=`M ${x}% 0`;let y=0;while(y<100){y+=8+Math.random()*6;path+=` L ${x+(Math.random()-0.5)*20}% ${y}%`;}svg+=`<path d="${path}" stroke="rgba(0,255,255,1)" stroke-width="2.5" fill="none" filter="url(#g)"/>`;}svg+=`<defs><filter id="g"><feGaussianBlur stdDeviation="3"/></filter></defs></svg>`;el.innerHTML=svg;el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),600);}
 
 // ═══ CURSOR ═══
@@ -883,14 +909,14 @@ function init3DBrain(){
   brainContainer=document.getElementById('brain-container');
   brainScene=new THREE.Scene();
   brainCamera=new THREE.PerspectiveCamera(50,brainContainer.clientWidth/brainContainer.clientHeight,0.1,1000);
-  brainCamera.position.z=4.8;
+  brainCamera.position.z=4.3;
   brainRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
   brainRenderer.setSize(brainContainer.clientWidth,brainContainer.clientHeight);
   brainContainer.appendChild(brainRenderer.domElement);
   brainGroup=new THREE.Group();
   brainRegionData.forEach(r=>{
     const geom=new THREE.SphereGeometry(r.size,32,32);
-    const mat=new THREE.MeshPhongMaterial({color:r.color,emissive:r.color,emissiveIntensity:0.4,transparent:true,opacity:0.75,shininess:120});
+    const mat=new THREE.MeshPhongMaterial({color:r.color,emissive:r.color,emissiveIntensity:0.55,transparent:true,opacity:0.8,shininess:140});
     const mesh=new THREE.Mesh(geom,mat);
     mesh.position.set(r.x,r.y,r.z);
     mesh.userData=r;
@@ -900,22 +926,29 @@ function init3DBrain(){
   const wireGeom=new THREE.SphereGeometry(1.5,24,18);
   const wireMat=new THREE.MeshBasicMaterial({color:0x00ffff,wireframe:true,transparent:true,opacity:0.22});
   brainGroup.add(new THREE.Mesh(wireGeom,wireMat));
-  const pGeom=new THREE.BufferGeometry();const pCount=350;const positions=new Float32Array(pCount*3);
+  const pGeom=new THREE.BufferGeometry();const pCount=600;const positions=new Float32Array(pCount*3);
   for(let i=0;i<pCount;i++){const r=1.6+Math.random()*0.6,t=Math.random()*Math.PI*2,p=Math.random()*Math.PI;positions[i*3]=r*Math.sin(p)*Math.cos(t);positions[i*3+1]=r*Math.sin(p)*Math.sin(t);positions[i*3+2]=r*Math.cos(p);}
   pGeom.setAttribute('position',new THREE.BufferAttribute(positions,3));
   const pMat=new THREE.PointsMaterial({color:0x00ffff,size:0.06,transparent:true,opacity:0.9,blending:THREE.AdditiveBlending});
   const syn=new THREE.Points(pGeom,pMat);brainGroup.add(syn);
+  // neural connections between nearby regions
+  const linePos=[];for(let i=0;i<brainRegionData.length;i++)for(let j=i+1;j<brainRegionData.length;j++){const a=brainRegionData[i],b=brainRegionData[j];if(Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z)<1.55)linePos.push(a.x,a.y,a.z,b.x,b.y,b.z);}
+  const lGeom=new THREE.BufferGeometry();lGeom.setAttribute('position',new THREE.Float32BufferAttribute(linePos,3));
+  const neuralLines=new THREE.LineSegments(lGeom,new THREE.LineBasicMaterial({color:0x66f0ff,transparent:true,opacity:0.3,blending:THREE.AdditiveBlending}));brainGroup.add(neuralLines);
+  // outer rotating shell
+  const shell=new THREE.Mesh(new THREE.SphereGeometry(1.85,20,14),new THREE.MeshBasicMaterial({color:0xff00ff,wireframe:true,transparent:true,opacity:0.1}));brainGroup.add(shell);
   brainScene.add(brainGroup);
-  brainScene.add(new THREE.AmbientLight(0xffffff,0.7));
-  const pt=new THREE.PointLight(0x00ffff,1.8);pt.position.set(3,3,3);brainScene.add(pt);
-  const pt2=new THREE.PointLight(0xff00ff,1.0);pt2.position.set(-3,-3,3);brainScene.add(pt2);
+  brainScene.add(new THREE.AmbientLight(0xffffff,0.9));
+  const pt=new THREE.PointLight(0x00ffff,2.4);pt.position.set(3,3,3);brainScene.add(pt);
+  const pt2=new THREE.PointLight(0xff00ff,1.6);pt2.position.set(-3,-3,3);brainScene.add(pt2);
+  const pt3=new THREE.PointLight(0xffffff,1.0);pt3.position.set(0,0,4);brainScene.add(pt3);
   let isDragging=false,prevX=0,prevY=0,rotX=0,rotY=0;
   brainRenderer.domElement.addEventListener('mousedown',e=>{isDragging=true;prevX=e.clientX;prevY=e.clientY;});
   addEventListener('mouseup',()=>isDragging=false);
   addEventListener('mousemove',e=>{if(!isDragging)return;rotY+=(e.clientX-prevX)*0.008;rotX+=(e.clientY-prevY)*0.008;prevX=e.clientX;prevY=e.clientY;});
   const tempVec=new THREE.Vector3();
   function updateLabels(){const rect=brainContainer.getBoundingClientRect();document.querySelectorAll('.brain-label').forEach(label=>{const region=brainRegions[label.dataset.region];if(!region)return;tempVec.setFromMatrixPosition(region.matrixWorld);tempVec.project(brainCamera);const x=(tempVec.x*0.5+0.5)*rect.width;const y=(-tempVec.y*0.5+0.5)*rect.height;label.style.left=x+'px';label.style.top=y+'px';label.style.opacity=tempVec.z<1?'1':'0';});}
-  function animate(){requestAnimationFrame(animate);if(!isDragging)rotY+=0.005;brainGroup.rotation.y=rotY;brainGroup.rotation.x=rotX*0.5;syn.rotation.y+=0.003;syn.rotation.x+=0.001;Object.entries(state.brainActivity).forEach(([name,val])=>{if(brainRegions[name]){const intensity=0.35+(val/100)*0.85;brainRegions[name].material.emissiveIntensity=intensity+Math.sin(Date.now()*0.005)*0.15*(val/100);brainRegions[name].material.opacity=0.75+(val/100)*0.25;}});brainScene.updateMatrixWorld();updateLabels();brainRenderer.render(brainScene,brainCamera);}animate();
+  function animate(){requestAnimationFrame(animate);if(!isDragging)rotY+=0.005;brainGroup.rotation.y=rotY;brainGroup.rotation.x=rotX*0.5;syn.rotation.y+=0.003;syn.rotation.x+=0.001;shell.rotation.y-=0.004;shell.rotation.z+=0.002;neuralLines.material.opacity=0.18+Math.abs(Math.sin(Date.now()*0.0022))*0.4;Object.entries(state.brainActivity).forEach(([name,val])=>{if(brainRegions[name]){const intensity=0.35+(val/100)*0.85;brainRegions[name].material.emissiveIntensity=intensity+Math.sin(Date.now()*0.005)*0.15*(val/100);brainRegions[name].material.opacity=0.75+(val/100)*0.25;}});brainScene.updateMatrixWorld();updateLabels();brainRenderer.render(brainScene,brainCamera);}animate();
   addEventListener('resize',()=>{if(!brainContainer.clientWidth)return;brainCamera.aspect=brainContainer.clientWidth/brainContainer.clientHeight;brainCamera.updateProjectionMatrix();brainRenderer.setSize(brainContainer.clientWidth,brainContainer.clientHeight);});
 }
 function activateBrain(region,amt=10){state.brainActivity[region]=Math.min(100,(state.brainActivity[region]||0)+amt);renderBrainBalance();save();if(brainRegions[region]){const m=brainRegions[region].material;m.emissiveIntensity=1.8;setTimeout(()=>m.emissiveIntensity=0.45,500);}}
@@ -1269,10 +1302,10 @@ addEventListener('keydown',e=>{if(e.key==='Escape'){closeDump();closeRSD();close
 function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&new Date(lw.date).toDateString()===new Date().toDateString())s+=15;if(lw)s+=(lw.mood+lw.energy+lw.sleep-15);if(state.heartbeat.find(h=>new Date(h.date).toDateString()===new Date().toDateString()))s+=10;s+=Math.min(15,state.tasks.filter(t=>t.done).length*3);const mr=state.transactions.filter(t=>{const d=new Date(t.date);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).reduce((sm,t)=>sm+t.amount,0);if(mr>0)s+=10;const lost=state.startWeight-state.currentWeight;if(lost>0)s+=Math.min(10,lost);s=Math.max(0,Math.min(100,s));state.lifeScore=s;save();document.getElementById('life-score-num').textContent=s;document.getElementById('life-ring').setAttribute('stroke-dashoffset',94.2-(s/100)*94.2);updateBodyScanner();}
 
 // ═══ BOOT ═══
-function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
+function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();powerUp();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
 const bootMsgs=['INITIALIZING REBEL CORE...','LOADING NEURAL MAP...','SYNCING BIOMETRICS...','CALIBRATING WARRIOR MODE...','ENGAGING JARVIS...','LOADING COUNCIL OF GIANTS...','DELIA-OS REBEL EDITION ONLINE'];
 let bootStep=0;
-function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');chord();setTimeout(chord,200);},800);return;}document.getElementById('boot-status').textContent=bootMsgs[bootStep];document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';playSound(440+bootStep*70,0.08);bootStep++;setTimeout(runBoot,500);}
+function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();},800);return;}document.getElementById('boot-status').textContent=bootMsgs[bootStep];document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
 
 // ═══ INIT ═══
 function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateHero();calcLifeScore();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
