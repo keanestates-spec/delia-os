@@ -662,7 +662,7 @@ kbd{background:rgba(0,255,255,0.18);padding:0.2rem 0.55rem;border-radius:5px;bor
 <div id="copilot-pulse"></div>
 <div id="copilot"></div>
 <div id="copilot-panel">
-  <div class="copilot-header"><div class="copilot-title">🦾 JARVIS // CO-PILOT</div><div><button class="copilot-close" id="copilot-key-btn" onclick="setAnthropicKey()" title="Set Anthropic API key" style="margin-right:0.4rem;">🔑</button><button class="copilot-close" onclick="toggleCopilot()">✕</button></div></div>
+  <div class="copilot-header"><div class="copilot-title">🦾 JARVIS // CO-PILOT</div><div><button class="copilot-close" id="copilot-db-btn" onclick="setSupabase()" title="Connect Supabase memory" style="margin-right:0.4rem;">🗄️</button><button class="copilot-close" id="copilot-key-btn" onclick="setAnthropicKey()" title="Set Anthropic API key" style="margin-right:0.4rem;">🔑</button><button class="copilot-close" onclick="toggleCopilot()">✕</button></div></div>
   <div class="copilot-messages" id="copilot-messages"></div>
   <div class="copilot-suggestions">
     <button class="copilot-suggest-btn" onclick="copilotPrompt('plan')">Plan my day</button>
@@ -754,6 +754,7 @@ const state=Object.assign({
   theme:'teal',voiceOn:true,musicMode:'silence',
   elevenLabsKey:'',elevenLabsVoice:'pNInz6obpgDQGcFmaJgB',
   anthropicKey:'',
+  supabaseUrl:'',supabaseKey:'',
   tasks:[],transactions:[],wellness:[],dumps:[],heartbeat:[],
   // Weight Warrior
   startWeight:129,goalWeight:84,currentWeight:129,weightLog:[],photos:[],
@@ -1125,11 +1126,46 @@ function toggleHeartbeatMode(){const m=['morning','midday','evening'];heartbeatM
 // ═══ CO-PILOT ═══
 function toggleCopilot(){document.getElementById('copilot-panel').classList.toggle('open');renderCopilotMessages();}
 document.getElementById('copilot').onclick=toggleCopilot;
-function copilotAddMsg(role,text){state.copilotMessages=state.copilotMessages||[];state.copilotMessages.push({role,text,t:Date.now()});save();renderCopilotMessages();if(role==='system'&&state.voiceOn)speak(text);}
+function copilotAddMsg(role,text){state.copilotMessages=state.copilotMessages||[];state.copilotMessages.push({role,text,t:Date.now()});save();pushToSupabase(role,text);renderCopilotMessages();if(role==='system'&&state.voiceOn)speak(text);}
 function renderCopilotMessages(){const m=document.getElementById('copilot-messages');state.copilotMessages=state.copilotMessages||[];m.innerHTML=state.copilotMessages.slice(-20).map(msg=>`<div class="copilot-msg ${msg.role==='user'?'user':''}">${msg.text}</div>`).join('');m.scrollTop=m.scrollHeight;}
 const copilotPrompts={plan:'Plan my day for me.',stuck:'I feel stuck. Help me move.',hype:'Hype me up.',weight:'Where am I on my weight goal?'};
 function copilotPrompt(t){copilotRespond(copilotPrompts[t]||t);}
 function setAnthropicKey(){const k=prompt('Paste your Anthropic API key (starts with sk-ant-). Stored only in this browser, never uploaded.',state.anthropicKey||'');if(k===null)return;state.anthropicKey=k.trim();save();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';toast(state.anthropicKey?'🔑 Anthropic key saved — JARVIS is live':'🔑 Key cleared','success');}
+// ═══ SUPABASE MEMORY ═══
+let copilotSessionId='sess_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function supabaseConfigured(){return !!(state.supabaseUrl&&state.supabaseKey);}
+function setSupabase(){
+  const url=prompt('Supabase Project URL (e.g. https://abcdefgh.supabase.co)',state.supabaseUrl||'');
+  if(url===null)return;
+  const key=prompt('Supabase anon public key (safe to use in browser — protected by Row Level Security)',state.supabaseKey||'');
+  if(key===null)return;
+  state.supabaseUrl=url.trim().replace(/\/+$/,'');state.supabaseKey=key.trim();save();
+  document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';
+  if(supabaseConfigured()){toast('🗄️ Supabase connected — loading memory...','success');loadCopilotHistory();}
+  else toast('🗄️ Supabase memory cleared','warn');
+}
+async function pushToSupabase(role,text){
+  if(!supabaseConfigured())return;
+  try{
+    await fetch(state.supabaseUrl+'/rest/v1/conversations',{
+      method:'POST',
+      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({session_id:copilotSessionId,role:role,content:text})
+    });
+  }catch(e){console.warn('Supabase save failed',e);}
+}
+async function loadCopilotHistory(){
+  if(!supabaseConfigured())return;
+  try{
+    const res=await fetch(state.supabaseUrl+'/rest/v1/conversations?select=role,content,created_at&order=created_at.desc&limit=50',{
+      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey}
+    });
+    if(!res.ok){let m='HTTP '+res.status;try{const e=await res.json();if(e&&e.message)m=e.message;}catch(_){}throw new Error(m);}
+    const rows=await res.json();rows.reverse();
+    if(rows.length){state.copilotMessages=rows.map(r=>({role:r.role,text:r.content,t:new Date(r.created_at).getTime()}));save();renderCopilotMessages();}
+    toast('🗄️ Memory loaded — '+rows.length+' messages','success');
+  }catch(e){toast('🗄️ Memory load failed: '+(e.message||e),'warn');}
+}
 function copilotSend(){const input=document.getElementById('copilot-input'),text=input.value.trim();if(!text)return;input.value='';copilotRespond(text);}
 async function copilotRespond(text){
   copilotAddMsg('user',text);
@@ -1237,7 +1273,7 @@ let bootStep=0;
 function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');chord();setTimeout(chord,200);},800);return;}document.getElementById('boot-status').textContent=bootMsgs[bootStep];document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';playSound(440+bootStep*70,0.08);bootStep++;setTimeout(runBoot,500);}
 
 // ═══ INIT ═══
-function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';updateHero();calcLifeScore();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured())loadCopilotHistory();updateHero();calcLifeScore();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
 window.addEventListener('load',()=>{initEverything();});
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
