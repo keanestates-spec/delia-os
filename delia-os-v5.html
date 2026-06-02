@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>DELIA-OS // REBEL EDITION</title>
+<title>NEXUS HOTEL // COMMAND BRIDGE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'SF Mono','Monaco','Courier New',monospace;}
@@ -290,16 +292,16 @@ body{
 .dock-sep{width:1px;background:var(--border);margin:0.4rem 0.2rem;}
 
 /* CO-PILOT */
-#copilot{position:fixed;bottom:6.5rem;right:1.8rem;width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 32% 26%,#fff,var(--accent) 36%,var(--accent-2) 78%,#400022);box-shadow:0 0 90px var(--accent),0 0 28px #fff,inset 0 0 45px rgba(255,255,255,0.55);cursor:pointer;z-index:260;display:flex;align-items:center;justify-content:center;animation:orbBreathe 2.2s ease-in-out infinite;transition:transform 0.25s cubic-bezier(.34,1.56,.64,1),box-shadow 0.25s;}
+#copilot{position:fixed;bottom:6rem;left:50%;margin-left:-48px;width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 32% 26%,#fff,var(--accent) 36%,var(--accent-2) 78%,#400022);box-shadow:0 0 90px var(--accent),0 0 28px #fff,inset 0 0 45px rgba(255,255,255,0.55);cursor:pointer;z-index:260;display:flex;align-items:center;justify-content:center;animation:orbBreathe 2.2s ease-in-out infinite;transition:transform 0.25s cubic-bezier(.34,1.56,.64,1),box-shadow 0.25s;}
 #copilot:hover{transform:scale(1.22) rotate(8deg);box-shadow:0 0 150px var(--accent),0 0 60px #fff,inset 0 0 65px rgba(255,255,255,0.9);}
 #copilot:active{transform:scale(1.06);}
 #copilot::before{content:'';position:absolute;inset:-11px;border-radius:50%;border:2px dashed var(--accent);opacity:0.7;animation:ringRotate 8s linear infinite;}
 #copilot::after{content:'🦾';font-size:2.7rem;filter:drop-shadow(0 0 24px #fff);animation:orbFloat 3s ease-in-out infinite;}
 @keyframes orbBreathe{0%,100%{box-shadow:0 0 90px var(--accent),0 0 28px #fff,inset 0 0 45px rgba(255,255,255,0.55);}50%{box-shadow:0 0 155px var(--accent),0 0 50px #fff,inset 0 0 68px rgba(255,255,255,0.9);}}
 @keyframes orbFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
-#copilot-hint{position:fixed;bottom:13rem;right:1.7rem;background:rgba(2,6,18,0.92);border:1px solid var(--border-bright);color:var(--accent);font-size:0.6rem;font-weight:700;letter-spacing:0.18rem;padding:0.35rem 0.7rem;border-radius:8px;z-index:260;pointer-events:none;text-shadow:0 0 10px var(--accent);box-shadow:0 0 28px var(--accent-glow);white-space:nowrap;animation:hintPulse 2.4s ease-in-out infinite;}
-@keyframes hintPulse{0%,100%{opacity:0.55;transform:translateY(0);}50%{opacity:1;transform:translateY(-3px);}}
-#copilot-pulse{position:fixed;bottom:6.5rem;right:1.8rem;width:96px;height:96px;border-radius:50%;border:2px solid var(--accent);pointer-events:none;z-index:255;animation:copilotPulse 2s infinite;}
+#copilot-hint{position:fixed;bottom:12.6rem;left:50%;transform:translateX(-50%);background:rgba(2,6,18,0.92);border:1px solid var(--border-bright);color:var(--accent);font-size:0.6rem;font-weight:700;letter-spacing:0.18rem;padding:0.35rem 0.7rem;border-radius:8px;z-index:260;pointer-events:none;text-shadow:0 0 10px var(--accent);box-shadow:0 0 28px var(--accent-glow);white-space:nowrap;animation:hintPulse 2.4s ease-in-out infinite;}
+@keyframes hintPulse{0%,100%{opacity:0.55;transform:translateX(-50%) translateY(0);}50%{opacity:1;transform:translateX(-50%) translateY(-3px);}}
+#copilot-pulse{position:fixed;bottom:6rem;left:50%;margin-left:-48px;width:96px;height:96px;border-radius:50%;border:2px solid var(--accent);pointer-events:none;z-index:255;animation:copilotPulse 2s infinite;}
 @keyframes copilotPulse{0%{transform:scale(1);opacity:0.9;}100%{transform:scale(2.3);opacity:0;}}
 #copilot-panel{position:fixed;bottom:7rem;right:1.5rem;width:430px;max-height:580px;background:rgba(2,6,18,0.98);backdrop-filter:blur(35px);border:1px solid var(--border-bright);border-radius:18px;z-index:201;display:none;flex-direction:column;box-shadow:0 0 120px var(--accent);}
 #copilot-panel.open{display:flex;animation:panelSlide 0.5s;}
@@ -379,6 +381,28 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 .widget-icon{animation:iconFloat 4s ease-in-out infinite;}
 @keyframes iconFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
 .topbar{box-shadow:0 0 70px rgba(0,255,255,0.4);}
+/* ═══ V7 COMMAND BRIDGE ═══ */
+body,input,button,textarea,select{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;}
+.widget-title,.boot-logo,.start-logo,.start-sub,.start-btn,.dock-btn,.topbar-btn,.hero-btn,.life-score-label,.boot-status{font-family:'Orbitron','Inter',sans-serif;}
+.life-score-num,.topbar-time,.boot-log,.boot-log div{font-family:'Orbitron','SF Mono',monospace;}
+.widget-title{letter-spacing:0.16em;}
+button,.dock-btn,.topbar-btn,.copilot-suggest-btn,.hero-btn{transition:all 0.22s ease;}
+button:hover,.topbar-btn:hover,.copilot-suggest-btn:hover,.hero-btn:hover{color:var(--accent);border-color:var(--border-bright);box-shadow:0 0 28px var(--accent-glow);text-shadow:0 0 12px var(--accent);}
+.boot-core{position:absolute;top:50%;left:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 0 40px var(--accent),0 0 130px var(--accent);animation:ignite 1.8s ease-out forwards;z-index:1;}
+@keyframes ignite{0%{transform:scale(0.2);opacity:0;}18%{opacity:1;}100%{transform:scale(46);opacity:0;}}
+.boot-log{position:absolute;bottom:2.2rem;left:2.2rem;font-size:0.72rem;color:var(--accent);letter-spacing:0.12em;text-shadow:0 0 12px var(--accent);text-align:left;max-width:70%;z-index:3;line-height:1.7;}
+.boot-log div{opacity:0;animation:logIn 0.4s forwards;}
+@keyframes logIn{from{opacity:0;transform:translateX(-12px);}to{opacity:0.92;transform:none;}}
+#conn-hud{position:fixed;top:5.2rem;right:1.2rem;z-index:140;display:flex;flex-direction:column;gap:0.5rem;background:rgba(2,6,18,0.82);border:1px solid var(--border);border-radius:12px;padding:0.7rem 0.9rem;backdrop-filter:blur(18px);box-shadow:0 0 40px rgba(0,255,255,0.18);font-size:0.6rem;letter-spacing:0.12em;}
+.conn-row{display:flex;align-items:center;gap:0.5rem;color:var(--text-dim);font-family:'Orbitron',monospace;}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:#555;transition:all 0.3s;flex-shrink:0;}
+.conn-dot.live{background:#00ff88;box-shadow:0 0 10px #00ff88;}
+.conn-dot.err{background:#ff0044;box-shadow:0 0 10px #ff0044;}
+#conn-wave{display:flex;align-items:flex-end;gap:2px;height:12px;margin-top:0.1rem;}
+#conn-wave span{width:2px;background:var(--accent);box-shadow:0 0 6px var(--accent);animation:waveBar 1s ease-in-out infinite;}
+#conn-wave.idle span{animation-play-state:paused;height:2px;opacity:0.4;}
+@keyframes waveBar{0%,100%{height:3px;}50%{height:12px;}}
+@media(max-width:900px){#conn-hud{display:none;}}
 </style>
 </head>
 <body>
@@ -389,7 +413,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 <!-- START SCREEN -->
 <div id="start-screen">
   <div class="start-rings"><div class="start-ring"></div><div class="start-ring"></div><div class="start-ring"></div></div>
-  <div class="start-logo">DELIA<span class="accent">-OS</span></div>
+  <div class="start-logo">NEXUS<span class="accent"> HOTEL</span></div>
   <div class="start-sub">REBEL EDITION // v5</div>
   <div class="start-tagline">🤘 BUILT FOR LEGENDS · BY YOU · FOR YOU 🤘</div>
   <button class="start-btn" onclick="initiate()">⚡ ENGAGE THE EMPIRE ⚡</button>
@@ -398,10 +422,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 
 <!-- BOOT -->
 <div id="boot">
+  <div class="boot-core"></div>
   <div class="boot-reactor"></div>
-  <div class="boot-logo">DELIA<span class="accent">-OS</span></div>
-  <div class="boot-status" id="boot-status">INITIALIZING REBEL CORE...</div>
+  <div class="boot-logo">NEXUS<span class="accent"> HOTEL</span></div>
   <div class="boot-bar"><div class="boot-bar-fill" id="boot-bar-fill"></div></div>
+  <div class="boot-log" id="boot-log"></div>
 </div>
 
 <canvas id="particles"></canvas>
@@ -680,6 +705,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 </div>
 
 <!-- CO-PILOT -->
+<div id="conn-hud">
+  <div class="conn-row"><span class="conn-dot" id="conn-anthropic"></span>ANTHROPIC</div>
+  <div class="conn-row"><span class="conn-dot" id="conn-supabase"></span>MEMORY</div>
+  <div class="conn-row"><span class="conn-dot" id="conn-voice"></span>VOICE</div>
+  <div id="conn-wave" class="idle"><span style="animation-delay:0s"></span><span style="animation-delay:.15s"></span><span style="animation-delay:.3s"></span><span style="animation-delay:.45s"></span><span style="animation-delay:.6s"></span></div>
+</div>
 <div id="copilot-pulse"></div>
 <div id="copilot-hint">ASK&nbsp;JARVIS</div>
 <div id="copilot"></div>
@@ -1163,17 +1194,18 @@ function copilotAddMsg(role,text){state.copilotMessages=state.copilotMessages||[
 function renderCopilotMessages(){const m=document.getElementById('copilot-messages');state.copilotMessages=state.copilotMessages||[];m.innerHTML=state.copilotMessages.slice(-20).map(msg=>`<div class="copilot-msg ${msg.role==='user'?'user':''}">${msg.text}</div>`).join('');m.scrollTop=m.scrollHeight;}
 const copilotPrompts={plan:'Plan my day for me.',stuck:'I feel stuck. Help me move.',hype:'Hype me up.',weight:'Where am I on my weight goal?'};
 function copilotPrompt(t){copilotRespond(copilotPrompts[t]||t);}
-function setAnthropicKey(){const k=prompt('Paste your Anthropic API key (starts with sk-ant-). Stored only in this browser, never uploaded.',state.anthropicKey||'');if(k===null)return;state.anthropicKey=k.trim();save();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';toast(state.anthropicKey?'🔑 Anthropic key saved — JARVIS is live':'🔑 Key cleared','success');}
+function setAnthropicKey(){const k=prompt('Paste your Anthropic API key (starts with sk-ant-). Stored only in this browser, never uploaded.',state.anthropicKey||'');if(k===null)return;state.anthropicKey=k.trim();save();updateConnHud();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';toast(state.anthropicKey?'🔑 Anthropic key saved — JARVIS is live':'🔑 Key cleared','success');}
 // ═══ SUPABASE MEMORY ═══
 let copilotSessionId='sess_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 function supabaseConfigured(){return !!(state.supabaseUrl&&state.supabaseKey);}
+function updateConnHud(){const set=(id,on)=>{const e=document.getElementById(id);if(e)e.className='conn-dot'+(on?' live':'');};set('conn-anthropic',!!state.anthropicKey);set('conn-supabase',supabaseConfigured());set('conn-voice',state.voiceOn);const w=document.getElementById('conn-wave');if(w)w.classList.toggle('idle',!state.voiceOn);}
 function setDbStatus(s){const d=document.getElementById('copilot-db-dot');if(!d)return;const map={off:['#555','Memory: not connected'],connecting:['#ffb020','Memory: connecting…'],ok:['#00e676','Memory: synced'],error:['#ff3b30','Memory: error — tap 🗄️ to check']};const v=map[s]||map.off;d.style.background=v[0];d.style.boxShadow=s==='off'?'none':'0 0 8px '+v[0];d.title=v[1];}
 function setSupabase(){
   const url=prompt('Supabase Project URL (e.g. https://abcdefgh.supabase.co)',state.supabaseUrl||'');
   if(url===null)return;
   const key=prompt('Supabase anon public key (safe to use in browser — protected by Row Level Security)',state.supabaseKey||'');
   if(key===null)return;
-  state.supabaseUrl=url.trim().replace(/\/+$/,'');state.supabaseKey=key.trim();save();
+  state.supabaseUrl=url.trim().replace(/\/+$/,'');state.supabaseKey=key.trim();save();updateConnHud();
   document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';
   if(supabaseConfigured()){setDbStatus('connecting');toast('🗄️ Supabase connected — loading memory...','success');loadCopilotHistory();}
   else {setDbStatus('off');toast('🗄️ Supabase memory cleared','warn');}
@@ -1291,7 +1323,7 @@ function exitFocus(){if(focusTimer)clearInterval(focusTimer);document.getElement
 function switchTheme(){const t=['teal','rebel','quantum','gold'];state.theme=t[(t.indexOf(state.theme)+1)%t.length];document.body.classList.remove('theme-teal','theme-rebel','theme-quantum','theme-gold');document.body.classList.add('theme-'+state.theme);save();toast('⬢ Theme: '+state.theme,'success');}
 document.body.classList.add('theme-'+state.theme);
 document.getElementById('theme-toggle').onclick=switchTheme;
-document.getElementById('audio-toggle').onclick=()=>{state.voiceOn=!state.voiceOn;save();document.getElementById('audio-toggle').classList.toggle('active',state.voiceOn);toast('🔊 Voice '+(state.voiceOn?'ON':'OFF'),'success');if(state.voiceOn)speak('Voice activated.');};
+document.getElementById('audio-toggle').onclick=()=>{state.voiceOn=!state.voiceOn;save();updateConnHud();document.getElementById('audio-toggle').classList.toggle('active',state.voiceOn);toast('🔊 Voice '+(state.voiceOn?'ON':'OFF'),'success');if(state.voiceOn)speak('Voice activated.');};
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='delia-os-v5-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('💾 Backup downloaded','success');}
 document.getElementById('export-data').onclick=exportData;
 
@@ -1303,12 +1335,12 @@ function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&ne
 
 // ═══ BOOT ═══
 function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();powerUp();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
-const bootMsgs=['INITIALIZING REBEL CORE...','LOADING NEURAL MAP...','SYNCING BIOMETRICS...','CALIBRATING WARRIOR MODE...','ENGAGING JARVIS...','LOADING COUNCIL OF GIANTS...','DELIA-OS REBEL EDITION ONLINE'];
+const bootMsgs=['NEURAL LINK INITIALISING...','LOADING 25 WINGS...','OBSERVATORY TOWER: ONLINE','AGENT TEAM: STANDING BY','BIOMETRIC SENSORS: SCANNING...','JARVIS COPILOT: ENGAGED','NEXUS ONLINE'];
 let bootStep=0;
-function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();},800);return;}document.getElementById('boot-status').textContent=bootMsgs[bootStep];document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
+function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
 
 // ═══ INIT ═══
-function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateHero();calcLifeScore();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
 window.addEventListener('load',()=>{initEverything();});
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
