@@ -478,6 +478,22 @@ body.view-wing main.grid{padding-top:5.5rem;}
 .deal-btn{background:rgba(0,255,255,0.12);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:0.58rem;padding:0.12rem 0.38rem;line-height:1;}
 .deal-btn:hover{box-shadow:0 0 14px var(--accent-glow);}
 @media(max-width:760px){.pipeline{grid-template-columns:repeat(2,1fr);}}
+/* ═══ STARFIELD + TOOLTIP + CMDK ═══ */
+#starfield{position:fixed;inset:0;z-index:-2;pointer-events:none;}
+#brain-tip{position:fixed;z-index:300;max-width:250px;background:rgba(2,6,18,0.96);border:1px solid var(--border-bright);border-radius:10px;padding:0.7rem 0.85rem;pointer-events:none;opacity:0;transition:opacity 0.15s;box-shadow:0 0 34px var(--accent-glow);backdrop-filter:blur(12px);}
+#brain-tip.show{opacity:1;}
+#brain-tip .bt-title{font-family:'Orbitron',sans-serif;font-size:0.66rem;letter-spacing:0.1em;color:var(--accent);text-shadow:0 0 10px var(--accent);}
+#brain-tip .bt-fn{font-size:0.72rem;color:#fff;margin:0.35rem 0;line-height:1.45;}
+#brain-tip .bt-bio{font-size:0.62rem;color:var(--accent-2);letter-spacing:0.03em;line-height:1.4;}
+#cmdk-overlay{position:fixed;inset:0;z-index:600;background:rgba(0,3,8,0.78);backdrop-filter:blur(8px);display:none;align-items:flex-start;justify-content:center;padding-top:14vh;}
+#cmdk-overlay.open{display:flex;}
+#cmdk{width:min(560px,92vw);background:rgba(2,6,18,0.98);border:1px solid var(--border-bright);border-radius:16px;box-shadow:0 0 90px var(--accent);overflow:hidden;}
+#cmdk-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);color:#fff;font-family:'Orbitron',sans-serif;font-size:1rem;letter-spacing:0.08em;padding:1.1rem 1.3rem;outline:none;}
+#cmdk-list{max-height:46vh;overflow-y:auto;padding:0.4rem;}
+.cmdk-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;border-radius:10px;cursor:pointer;font-size:0.85rem;color:var(--text-dim);}
+.cmdk-item .ck-ico{font-size:1.2rem;}
+.cmdk-item.sel,.cmdk-item:hover{background:rgba(0,255,255,0.12);color:#fff;box-shadow:inset 0 0 22px var(--accent-glow);}
+.cmdk-item .ck-tag{margin-left:auto;font-size:0.56rem;font-family:'Orbitron',sans-serif;letter-spacing:0.12em;color:var(--accent);opacity:0.7;}
 </style>
 </head>
 <body>
@@ -504,6 +520,8 @@ body.view-wing main.grid{padding-top:5.5rem;}
   <div class="boot-log" id="boot-log"></div>
 </div>
 
+<canvas id="starfield"></canvas>
+<div id="brain-tip"></div>
 <canvas id="particles"></canvas>
 <div class="grid-bg"></div>
 <div class="scanlines"></div>
@@ -523,6 +541,9 @@ body.view-wing main.grid{padding-top:5.5rem;}
     </div>
   </div>
   <div class="topbar-right">
+    <span id="wx-chip" title="Weather (your location)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--accent);text-shadow:0 0 10px var(--accent);margin-right:0.4rem;cursor:pointer;" onclick="showWing('intel')">🌍 —</span>
+    <button class="qa-icon" id="listen-btn" title="Hands-free voice — say JARVIS" onclick="toggleAlwaysListening()" style="margin-right:0.4rem;opacity:0.5;">👂</button>
+    <button class="qa-icon" title="Command palette (⌘K)" onclick="openCmdK()" style="margin-right:0.4rem;">⌘</button>
     <span id="state-dot" title="System state"></span>
     <div class="qa-icons">
       <button class="qa-icon" title="Brain Home" onclick="goHome()">🧠</button>
@@ -685,11 +706,11 @@ body.view-wing main.grid{padding-top:5.5rem;}
         <button class="btn-primary" onclick="loadYouTube()">PLAY</button>
       </div>
       <div class="music-mode-grid">
-        <div class="music-mode" onclick="playPreset('rebel')">🤘 REBEL</div>
+        <div class="music-mode" onclick="playPreset('panpipes')">🎍 PAN PIPES</div>
+        <div class="music-mode" onclick="playPreset('forest')">🌲 FOREST</div>
         <div class="music-mode" onclick="playPreset('focus')">🎯 FOCUS</div>
-        <div class="music-mode" onclick="playPreset('motivation')">⚡ HYPE</div>
-        <div class="music-mode" onclick="playPreset('quantum')">🌌 QUANTUM</div>
-        <div class="music-mode" onclick="playPreset('zen')">🕊️ ZEN</div>
+        <div class="music-mode" onclick="playPreset('cosmic')">🌌 COSMIC</div>
+        <div class="music-mode" onclick="playPreset('deepcalm')">🕊️ DEEP CALM</div>
         <div class="music-mode" onclick="playPreset('rock')">🎸 ROCK</div>
       </div>
       <div class="music-now-playing" id="music-now" onclick="stopMusic()" style="cursor:pointer;" title="Tap to stop">🔇 SILENCE — Pick a mode or paste a URL</div>
@@ -797,7 +818,23 @@ body.view-wing main.grid{padding-top:5.5rem;}
     <ul id="rev-list" style="list-style:none;max-height:200px;overflow-y:auto;margin-top:1rem;"></ul>
   </section>
 
-<!-- SAVA NEXUS PIPELINE -->
+<!-- INTEL BRIEFING -->
+  <section class="widget col-12" data-wing="intel">
+    <div class="widget-header"><span class="widget-title">🛰️ INTEL BRIEFING // WORLD · MARKET · TECH</span><span class="widget-icon" onclick="loadBriefing()" style="cursor:pointer;" title="Refresh">🔄</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;">
+      <div>
+        <div class="lab-col-title">🌍 WEATHER</div>
+        <div id="brief-weather" style="margin-bottom:1.2rem;"><div style="color:var(--text-dim);font-size:0.75rem;">Allow location to load weather…</div></div>
+        <div class="lab-col-title">📈 MARKET PULSE</div>
+        <div id="brief-market"><div style="color:var(--text-dim);font-size:0.75rem;">Loading…</div></div>
+      </div>
+      <div>
+        <div class="lab-col-title">📰 TECH & BUSINESS HEADLINES</div>
+        <div id="brief-news"><div style="color:var(--text-dim);font-size:0.75rem;">Loading…</div></div>
+      </div>
+    </div>
+  </section>
+  <!-- SAVA NEXUS PIPELINE -->
   <section class="widget col-12" data-wing="business">
     <div class="widget-header"><span class="widget-title">🎯 SAVA NEXUS PIPELINE // DEAL FLOW</span><span class="widget-icon">📈</span></div>
     <div style="display:flex;gap:0.4rem;margin-bottom:0.6rem;flex-wrap:wrap;">
@@ -882,6 +919,12 @@ body.view-wing main.grid{padding-top:5.5rem;}
 </div>
 
 <!-- CO-PILOT -->
+<div id="cmdk-overlay" onclick="if(event.target===this)closeCmdK()">
+  <div id="cmdk">
+    <input id="cmdk-input" placeholder="Jump to… (type a wing or action)" oninput="renderCmdK(this.value)" autocomplete="off">
+    <div id="cmdk-list"></div>
+  </div>
+</div>
 <div id="conn-hud">
   <div class="conn-row"><span class="conn-dot" id="conn-anthropic"></span>ANTHROPIC</div>
   <div class="conn-row"><span class="conn-dot" id="conn-supabase"></span>MEMORY</div>
@@ -1060,6 +1103,7 @@ if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loa
 
 async function speak(text){
   if(!state.voiceOn)return;
+  window._jarvisSpeaking=true;clearTimeout(window._spkT);window._spkT=setTimeout(()=>window._jarvisSpeaking=false,Math.max(2500,(''+text).length*85));
   // Try ElevenLabs first
   if(state.elevenLabsKey){
     try{
@@ -1091,7 +1135,7 @@ function powerUp(){try{const ctx=window.audioCtx||(window.audioCtx=new(window.Au
 function victoryChord(){[523.25,659.25,783.99,1046.5].forEach((f,i)=>setTimeout(()=>playSound(f,0.55,'triangle',0.11),i*100));playSound(130.81,0.9,'sine',0.12);}
 // ═══ MIC PERMISSION (once per session) ═══
 let micStream=null,micGranted=false;
-async function ensureMic(){if(micGranted)return true;if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){micGranted=true;return true;}try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});micGranted=true;initClapDetection();return true;}catch(e){toast('🎙️ Microphone blocked — allow it in your browser settings','warn');return false;}}
+async function ensureMic(){if(micGranted)return true;if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){micGranted=true;return true;}try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});micGranted=true;initClapDetection();startAlwaysListening();return true;}catch(e){toast('🎙️ Microphone blocked — allow it in your browser settings','warn');return false;}}
 function initClapDetection(){
   if(!micStream||window._clapInit)return;window._clapInit=true;
   try{
@@ -1102,6 +1146,16 @@ function initClapDetection(){
   }catch(e){}
 }
 function onClap(){lightning();bassBoom();window.coherenceMode=true;Object.keys(state.brainActivity).forEach(k=>activateBrain(k,18));toast('👏 COHERENCE PULSE','witty');setTimeout(()=>{if(!musicNodes)window.coherenceMode=false;},2600);}
+// ═══ HANDS-FREE VOICE (say "JARVIS ...") ═══
+let alwaysRec=null,alwaysOn=false;
+function startAlwaysListening(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR||alwaysRec)return;alwaysRec=new SR();alwaysRec.lang='en-US';alwaysRec.continuous=true;alwaysRec.interimResults=true;
+  alwaysRec.onresult=e=>{if(window._jarvisSpeaking)return;for(let i=e.resultIndex;i<e.results.length;i++){if(!e.results[i].isFinal)continue;const low=e.results[i][0].transcript.trim().toLowerCase();const m=low.match(/\b(?:hey )?(?:jarvis|nexus)\b[ ,.:-]*(.*)/);if(m){const cmd=m[1].trim();if(cmd.length>1){document.getElementById('copilot-panel').classList.add('open');renderCopilotMessages();copilotRespond(cmd);}else{toast('🎙️ JARVIS — say your command','witty');playSound(880,0.08);}}}};
+  alwaysRec.onend=()=>{if(alwaysOn){try{alwaysRec.start();}catch(e){setTimeout(()=>{try{alwaysRec.start();}catch(_){}},500);}}};
+  alwaysRec.onerror=()=>{};
+  alwaysOn=true;try{alwaysRec.start();}catch(e){}const w=document.getElementById('conn-wave');if(w)w.classList.remove('idle');updateListenBtn();toast('👂 Hands-free ON — just say “JARVIS …”','success');}
+function stopAlwaysListening(){alwaysOn=false;if(alwaysRec){try{alwaysRec.stop();}catch(e){}}const w=document.getElementById('conn-wave');if(w)w.classList.add('idle');updateListenBtn();toast('👂 Hands-free off','warn');}
+function toggleAlwaysListening(){if(alwaysOn)stopAlwaysListening();else ensureMic().then(ok=>{if(ok)startAlwaysListening();});}
+function updateListenBtn(){const b=document.getElementById('listen-btn');if(b)b.style.opacity=alwaysOn?'1':'0.5';}
 function lightning(){const el=document.getElementById('lightning');el.innerHTML='';let svg=`<svg width="100%" height="100%" style="position:absolute;inset:0;">`;const lines=3+Math.floor(Math.random()*3);for(let i=0;i<lines;i++){const x=Math.random()*100;let path=`M ${x}% 0`;let y=0;while(y<100){y+=8+Math.random()*6;path+=` L ${x+(Math.random()-0.5)*20}% ${y}%`;}svg+=`<path d="${path}" stroke="rgba(0,255,255,1)" stroke-width="2.5" fill="none" filter="url(#g)"/>`;}svg+=`<defs><filter id="g"><feGaussianBlur stdDeviation="3"/></filter></defs></svg>`;el.innerHTML=svg;el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),600);}
 
 // ═══ CURSOR ═══
@@ -1171,7 +1225,7 @@ function init3DBrain(){
   const pt3=new THREE.PointLight(0xffffff,1.0);pt3.position.set(0,0,4);brainScene.add(pt3);
   let isDragging=false,prevX=0,prevY=0,rotX=0,rotY=0;
   brainRenderer.domElement.style.cursor='pointer';
-  let downX=0,downY=0;const ray=new THREE.Raycaster(),mouseV=new THREE.Vector2();
+  let downX=0,downY=0,hoverRegion=null;const ray=new THREE.Raycaster(),mouseV=new THREE.Vector2();
   brainRenderer.domElement.addEventListener('mousedown',e=>{isDragging=true;prevX=e.clientX;prevY=e.clientY;downX=e.clientX;downY=e.clientY;});
   brainRenderer.domElement.addEventListener('click',e=>{
     if(Math.abs(e.clientX-downX)>6||Math.abs(e.clientY-downY)>6)return;
@@ -1181,11 +1235,13 @@ function init3DBrain(){
     const hits=ray.intersectObjects(Object.values(brainRegions));
     if(hits.length&&typeof regionToWing==='function'){const wing=regionToWing(hits[0].object.userData.name);if(wing)showWing(wing);}
   });
+  brainRenderer.domElement.addEventListener('mousemove',e=>{const rect=brainRenderer.domElement.getBoundingClientRect();mouseV.x=((e.clientX-rect.left)/rect.width)*2-1;mouseV.y=-((e.clientY-rect.top)/rect.height)*2+1;ray.setFromCamera(mouseV,brainCamera);const hits=ray.intersectObjects(Object.values(brainRegions));const tip=document.getElementById('brain-tip');if(hits.length){const rn=hits[0].object.userData.name,info=BRAIN_INFO[rn];hoverRegion=rn;if(tip&&info){tip.innerHTML='<div class="bt-title">'+info.t+'</div><div class="bt-fn">'+info.f+'</div><div class="bt-bio">📡 '+info.b+'</div>';tip.style.left=Math.min(e.clientX+16,innerWidth-260)+'px';tip.style.top=(e.clientY+16)+'px';tip.classList.add('show');}}else{hoverRegion=null;if(tip)tip.classList.remove('show');}});
+  brainRenderer.domElement.addEventListener('mouseleave',()=>{hoverRegion=null;const tip=document.getElementById('brain-tip');if(tip)tip.classList.remove('show');});
   addEventListener('mouseup',()=>isDragging=false);
   addEventListener('mousemove',e=>{if(!isDragging)return;rotY+=(e.clientX-prevX)*0.008;rotX+=(e.clientY-prevY)*0.008;prevX=e.clientX;prevY=e.clientY;});
   const tempVec=new THREE.Vector3();
   function updateLabels(){const rect=brainContainer.getBoundingClientRect();document.querySelectorAll('.brain-label').forEach(label=>{const region=brainRegions[label.dataset.region];if(!region)return;tempVec.setFromMatrixPosition(region.matrixWorld);tempVec.project(brainCamera);const x=(tempVec.x*0.5+0.5)*rect.width;const y=(-tempVec.y*0.5+0.5)*rect.height;label.style.left=x+'px';label.style.top=y+'px';label.style.opacity=tempVec.z<1?'1':'0';});}
-  function animate(){requestAnimationFrame(animate);if(!isDragging)rotY+=0.005;brainGroup.rotation.y=rotY;brainGroup.rotation.x=rotX*0.5;syn.rotation.y+=0.003;syn.rotation.x+=0.001;shell.rotation.y-=0.004;shell.rotation.z+=0.002;neuralLines.material.opacity=0.18+Math.abs(Math.sin(Date.now()*0.0022))*0.4;if(window.coherenceMode){const cp=0.8+Math.abs(Math.sin(Date.now()*0.003))*1.3;Object.values(brainRegions).forEach(m=>{m.material.emissiveIntensity=cp;m.material.opacity=0.96;});neuralLines.material.opacity=0.4+Math.abs(Math.sin(Date.now()*0.003))*0.5;brainGroup.scale.setScalar(1+Math.sin(Date.now()*0.003)*0.035);}else{brainGroup.scale.setScalar(1);Object.entries(state.brainActivity).forEach(([name,val])=>{if(brainRegions[name]){const intensity=0.6+(val/100)*0.9;brainRegions[name].material.emissiveIntensity=intensity+Math.sin(Date.now()*0.005)*0.15*(val/100);brainRegions[name].material.opacity=0.82+(val/100)*0.18;}});}brainScene.updateMatrixWorld();updateLabels();brainRenderer.render(brainScene,brainCamera);}animate();setTimeout(()=>{const w=brainContainer.clientWidth,h=brainContainer.clientHeight;if(w&&h){brainCamera.aspect=w/h;brainCamera.updateProjectionMatrix();brainRenderer.setSize(w,h);}},350);
+  function animate(){requestAnimationFrame(animate);if(!isDragging)rotY+=0.005;brainGroup.rotation.y=rotY;brainGroup.rotation.x=rotX*0.5;syn.rotation.y+=0.003;syn.rotation.x+=0.001;shell.rotation.y-=0.004;shell.rotation.z+=0.002;neuralLines.material.opacity=0.18+Math.abs(Math.sin(Date.now()*0.0022))*0.4;if(window.coherenceMode){const cp=0.8+Math.abs(Math.sin(Date.now()*0.003))*1.3;Object.values(brainRegions).forEach(m=>{m.material.emissiveIntensity=cp;m.material.opacity=0.96;});neuralLines.material.opacity=0.4+Math.abs(Math.sin(Date.now()*0.003))*0.5;brainGroup.scale.setScalar(1+Math.sin(Date.now()*0.003)*0.035);}else{brainGroup.scale.setScalar(1);Object.entries(state.brainActivity).forEach(([name,val])=>{if(brainRegions[name]){const intensity=0.6+(val/100)*0.9;brainRegions[name].material.emissiveIntensity=intensity+Math.sin(Date.now()*0.005)*0.15*(val/100);brainRegions[name].material.opacity=0.82+(val/100)*0.18;}});}if(hoverRegion&&brainRegions[hoverRegion])brainRegions[hoverRegion].material.emissiveIntensity=2.4;brainScene.updateMatrixWorld();updateLabels();brainRenderer.render(brainScene,brainCamera);}animate();setTimeout(()=>{const w=brainContainer.clientWidth,h=brainContainer.clientHeight;if(w&&h){brainCamera.aspect=w/h;brainCamera.updateProjectionMatrix();brainRenderer.setSize(w,h);}},350);
   addEventListener('resize',()=>{if(!brainContainer.clientWidth)return;brainCamera.aspect=brainContainer.clientWidth/brainContainer.clientHeight;brainCamera.updateProjectionMatrix();brainRenderer.setSize(brainContainer.clientWidth,brainContainer.clientHeight);});
 }
 function activateBrain(region,amt=10){state.brainActivity[region]=Math.min(100,(state.brainActivity[region]||0)+amt);renderBrainBalance();save();if(brainRegions[region]){const m=brainRegions[region].material;m.emissiveIntensity=1.8;setTimeout(()=>m.emissiveIntensity=0.45,500);}}
@@ -1289,34 +1345,37 @@ document.getElementById('giant-file').addEventListener('change',e=>{
 });
 
 // ═══ MUSIC ENGINE ═══
-const presetNames={rebel:'🤘 REBEL MIX',focus:'🎯 DEEP FOCUS',motivation:'⚡ HYPE MODE',quantum:'🌌 QUANTUM',zen:'🕊️ ZEN',rock:'🎸 ROCK'};
-const musicProfiles={
-  rebel:{base:110,beat:14,wave:'sawtooth',label:'🤘 REBEL DRIVE · 14Hz'},
-  focus:{base:140,beat:10,wave:'sine',label:'🎯 ALPHA FOCUS · 10Hz'},
-  motivation:{base:160,beat:18,wave:'square',label:'⚡ GAMMA HYPE · 18Hz'},
-  quantum:{base:128,beat:7,wave:'sine',label:'🌌 THETA QUANTUM · 7Hz'},
-  zen:{base:96,beat:4,wave:'sine',label:'🕊️ DELTA ZEN · 4Hz'},
-  rock:{base:120,beat:16,wave:'triangle',label:'🎸 ROCK PULSE · 16Hz'}
+const MUSIC_PRESETS={
+  panpipes:{label:'🎍 PAN PIPES',root:392,scale:[0,2,4,7,9,12],gap:[850,1500],dur:1.7,gain:0.17,pad:0.03},
+  forest:{label:'🌲 FOREST CALM',root:294,scale:[0,3,5,7,10,12],gap:[1300,2300],dur:2.3,gain:0.15,pad:0.04},
+  focus:{label:'🎯 FOCUS FLOW',root:440,scale:[0,2,4,7,9],gap:[650,1050],dur:1.2,gain:0.14,pad:0.022},
+  cosmic:{label:'🌌 COSMIC DRIFT',root:262,scale:[0,5,7,12,14,19],gap:[1700,2700],dur:2.8,gain:0.14,pad:0.045},
+  deepcalm:{label:'🕊️ DEEP CALM',root:196,scale:[0,3,7,10,12],gap:[1900,3100],dur:3.2,gain:0.14,pad:0.05}
 };
+let panTimer=null;
+function _mf(root,semi){return root*Math.pow(2,semi/12);}
+function _flute(freq,dur,gainV){const ctx=window.audioCtx;if(!ctx)return;const t=ctx.currentTime;const o=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain(),lp=ctx.createBiquadFilter(),lfo=ctx.createOscillator(),lfoG=ctx.createGain();o.type='sine';o2.type='triangle';o.frequency.value=freq;o2.frequency.value=freq;lp.type='lowpass';lp.frequency.value=freq*3.4;lfo.type='sine';lfo.frequency.value=4.7;lfoG.gain.value=freq*0.009;lfo.connect(lfoG);lfoG.connect(o.frequency);lfoG.connect(o2.frequency);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(gainV,t+0.16);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(lp);o2.connect(lp);lp.connect(g);g.connect(window._musicMaster||ctx.destination);o.start(t);o2.start(t);lfo.start(t);const e=t+dur+0.2;o.stop(e);o2.stop(e);lfo.stop(e);}
 let musicNodes=null;
-function stopMusic(){if(musicNodes){musicNodes.forEach(n=>{try{n.stop&&n.stop();}catch(e){}try{n.disconnect&&n.disconnect();}catch(e){}});musicNodes=null;}if(window.ytPlayer&&ytPlayer.destroy){try{ytPlayer.destroy();}catch(e){}ytPlayer=null;}const emb=document.getElementById('yt-embed');if(emb){emb.classList.remove('active');emb.innerHTML='';}document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';window.coherenceMode=false;state.musicMode='silence';save();}
+function stopMusic(){if(panTimer){clearTimeout(panTimer);panTimer=null;}if(musicNodes){musicNodes.forEach(n=>{try{n.stop&&n.stop();}catch(e){}try{n.disconnect&&n.disconnect();}catch(e){}});musicNodes=null;}if(window.ytPlayer&&ytPlayer.destroy){try{ytPlayer.destroy();}catch(e){}ytPlayer=null;}const emb=document.getElementById('yt-embed');if(emb){emb.classList.remove('active');emb.innerHTML='';}document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';window.coherenceMode=false;state.musicMode='silence';save();}
 function playPreset(p){
-  const prof=musicProfiles[p];if(!prof)return;
+  if(p==='rock'||p==='rebel')return loadRock();
+  const pr=MUSIC_PRESETS[p]||MUSIC_PRESETS.panpipes;
   stopMusic();
   const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());
   if(ctx.state==='suspended')ctx.resume();
-  const master=ctx.createGain();master.gain.setValueAtTime(0.0001,ctx.currentTime);master.gain.exponentialRampToValueAtTime(0.09,ctx.currentTime+1.2);master.connect(ctx.destination);
-  const oL=ctx.createOscillator(),oR=ctx.createOscillator();oL.type=oR.type=prof.wave;oL.frequency.value=prof.base;oR.frequency.value=prof.base+prof.beat;
-  if(ctx.createStereoPanner){const pL=ctx.createStereoPanner(),pR=ctx.createStereoPanner();pL.pan.value=-1;pR.pan.value=1;oL.connect(pL);pL.connect(master);oR.connect(pR);pR.connect(master);musicNodes=[oL,oR,pL,pR,master];}else{oL.connect(master);oR.connect(master);musicNodes=[oL,oR,master];}
-  const pad=ctx.createOscillator();pad.type='sine';pad.frequency.value=prof.base/2;const padG=ctx.createGain();padG.gain.value=0.025;pad.connect(padG);padG.connect(ctx.destination);musicNodes.push(pad,padG);
-  oL.start();oR.start();pad.start();
+  const master=ctx.createGain();master.gain.setValueAtTime(0.0001,ctx.currentTime);master.gain.exponentialRampToValueAtTime(0.9,ctx.currentTime+1.5);master.connect(ctx.destination);window._musicMaster=master;
+  const pad=ctx.createOscillator(),pad2=ctx.createOscillator(),pg=ctx.createGain();pad.type='sine';pad2.type='sine';pad.frequency.value=pr.root/2;pad2.frequency.value=pr.root*0.748;pg.gain.value=pr.pad;pad.connect(pg);pad2.connect(pg);pg.connect(master);pad.start();pad2.start();
+  musicNodes=[pad,pad2,pg,master];
   window.coherenceMode=true;
+  const step=()=>{if(Math.random()>0.22){const semi=pr.scale[Math.floor(Math.random()*pr.scale.length)]+(Math.random()<0.25?12:0);_flute(_mf(pr.root,semi),pr.dur,pr.gain);if(Math.random()<0.35){const s2=pr.scale[Math.floor(Math.random()*pr.scale.length)];setTimeout(()=>_flute(_mf(pr.root,s2+7),pr.dur*0.85,pr.gain*0.55),190);}}panTimer=setTimeout(step,pr.gap[0]+Math.random()*(pr.gap[1]-pr.gap[0]));};
+  step();
   state.musicMode=p;save();
   document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));
   if(typeof event!=='undefined'&&event&&event.target&&event.target.classList)event.target.classList.add('active');
-  document.getElementById('music-now').textContent='▶ '+prof.label+'  (tap to stop)';
-  toast('🎵 '+prof.label,'success');
+  document.getElementById('music-now').textContent='▶ '+pr.label+'  (tap to stop)';
+  toast('🎵 '+pr.label,'success');
 }
+function loadRock(){stopMusic();window.open('https://www.youtube.com/results?search_query=rock+music+radio+live','_blank','noopener');const mn=document.getElementById('music-now');if(mn)mn.textContent='🎸 ROCK → opened on YouTube';toast('🎸 Rock can’t be synthesised — opened YouTube. Or paste any track URL below.','witty');}
 let ytApiLoading=false,ytPlayer=null;
 function ensureYTApi(cb){if(window.YT&&window.YT.Player)return cb();if(!ytApiLoading){ytApiLoading=true;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);}const iv=setInterval(()=>{if(window.YT&&window.YT.Player){clearInterval(iv);cb();}},150);setTimeout(()=>clearInterval(iv),8000);}
 function ytEmbedError(code,id){const reason=(code===101||code===150||code===153)?'the owner blocked embedding':(code===100)?'video not found or private':(code===2)?'invalid video link':'it can’t be embedded';const emb=document.getElementById('yt-embed');if(emb)emb.innerHTML='<div style="padding:0.7rem;font-size:0.78rem;color:var(--text-dim);">⚠️ Can’t embed — '+reason+'. <a href="https://www.youtube.com/watch?v='+id+'" target="_blank" rel="noopener" style="color:var(--accent);">Open on YouTube ↗</a><br>Tip: many videos block embedding — pick a binaural mode above for reliable in-app audio.</div>';const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';toast('⚠️ Video blocks embedding — fallback shown','warn');}
@@ -1329,7 +1388,7 @@ function loadYouTube(){
   document.getElementById('music-now').textContent='▶ LOADING YOUTUBE…';document.getElementById('music-url').value='';
   ensureYTApi(()=>{try{ytPlayer=new YT.Player('yt-player',{height:'80',width:'100%',videoId:id,playerVars:{autoplay:1,playsinline:1},events:{onReady:e=>{try{e.target.playVideo();}catch(_){}document.getElementById('music-now').textContent='▶ YOUTUBE PLAYING (tap to stop)';},onError:e=>ytEmbedError(e.data,id)}});}catch(err){ytEmbedError(0,id);}});
 }
-function cycleMusicSimple(){const presets=['rebel','focus','motivation','quantum','zen','rock'];const i=presets.indexOf(state.musicMode);state.musicMode=presets[(i+1)%presets.length];save();playPreset(state.musicMode);}
+function cycleMusicSimple(){const presets=['panpipes','forest','focus','cosmic','deepcalm'];const i=presets.indexOf(state.musicMode);state.musicMode=presets[(i+1)%presets.length];save();playPreset(state.musicMode);}
 
 // ═══ PROPERTIES ═══
 function renderProperties(){
@@ -1544,7 +1603,11 @@ function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'
 document.getElementById('export-data').onclick=exportData;
 
 // ═══ SHORTCUTS ═══
-addEventListener('keydown',e=>{if(e.key==='Escape'){closeDump();closeRSD();closeElevenLabs();document.getElementById('copilot-panel').classList.remove('open');exitFocus();return;}});
+addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('cmdk-overlay').classList.contains('open')?closeCmdK():openCmdK();return;}
+  if(document.getElementById('cmdk-overlay').classList.contains('open')){if(e.key==='Escape')closeCmdK();else if(e.key==='ArrowDown'){e.preventDefault();cmdkMove(1);}else if(e.key==='ArrowUp'){e.preventDefault();cmdkMove(-1);}else if(e.key==='Enter'){e.preventDefault();cmdkEnter();}return;}
+  if(e.key==='Escape'){closeCmdK();closeDump();closeRSD();closeElevenLabs();document.getElementById('copilot-panel').classList.remove('open');exitFocus();return;}
+});
 
 // ═══ LIFE SCORE ═══
 function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&new Date(lw.date).toDateString()===new Date().toDateString())s+=15;if(lw)s+=(lw.mood+lw.energy+lw.sleep-15);if(state.heartbeat.find(h=>new Date(h.date).toDateString()===new Date().toDateString()))s+=10;s+=Math.min(15,state.tasks.filter(t=>t.done).length*3);const mr=state.transactions.filter(t=>{const d=new Date(t.date);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).reduce((sm,t)=>sm+t.amount,0);if(mr>0)s+=10;const lost=state.startWeight-state.currentWeight;if(lost>0)s+=Math.min(10,lost);s=Math.max(0,Math.min(100,s));state.lifeScore=s;save();document.getElementById('life-score-num').textContent=s;document.getElementById('life-ring').setAttribute('stroke-dashoffset',94.2-(s/100)*94.2);updateBodyScanner();updateLifeColor();updateStateDot();}
@@ -1553,10 +1616,37 @@ function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&ne
 function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}ensureMic();document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();powerUp();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
 const bootMsgs=['NEURAL LINK INITIALISING...','LOADING 25 WINGS...','OBSERVATORY TOWER: ONLINE','AGENT TEAM: STANDING BY','BIOMETRIC SENSORS: SCANNING...','JARVIS COPILOT: ENGAGED','NEXUS ONLINE'];
 let bootStep=0;
-function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();setTimeout(()=>{try{playPreset('zen');toast('🎧 Ambient online — clap to pulse the core','witty');}catch(e){}},1900);},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
+function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();setTimeout(()=>{try{playPreset('panpipes');toast('🎍 Pan pipes online — clap to pulse the core','witty');}catch(e){}},1900);loadWeather();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
 
 // ═══ INIT ═══
-function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderPeptides();renderStateDashboard();renderPipeline();renderContent();renderComms();initPainLogging();renderPainPoints();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+function initEverything(){initParticles();initStarfield();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderPeptides();renderStateDashboard();renderPipeline();renderContent();renderComms();initPainLogging();renderPainPoints();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+// ═══ STARFIELD (deep space) ═══
+function initStarfield(){const c=document.getElementById('starfield');if(!c)return;const x=c.getContext('2d');function sz(){c.width=innerWidth;c.height=innerHeight;}sz();addEventListener('resize',sz);
+  const stars=Array.from({length:240},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+0.3,tw:Math.random()*6.28,sp:Math.random()*0.02+0.004,dx:(Math.random()-0.5)*0.00005}));
+  const names=['ORION','SIRIUS','VEGA','POLARIS','ANDROMEDA','CASSIOPEIA','LYRA','RIGEL','BETELGEUSE','PLEIADES','URSA MAJOR','DRACO','CYGNUS','ALTAIR','ARCTURUS','PERSEUS','PEGASUS','AQUILA'].map(n=>({n,x:Math.random(),y:Math.random()}));
+  const consts=[];for(let k=0;k<6;k++){const cx=Math.random(),cy=Math.random();consts.push(Array.from({length:4+(Math.random()*3|0)},()=>({x:cx+(Math.random()-0.5)*0.13,y:cy+(Math.random()-0.5)*0.13})));}
+  (function draw(){x.clearRect(0,0,c.width,c.height);
+    x.lineWidth=0.6;x.strokeStyle='rgba(0,229,255,0.16)';consts.forEach(p=>{x.beginPath();p.forEach((q,i)=>{const px=q.x*c.width,py=q.y*c.height;i?x.lineTo(px,py):x.moveTo(px,py);});x.stroke();x.fillStyle='rgba(130,220,255,0.7)';p.forEach(q=>{x.beginPath();x.arc(q.x*c.width,q.y*c.height,1.4,0,6.3);x.fill();});});
+    stars.forEach(s=>{s.tw+=s.sp;s.x+=s.dx;if(s.x<0)s.x=1;if(s.x>1)s.x=0;const a=0.3+Math.abs(Math.sin(s.tw))*0.6;x.fillStyle='rgba(185,220,255,'+a.toFixed(2)+')';x.beginPath();x.arc(s.x*c.width,s.y*c.height,s.r,0,6.3);x.fill();});
+    x.font='9px Orbitron,monospace';x.fillStyle='rgba(0,229,255,0.14)';names.forEach(l=>x.fillText(l.n,l.x*c.width,l.y*c.height));
+    requestAnimationFrame(draw);})();}
+// ═══ BRAIN LEARNING INFO ═══
+const BRAIN_INFO={prefrontal:{t:'PREFRONTAL CORTEX',f:'Planning, decisions, impulse control & deep focus.',b:'Driven by HRV + focus — peaks in deep work.'},motor:{t:'MOTOR CORTEX',f:'Plans & fires voluntary movement.',b:'Driven by activity / steps (Apple Watch).'},parietal:{t:'PARIETAL LOBE',f:'Spatial sense, numbers & attention.',b:'Driven by analytical / financial work.'},occipital:{t:'OCCIPITAL LOBE',f:'Visual processing & mental imagery.',b:'Driven by creative / content sessions.'},temporal:{t:'TEMPORAL LOBE · R',f:'Hearing, language & memory.',b:'Driven by communication & learning.'},temporal2:{t:'TEMPORAL LOBE · L',f:'Language, naming & verbal memory.',b:'Driven by reading & writing.'},cerebellum:{t:'CEREBELLUM',f:'Balance, coordination & motor timing.',b:'Driven by training strain (WHOOP).'},hippocampus:{t:'HIPPOCAMPUS',f:'Forms & recalls memories.',b:'Driven by sleep — consolidates overnight.'},amygdala:{t:'AMYGDALA',f:'Emotion, threat & the RSD response.',b:'Spikes when HRV drops or mood falls.'},reward:{t:'REWARD CENTRE',f:'Dopamine, drive & the feeling of a win.',b:'Lights up when you complete goals.'},dmn:{t:'DEFAULT MODE NETWORK',f:'Reflection, daydreaming & rest-state insight.',b:'Active in meditation / coherence mode.'}};
+// ═══ COMMAND PALETTE (⌘K) ═══
+function cmdkItems(){const items=[{ico:'🧠',label:'BRAIN HOME',tag:'GO',act:goHome}];WINGS.forEach(w=>items.push({ico:w.icon,label:w.name,tag:'WING',act:()=>showWing(w.id)}));items.push({ico:'💬',label:'OPEN JARVIS',tag:'AI',act:toggleCopilot},{ico:'🎯',label:'FOCUS · 25 MIN',tag:'DO',act:()=>startFocus(25)},{ico:'🎍',label:'PLAY PAN PIPES',tag:'AUDIO',act:()=>playPreset('panpipes')},{ico:'🔇',label:'STOP MUSIC',tag:'AUDIO',act:stopMusic},{ico:'🔄',label:'REFRESH BRIEFING',tag:'INTEL',act:loadBriefing});return items;}
+let cmdkSel=0,cmdkFiltered=[];
+function openCmdK(){document.getElementById('cmdk-overlay').classList.add('open');const inp=document.getElementById('cmdk-input');inp.value='';renderCmdK('');setTimeout(()=>inp.focus(),30);}
+function closeCmdK(){document.getElementById('cmdk-overlay').classList.remove('open');}
+function renderCmdK(q){q=(q||'').toLowerCase();cmdkFiltered=cmdkItems().filter(it=>it.label.toLowerCase().includes(q));cmdkSel=0;const l=document.getElementById('cmdk-list');l.innerHTML=cmdkFiltered.map((it,i)=>'<div class="cmdk-item'+(i===0?' sel':'')+'" data-i="'+i+'"><span class="ck-ico">'+it.ico+'</span><span>'+it.label+'</span><span class="ck-tag">'+it.tag+'</span></div>').join('')||'<div class="cmdk-item">No matches</div>';l.querySelectorAll('.cmdk-item').forEach(el=>{el.onclick=()=>{const it=cmdkFiltered[+el.dataset.i];if(it){closeCmdK();it.act();}};});}
+function cmdkMove(d){if(!cmdkFiltered.length)return;cmdkSel=(cmdkSel+d+cmdkFiltered.length)%cmdkFiltered.length;document.querySelectorAll('#cmdk-list .cmdk-item').forEach((el,i)=>el.classList.toggle('sel',i===cmdkSel));}
+function cmdkEnter(){const it=cmdkFiltered[cmdkSel];if(it){closeCmdK();it.act();}}
+// ═══ WEATHER + INTEL BRIEFING (free, no-key APIs) ═══
+function wxIcon(c){if(c===0)return '☀️';if(c<3)return '🌤️';if(c<50)return '☁️';if(c<70)return '🌧️';if(c<80)return '❄️';return '⛈️';}
+function wxText(c){if(c===0)return 'Clear sky';if(c<3)return 'Partly cloudy';if(c<50)return 'Cloudy / foggy';if(c<70)return 'Rain';if(c<80)return 'Snow';return 'Storms';}
+function loadWeather(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(pos=>{const la=pos.coords.latitude,lo=pos.coords.longitude;fetch('https://api.open-meteo.com/v1/forecast?latitude='+la+'&longitude='+lo+'&current=temperature_2m,weather_code&timezone=auto').then(r=>r.json()).then(d=>{const t=Math.round(d.current.temperature_2m),code=d.current.weather_code,ico=wxIcon(code);const chip=document.getElementById('wx-chip');if(chip)chip.innerHTML=ico+' '+t+'°';const big=document.getElementById('brief-weather');if(big)big.innerHTML='<div style="font-size:2.4rem;font-family:JetBrains Mono;">'+ico+' '+t+'°C</div><div style="color:var(--text-dim);font-size:0.7rem;">'+wxText(code)+' · your location</div>';}).catch(()=>{});},()=>{const chip=document.getElementById('wx-chip');if(chip)chip.innerHTML='🌍 —';});}
+function loadBriefing(){loadWeather();loadTechNews();loadMarket();}
+function loadTechNews(){const el=document.getElementById('brief-news');if(!el)return;el.innerHTML='<div style="color:var(--text-dim);font-size:0.75rem;">Loading tech headlines…</div>';fetch('https://hacker-news.firebaseio.com/v0/topstories.json').then(r=>r.json()).then(ids=>Promise.all(ids.slice(0,7).map(id=>fetch('https://hacker-news.firebaseio.com/v0/item/'+id+'.json').then(r=>r.json())))).then(items=>{el.innerHTML=items.filter(i=>i&&i.title).map(i=>'<a href="'+(i.url||'https://news.ycombinator.com/item?id='+i.id)+'" target="_blank" rel="noopener" class="pep-card" style="text-decoration:none;color:#fff;display:flex;">📰 <span style="flex:1;">'+i.title+'</span><span style="color:var(--accent);font-size:0.66rem;">▲'+(i.score||0)+'</span></a>').join('');}).catch(()=>{el.innerHTML='<div style="color:var(--danger);font-size:0.75rem;">Couldn’t load headlines.</div>';});}
+function loadMarket(){const el=document.getElementById('brief-market');if(!el)return;el.innerHTML='<div style="color:var(--text-dim);font-size:0.75rem;">Loading market…</div>';fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true').then(r=>r.json()).then(d=>{const row=(n,o)=>{const ch=o.usd_24h_change||0,c=ch>=0?'#00ff88':'#ff0044';return '<div class="pep-card"><span style="flex:1;">'+n+'</span><span style="font-family:JetBrains Mono;">$'+Math.round(o.usd).toLocaleString()+'</span><span style="color:'+c+';font-size:0.7rem;">'+(ch>=0?'▲':'▼')+Math.abs(ch).toFixed(1)+'%</span></div>';};let html=row('₿ Bitcoin',d.bitcoin)+row('Ξ Ethereum',d.ethereum);const key=state.apiKeys&&state.apiKeys.finnhub;if(key){Promise.all(['AAPL','NVDA','TSLA','MSFT'].map(s=>fetch('https://finnhub.io/api/v1/quote?symbol='+s+'&token='+key).then(r=>r.json()).then(q=>({s,q})))).then(rs=>{html+=rs.map(({s,q})=>{const ch=q.dp||0,c=ch>=0?'#00ff88':'#ff0044';return '<div class="pep-card"><span style="flex:1;">'+s+'</span><span style="font-family:JetBrains Mono;">$'+(q.c||0).toFixed(2)+'</span><span style="color:'+c+';font-size:0.7rem;">'+(ch>=0?'▲':'▼')+Math.abs(ch).toFixed(1)+'%</span></div>';}).join('');el.innerHTML=html;}).catch(()=>{el.innerHTML=html;});}else{html+='<div style="color:var(--text-dim);font-size:0.66rem;margin-top:0.5rem;">📈 Add a free Finnhub key in 🔌 Connections for live AAPL / NVDA / TSLA / MSFT.</div>';el.innerHTML=html;}}).catch(()=>{el.innerHTML='<div style="color:var(--danger);font-size:0.75rem;">Couldn’t load market.</div>';});}
 // ═══ HOTEL NAVIGATION ═══
 const WINGS=[
   {id:'intel',name:'INTELLIGENCE',icon:'🛰️',cls:'analytical',region:'prefrontal'},
@@ -1586,6 +1676,7 @@ function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('
   if(w==='business')renderPipeline();
   if(w==='content')renderContent();
   if(w==='comms')renderComms();
+  if(w==='intel')loadBriefing();
   window.scrollTo(0,0);chord();
 }
 function goHome(){currentWing='bridge';document.body.classList.add('view-bridge');document.body.classList.remove('view-wing');document.querySelectorAll('main.grid .widget').forEach(el=>{el.style.display='';});layoutWingRing();setTimeout(resizeBrain,80);}
@@ -1595,7 +1686,7 @@ function resizeBrain(){if(!brainRenderer||!brainContainer)return;const w=brainCo
 // ═══ CONNECTIONS HUB ═══
 const CONN_NODES=[
   {id:'anthropic',name:'ANTHROPIC',icon:'🧠',use:'special'},{id:'elevenlabs',name:'ELEVENLABS',icon:'🗣️',use:'special'},{id:'supabase',name:'SUPABASE',icon:'🗄️',use:'special'},
-  {id:'suno',name:'SUNO',icon:'🎼',use:'key'},{id:'notion',name:'NOTION',icon:'📔',use:'key'},{id:'youtube',name:'YOUTUBE',icon:'▶️',use:'none'},{id:'obsidian',name:'OBSIDIAN',icon:'🔮',use:'local'},
+  {id:'suno',name:'SUNO',icon:'🎼',use:'key'},{id:'notion',name:'NOTION',icon:'📔',use:'key'},{id:'finnhub',name:'FINNHUB STOCKS',icon:'📈',use:'key'},{id:'youtube',name:'YOUTUBE',icon:'▶️',use:'none'},{id:'obsidian',name:'OBSIDIAN',icon:'🔮',use:'local'},
   {id:'whoop',name:'WHOOP',icon:'💓',use:'oauth'},{id:'muse',name:'MUSE EEG',icon:'🧘',use:'ble'},{id:'spotify',name:'SPOTIFY',icon:'🎧',use:'oauth'},{id:'gcal',name:'GOOGLE CAL',icon:'📅',use:'oauth'},{id:'gmail',name:'GMAIL',icon:'✉️',use:'oauth'},{id:'stripe',name:'STRIPE',icon:'💳',use:'oauth'},{id:'xero',name:'XERO',icon:'📊',use:'oauth'},{id:'revolut',name:'REVOLUT',icon:'🏦',use:'oauth'},{id:'meta',name:'META',icon:'📱',use:'oauth'},{id:'notebooklm',name:'NOTEBOOKLM',icon:'📚',use:'oauth'}
 ];
 function connStatus(n){if(n.id==='anthropic')return state.anthropicKey?'live':'ready';if(n.id==='elevenlabs')return state.elevenLabsKey?'live':'ready';if(n.id==='supabase')return supabaseConfigured()?'live':'ready';if(n.use==='none')return 'live';if(n.use==='key')return(state.apiKeys&&state.apiKeys[n.id])?'live':'ready';return 'ready';}
