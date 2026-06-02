@@ -838,13 +838,28 @@ body.view-wing main.grid{padding-top:5.5rem;}
     <p style="color:var(--text-dim);font-size:0.78rem;margin-bottom:1.2rem;letter-spacing:0.05em;">Tap a node to connect. 🟢 live · 🟠 ready / needs backend · keys stored only in this browser.</p>
     <div class="conn-grid" id="conn-grid"></div>
   </section>
-  <!-- CONTENT STUDIO (room being built) -->
+  <!-- CONTENT STUDIO -->
   <section class="widget col-12" data-wing="content">
-    <div class="wing-empty"><div class="we-icon">🎬</div><h3>CONTENT STUDIO</h3><p>Campaigns, HeyGen twin, content calendar & voice-to-content capture. Room under construction — wire HeyGen / Meta keys in Connections to bring it online.</p></div>
+    <div class="widget-header"><span class="widget-title">🎬 CONTENT STUDIO // IDEA ENGINE</span><span class="widget-icon">🎥</span></div>
+    <div style="display:flex;gap:0.4rem;margin-bottom:0.8rem;flex-wrap:wrap;">
+      <input class="lab-input" id="content-text" placeholder="Content idea / hook..." style="flex:1;min-width:180px;">
+      <select class="lab-input" id="content-platform" style="width:130px;"><option>YouTube</option><option>Instagram</option><option>TikTok</option><option>LinkedIn</option><option>X</option><option>Newsletter</option></select>
+      <button class="hero-btn" onclick="contentVoice()" title="Voice capture">🎙️</button>
+      <button class="hero-btn" onclick="addContent()">+ CAPTURE</button>
+    </div>
+    <div id="content-list"></div>
+    <p style="color:var(--text-dim);font-size:0.66rem;margin-top:0.8rem;">Auto-publish / HeyGen twin need backend — connect HeyGen / Meta in 🔌 Connections.</p>
   </section>
-  <!-- COMMUNICATIONS (room being built) -->
+  <!-- COMMUNICATIONS -->
   <section class="widget col-12" data-wing="comms">
-    <div class="wing-empty"><div class="we-icon">📡</div><h3>COMMUNICATIONS</h3><p>Gmail, Calendar & messages. Room under construction — connect Gmail / Google Calendar in Connections (needs backend OAuth) to bring it online.</p></div>
+    <div class="widget-header"><span class="widget-title">📡 COMMUNICATIONS // FOLLOW-UPS</span><span class="widget-icon">✉️</span></div>
+    <div style="display:flex;gap:0.4rem;margin-bottom:0.8rem;flex-wrap:wrap;">
+      <input class="lab-input" id="comms-text" placeholder="Follow-up / message to send..." style="flex:1;min-width:180px;">
+      <select class="lab-input" id="comms-type" style="width:120px;"><option>Email</option><option>Call</option><option>Message</option><option>Meeting</option></select>
+      <button class="hero-btn" onclick="addComms()">+ ADD</button>
+    </div>
+    <div id="comms-list"></div>
+    <p style="color:var(--text-dim);font-size:0.66rem;margin-top:0.8rem;">Live Gmail / Calendar sync needs backend OAuth — connect in 🔌 Connections.</p>
   </section>
 </main>
 
@@ -964,7 +979,7 @@ const state=Object.assign({
   theme:'teal',voiceOn:true,musicMode:'silence',
   elevenLabsKey:'',elevenLabsVoice:'pNInz6obpgDQGcFmaJgB',
   anthropicKey:'',
-  supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],deals:[],
+  supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],deals:[],contentIdeas:[],commsLog:[],
   tasks:[],transactions:[],wellness:[],dumps:[],heartbeat:[],
   // Weight Warrior
   startWeight:129,goalWeight:84,currentWeight:129,weightLog:[],photos:[],
@@ -1537,7 +1552,7 @@ let bootStep=0;
 function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
 
 // ═══ INIT ═══
-function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderPeptides();renderStateDashboard();renderPipeline();initPainLogging();renderPainPoints();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderPeptides();renderStateDashboard();renderPipeline();renderContent();renderComms();initPainLogging();renderPainPoints();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
 // ═══ HOTEL NAVIGATION ═══
 const WINGS=[
   {id:'intel',name:'INTELLIGENCE',icon:'🛰️',cls:'analytical',region:'prefrontal'},
@@ -1565,6 +1580,8 @@ function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('
   if(w==='connections')renderConnections();
   if(w==='state')renderStateDashboard();
   if(w==='business')renderPipeline();
+  if(w==='content')renderContent();
+  if(w==='comms')renderComms();
   window.scrollTo(0,0);chord();
 }
 function goHome(){currentWing='bridge';document.body.classList.add('view-bridge');document.body.classList.remove('view-wing');document.querySelectorAll('main.grid .widget').forEach(el=>{el.style.display='';});layoutWingRing();setTimeout(resizeBrain,80);}
@@ -1592,6 +1609,20 @@ function connectNode(id){const n=CONN_NODES.find(x=>x.id===id);if(!n)return;
 // ═══ POLISH ═══
 function updateLifeColor(){const el=document.getElementById('life-score-num');if(!el)return;const s=state.lifeScore||0;let c='#fff',g='0 0 16px rgba(255,255,255,0.6)';if(s>=900){c='#ff00ff';g='0 0 28px #ff00ff';}else if(s>=600){c='#ffd700';g='0 0 24px #ffd700';}else if(s>=300){c='#00ffff';g='0 0 22px #00ffff';}el.style.color=c;el.style.textShadow=g;}
 function updateStateDot(){const d=document.getElementById('state-dot');if(!d)return;const lw=state.wellness.slice(-1)[0];let cls='';if(lw){if(lw.mood<=3||lw.energy<=2)cls='crit';else if(lw.mood<=5||lw.energy<=4)cls='warn';}d.className=cls;d.title='System state: '+(cls==='crit'?'CRITICAL':cls==='warn'?'WARNING':'ACTIVE');}
+// ═══ CONTENT STUDIO ═══
+const CONTENT_STAGES=['idea','script','filmed','published'];
+function renderContent(){const el=document.getElementById('content-list');if(!el)return;state.contentIdeas=state.contentIdeas||[];
+  el.innerHTML=state.contentIdeas.length?state.contentIdeas.map((c,i)=>{const next=CONTENT_STAGES[CONTENT_STAGES.indexOf(c.status)+1];return '<div class="pep-card"><span style="font-size:0.58rem;font-family:Orbitron;letter-spacing:0.08em;color:var(--accent-2);border:1px solid var(--border);border-radius:6px;padding:0.2rem 0.45rem;">'+c.platform+'</span><span style="flex:1;">'+c.text+'</span><span style="font-size:0.58rem;font-family:Orbitron;letter-spacing:0.08em;color:var(--accent);text-transform:uppercase;">'+c.status+'</span>'+(next?'<button class="deal-btn" onclick="advanceContent('+i+')" title="→ '+next+'">▶</button>':'✅')+'<button class="deal-btn" style="color:var(--danger);" onclick="delContent('+i+')">✕</button></div>';}).join(''):'<div style="color:var(--text-dim);font-size:0.8rem;">No ideas yet. Capture one above (or tap 🎙️).</div>';}
+function addContent(){const t=document.getElementById('content-text').value.trim();if(!t)return;state.contentIdeas=state.contentIdeas||[];state.contentIdeas.unshift({text:t,platform:document.getElementById('content-platform').value,status:'idea',date:Date.now()});save();document.getElementById('content-text').value='';renderContent();toast('🎬 Idea captured','success');chord();activateBrain('occipital',15);}
+function advanceContent(i){const c=state.contentIdeas[i];if(!c)return;const idx=CONTENT_STAGES.indexOf(c.status)+1;if(idx<CONTENT_STAGES.length){c.status=CONTENT_STAGES[idx];save();renderContent();if(c.status==='published'){chord();toast('🚀 Published: '+c.text,'success');activateBrain('reward',20);}}}
+function delContent(i){state.contentIdeas.splice(i,1);save();renderContent();}
+function contentVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return toast('Voice not supported','warn');ensureMic().then(ok=>{if(!ok)return;const r=new SR();r.lang='en-US';r.onresult=e=>{document.getElementById('content-text').value=e.results[0][0].transcript;};try{r.start();toast('🎙️ Listening...','success');}catch(e){}});}
+// ═══ COMMUNICATIONS ═══
+function renderComms(){const el=document.getElementById('comms-list');if(!el)return;state.commsLog=state.commsLog||[];
+  el.innerHTML=state.commsLog.length?state.commsLog.map((c,i)=>'<div class="pep-card"><input type="checkbox" '+(c.done?'checked':'')+' onchange="toggleComms('+i+')"><span style="font-size:0.58rem;font-family:Orbitron;letter-spacing:0.08em;color:var(--accent-2);border:1px solid var(--border);border-radius:6px;padding:0.2rem 0.45rem;">'+c.type+'</span><span style="flex:1;'+(c.done?'opacity:0.5;text-decoration:line-through;':'')+'">'+c.text+'</span><button class="deal-btn" style="color:var(--danger);" onclick="delComms('+i+')">✕</button></div>').join(''):'<div style="color:var(--text-dim);font-size:0.8rem;">No follow-ups yet.</div>';}
+function addComms(){const t=document.getElementById('comms-text').value.trim();if(!t)return;state.commsLog=state.commsLog||[];state.commsLog.unshift({text:t,type:document.getElementById('comms-type').value,done:false,date:Date.now()});save();document.getElementById('comms-text').value='';renderComms();toast('📡 Follow-up added','success');}
+function toggleComms(i){state.commsLog[i].done=!state.commsLog[i].done;save();renderComms();if(state.commsLog[i].done)chord();}
+function delComms(i){state.commsLog.splice(i,1);save();renderComms();}
 // ═══ SAVA NEXUS PIPELINE ═══
 const DEAL_STAGES=['lead','qualified','proposal','closed'];
 const STAGE_LABELS={lead:'LEAD',qualified:'QUALIFIED',proposal:'PROPOSAL',closed:'CLOSED'};
