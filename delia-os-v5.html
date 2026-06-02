@@ -467,6 +467,13 @@ body.view-wing main.grid{padding-top:5.5rem;}
 #pain-hint{position:absolute;bottom:0.5rem;left:50%;transform:translateX(-50%);font-family:'Orbitron',sans-serif;font-size:0.52rem;letter-spacing:0.16em;color:var(--text-faint);z-index:6;pointer-events:none;}
 #warrior-ghost{filter:drop-shadow(0 0 6px #ffd700);}
 #warrior-label{position:absolute;top:0.5rem;right:0.5rem;font-family:'Orbitron',sans-serif;font-size:0.54rem;letter-spacing:0.1em;color:#ffd700;text-shadow:0 0 12px #ffd700;z-index:6;}
+.pipeline{grid-column:span 12;display:grid;grid-template-columns:repeat(4,1fr);gap:0.8rem;margin-top:0.5rem;}
+.pipe-col{background:rgba(2,6,18,0.6);border:1px solid var(--border);border-radius:12px;padding:0.7rem;min-height:120px;}
+.pipe-head{font-family:'Orbitron',sans-serif;font-size:0.56rem;letter-spacing:0.08em;color:var(--accent);margin-bottom:0.6rem;text-shadow:0 0 10px var(--accent);}
+.deal-card{display:flex;gap:0.5rem;align-items:center;background:rgba(0,255,255,0.06);border:1px solid var(--border);border-radius:9px;padding:0.55rem;margin-bottom:0.5rem;font-size:0.76rem;}
+.deal-btn{background:rgba(0,255,255,0.12);border:1px solid var(--border);color:var(--accent);border-radius:6px;cursor:pointer;font-size:0.58rem;padding:0.12rem 0.38rem;line-height:1;}
+.deal-btn:hover{box-shadow:0 0 14px var(--accent-glow);}
+@media(max-width:760px){.pipeline{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
 <body>
@@ -785,7 +792,17 @@ body.view-wing main.grid{padding-top:5.5rem;}
     <ul id="rev-list" style="list-style:none;max-height:200px;overflow-y:auto;margin-top:1rem;"></ul>
   </section>
 
-<!-- STATE DASHBOARD -->
+<!-- SAVA NEXUS PIPELINE -->
+  <section class="widget col-12" data-wing="business">
+    <div class="widget-header"><span class="widget-title">🎯 SAVA NEXUS PIPELINE // DEAL FLOW</span><span class="widget-icon">📈</span></div>
+    <div style="display:flex;gap:0.4rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+      <input class="lab-input" id="deal-name" placeholder="Deal name" style="flex:1;min-width:160px;">
+      <input class="lab-input" id="deal-value" type="number" placeholder="Value €" style="width:120px;">
+      <button class="hero-btn" onclick="addDeal()">+ ADD DEAL</button>
+    </div>
+    <div class="pipeline" id="pipeline"></div>
+  </section>
+  <!-- STATE DASHBOARD -->
   <section class="widget col-12" data-wing="state">
     <div class="widget-header"><span class="widget-title">📊 STATE DASHBOARD // NERVOUS SYSTEM</span><span class="widget-icon">🫁</span></div>
     <div class="state-cards" id="state-cards"></div>
@@ -947,7 +964,7 @@ const state=Object.assign({
   theme:'teal',voiceOn:true,musicMode:'silence',
   elevenLabsKey:'',elevenLabsVoice:'pNInz6obpgDQGcFmaJgB',
   anthropicKey:'',
-  supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],
+  supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],deals:[],
   tasks:[],transactions:[],wellness:[],dumps:[],heartbeat:[],
   // Weight Warrior
   startWeight:129,goalWeight:84,currentWeight:129,weightLog:[],photos:[],
@@ -1138,7 +1155,7 @@ function init3DBrain(){
   addEventListener('mousemove',e=>{if(!isDragging)return;rotY+=(e.clientX-prevX)*0.008;rotX+=(e.clientY-prevY)*0.008;prevX=e.clientX;prevY=e.clientY;});
   const tempVec=new THREE.Vector3();
   function updateLabels(){const rect=brainContainer.getBoundingClientRect();document.querySelectorAll('.brain-label').forEach(label=>{const region=brainRegions[label.dataset.region];if(!region)return;tempVec.setFromMatrixPosition(region.matrixWorld);tempVec.project(brainCamera);const x=(tempVec.x*0.5+0.5)*rect.width;const y=(-tempVec.y*0.5+0.5)*rect.height;label.style.left=x+'px';label.style.top=y+'px';label.style.opacity=tempVec.z<1?'1':'0';});}
-  function animate(){requestAnimationFrame(animate);if(!isDragging)rotY+=0.005;brainGroup.rotation.y=rotY;brainGroup.rotation.x=rotX*0.5;syn.rotation.y+=0.003;syn.rotation.x+=0.001;shell.rotation.y-=0.004;shell.rotation.z+=0.002;neuralLines.material.opacity=0.18+Math.abs(Math.sin(Date.now()*0.0022))*0.4;Object.entries(state.brainActivity).forEach(([name,val])=>{if(brainRegions[name]){const intensity=0.6+(val/100)*0.9;brainRegions[name].material.emissiveIntensity=intensity+Math.sin(Date.now()*0.005)*0.15*(val/100);brainRegions[name].material.opacity=0.82+(val/100)*0.18;}});brainScene.updateMatrixWorld();updateLabels();brainRenderer.render(brainScene,brainCamera);}animate();setTimeout(()=>{const w=brainContainer.clientWidth,h=brainContainer.clientHeight;if(w&&h){brainCamera.aspect=w/h;brainCamera.updateProjectionMatrix();brainRenderer.setSize(w,h);}},350);
+  function animate(){requestAnimationFrame(animate);if(!isDragging)rotY+=0.005;brainGroup.rotation.y=rotY;brainGroup.rotation.x=rotX*0.5;syn.rotation.y+=0.003;syn.rotation.x+=0.001;shell.rotation.y-=0.004;shell.rotation.z+=0.002;neuralLines.material.opacity=0.18+Math.abs(Math.sin(Date.now()*0.0022))*0.4;if(window.coherenceMode){const cp=0.8+Math.abs(Math.sin(Date.now()*0.003))*1.3;Object.values(brainRegions).forEach(m=>{m.material.emissiveIntensity=cp;m.material.opacity=0.96;});neuralLines.material.opacity=0.4+Math.abs(Math.sin(Date.now()*0.003))*0.5;brainGroup.scale.setScalar(1+Math.sin(Date.now()*0.003)*0.035);}else{brainGroup.scale.setScalar(1);Object.entries(state.brainActivity).forEach(([name,val])=>{if(brainRegions[name]){const intensity=0.6+(val/100)*0.9;brainRegions[name].material.emissiveIntensity=intensity+Math.sin(Date.now()*0.005)*0.15*(val/100);brainRegions[name].material.opacity=0.82+(val/100)*0.18;}});}brainScene.updateMatrixWorld();updateLabels();brainRenderer.render(brainScene,brainCamera);}animate();setTimeout(()=>{const w=brainContainer.clientWidth,h=brainContainer.clientHeight;if(w&&h){brainCamera.aspect=w/h;brainCamera.updateProjectionMatrix();brainRenderer.setSize(w,h);}},350);
   addEventListener('resize',()=>{if(!brainContainer.clientWidth)return;brainCamera.aspect=brainContainer.clientWidth/brainContainer.clientHeight;brainCamera.updateProjectionMatrix();brainRenderer.setSize(brainContainer.clientWidth,brainContainer.clientHeight);});
 }
 function activateBrain(region,amt=10){state.brainActivity[region]=Math.min(100,(state.brainActivity[region]||0)+amt);renderBrainBalance();save();if(brainRegions[region]){const m=brainRegions[region].material;m.emissiveIntensity=1.8;setTimeout(()=>m.emissiveIntensity=0.45,500);}}
@@ -1260,7 +1277,7 @@ const musicProfiles={
   rock:{base:120,beat:16,wave:'triangle',label:'🎸 ROCK PULSE · 16Hz'}
 };
 let musicNodes=null;
-function stopMusic(){if(musicNodes){musicNodes.forEach(n=>{try{n.stop&&n.stop();}catch(e){}try{n.disconnect&&n.disconnect();}catch(e){}});musicNodes=null;}const emb=document.getElementById('yt-embed');if(emb){emb.classList.remove('active');emb.innerHTML='';}document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';state.musicMode='silence';save();}
+function stopMusic(){if(musicNodes){musicNodes.forEach(n=>{try{n.stop&&n.stop();}catch(e){}try{n.disconnect&&n.disconnect();}catch(e){}});musicNodes=null;}const emb=document.getElementById('yt-embed');if(emb){emb.classList.remove('active');emb.innerHTML='';}document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';window.coherenceMode=false;state.musicMode='silence';save();}
 function playPreset(p){
   const prof=musicProfiles[p];if(!prof)return;
   stopMusic();
@@ -1271,6 +1288,7 @@ function playPreset(p){
   if(ctx.createStereoPanner){const pL=ctx.createStereoPanner(),pR=ctx.createStereoPanner();pL.pan.value=-1;pR.pan.value=1;oL.connect(pL);pL.connect(master);oR.connect(pR);pR.connect(master);musicNodes=[oL,oR,pL,pR,master];}else{oL.connect(master);oR.connect(master);musicNodes=[oL,oR,master];}
   const pad=ctx.createOscillator();pad.type='sine';pad.frequency.value=prof.base/2;const padG=ctx.createGain();padG.gain.value=0.025;pad.connect(padG);padG.connect(ctx.destination);musicNodes.push(pad,padG);
   oL.start();oR.start();pad.start();
+  window.coherenceMode=true;
   state.musicMode=p;save();
   document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));
   if(typeof event!=='undefined'&&event&&event.target&&event.target.classList)event.target.classList.add('active');
@@ -1495,8 +1513,8 @@ function removeElevenLabs(){state.elevenLabsKey='';save();closeElevenLabs();docu
 
 // ═══ FOCUS ═══
 let focusTimer=null;
-function startFocus(min){const task=prompt('What ONE thing?')||'Focus session';document.getElementById('focus-task').textContent=task;document.getElementById('focus-overlay').classList.add('on');let s=min*60;document.getElementById('focus-timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');speak('Engaging focus mode. '+min+' minutes. Lock in.');bassBoom();focusTimer=setInterval(()=>{s--;if(s<=0){clearInterval(focusTimer);exitFocus();speak('Focus complete. Beautiful work.');chord();playSound(1320,0.3);toast('🚀 Focus complete','success');activateBrain('reward',40);return;}document.getElementById('focus-timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);activateBrain('prefrontal',20);}
-function exitFocus(){if(focusTimer)clearInterval(focusTimer);document.getElementById('focus-overlay').classList.remove('on');}
+function startFocus(min){const task=prompt('What ONE thing?')||'Focus session';document.getElementById('focus-task').textContent=task;document.getElementById('focus-overlay').classList.add('on');window.coherenceMode=true;let s=min*60;document.getElementById('focus-timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');speak('Engaging focus mode. '+min+' minutes. Lock in.');bassBoom();focusTimer=setInterval(()=>{s--;if(s<=0){clearInterval(focusTimer);exitFocus();speak('Focus complete. Beautiful work.');chord();playSound(1320,0.3);toast('🚀 Focus complete','success');activateBrain('reward',40);return;}document.getElementById('focus-timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);activateBrain('prefrontal',20);}
+function exitFocus(){if(focusTimer)clearInterval(focusTimer);document.getElementById('focus-overlay').classList.remove('on');window.coherenceMode=!!musicNodes;}
 
 // ═══ THEME / VOICE / EXPORT ═══
 function switchTheme(){const t=['teal','rebel','quantum','gold'];state.theme=t[(t.indexOf(state.theme)+1)%t.length];document.body.classList.remove('theme-teal','theme-rebel','theme-quantum','theme-gold');document.body.classList.add('theme-'+state.theme);save();toast('⬢ Theme: '+state.theme,'success');}
@@ -1519,7 +1537,7 @@ let bootStep=0;
 function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),800);toast('🦾 '+g,'witty');victoryChord();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];playSound(bootNotes[bootStep%bootNotes.length],0.14,'triangle',0.09);bootStep++;setTimeout(runBoot,500);}
 
 // ═══ INIT ═══
-function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderPeptides();renderStateDashboard();initPainLogging();renderPainPoints();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
+function initEverything(){initParticles();init3DBrain();renderTasks();renderRev();renderHeartbeat();renderBrainBalance();renderOverview();updateBodyScanner();renderWarrior();renderGiants();renderProperties();renderFinance();renderMedical();renderRSD();renderPeptides();renderStateDashboard();renderPipeline();initPainLogging();renderPainPoints();renderCopilotMessages();document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');updateConnHud();updateHero();calcLifeScore();initHotel();document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);setInterval(()=>{calcLifeScore();updateHero();updateBodyScanner();},30000);setInterval(()=>{if(document.getElementById('copilot-panel').classList.contains('open'))return;if(Math.random()<0.2){const wits=['👀 Mood logged today? Watching you.','🔥 '+(state.currentWeight-state.goalWeight).toFixed(1)+' kg to crush. You got this.','💎 '+state.tasks.filter(t=>!t.done).length+' missions waiting.','✨ The 84 kg Delia is rooting for you.'];toast(wits[Math.floor(Math.random()*wits.length)],'witty');}},150000);}
 // ═══ HOTEL NAVIGATION ═══
 const WINGS=[
   {id:'intel',name:'INTELLIGENCE',icon:'🛰️',cls:'analytical',region:'prefrontal'},
@@ -1546,6 +1564,7 @@ function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('
   if(wing&&wing.region)activateBrain(wing.region,40);
   if(w==='connections')renderConnections();
   if(w==='state')renderStateDashboard();
+  if(w==='business')renderPipeline();
   window.scrollTo(0,0);chord();
 }
 function goHome(){currentWing='bridge';document.body.classList.add('view-bridge');document.body.classList.remove('view-wing');document.querySelectorAll('main.grid .widget').forEach(el=>{el.style.display='';});layoutWingRing();setTimeout(resizeBrain,80);}
@@ -1573,6 +1592,15 @@ function connectNode(id){const n=CONN_NODES.find(x=>x.id===id);if(!n)return;
 // ═══ POLISH ═══
 function updateLifeColor(){const el=document.getElementById('life-score-num');if(!el)return;const s=state.lifeScore||0;let c='#fff',g='0 0 16px rgba(255,255,255,0.6)';if(s>=900){c='#ff00ff';g='0 0 28px #ff00ff';}else if(s>=600){c='#ffd700';g='0 0 24px #ffd700';}else if(s>=300){c='#00ffff';g='0 0 22px #00ffff';}el.style.color=c;el.style.textShadow=g;}
 function updateStateDot(){const d=document.getElementById('state-dot');if(!d)return;const lw=state.wellness.slice(-1)[0];let cls='';if(lw){if(lw.mood<=3||lw.energy<=2)cls='crit';else if(lw.mood<=5||lw.energy<=4)cls='warn';}d.className=cls;d.title='System state: '+(cls==='crit'?'CRITICAL':cls==='warn'?'WARNING':'ACTIVE');}
+// ═══ SAVA NEXUS PIPELINE ═══
+const DEAL_STAGES=['lead','qualified','proposal','closed'];
+const STAGE_LABELS={lead:'LEAD',qualified:'QUALIFIED',proposal:'PROPOSAL',closed:'CLOSED'};
+function renderPipeline(){const el=document.getElementById('pipeline');if(!el)return;state.deals=state.deals||[];
+  el.innerHTML=DEAL_STAGES.map(st=>{const ds=state.deals.map((d,i)=>({d,i})).filter(x=>x.d.stage===st);const total=ds.reduce((s,x)=>s+(x.d.value||0),0);
+    return '<div class="pipe-col"><div class="pipe-head">'+STAGE_LABELS[st]+' · €'+total.toLocaleString()+'</div>'+(ds.length?ds.map(x=>'<div class="deal-card"><div style="flex:1;"><b>'+x.d.name+'</b><div style="color:var(--accent);font-size:0.72rem;">€'+(x.d.value||0).toLocaleString()+'</div></div><div style="display:flex;flex-direction:column;gap:0.2rem;">'+(st!=='lead'?'<button class="deal-btn" onclick="moveDeal('+x.i+',-1)" title="Back">◀</button>':'')+(st!=='closed'?'<button class="deal-btn" onclick="moveDeal('+x.i+',1)" title="Advance">▶</button>':'')+'<button class="deal-btn" style="color:var(--danger);" onclick="delDeal('+x.i+')" title="Delete">✕</button></div></div>').join(''):'<div style="color:var(--text-dim);font-size:0.72rem;padding:0.4rem;">—</div>')+'</div>';}).join('');}
+function addDeal(){const n=document.getElementById('deal-name').value.trim();if(!n)return;const v=parseFloat(document.getElementById('deal-value').value)||0;state.deals=state.deals||[];state.deals.push({name:n,value:v,stage:'lead'});save();document.getElementById('deal-name').value='';document.getElementById('deal-value').value='';renderPipeline();toast('🎯 Deal added: '+n,'success');chord();}
+function moveDeal(i,dir){const d=state.deals[i];if(!d)return;const idx=DEAL_STAGES.indexOf(d.stage)+dir;if(idx<0||idx>=DEAL_STAGES.length)return;d.stage=DEAL_STAGES[idx];save();renderPipeline();if(d.stage==='closed'){chord();playSound(1100,0.2);lightning();toast('🏆 '+d.name+' CLOSED — €'+(d.value||0).toLocaleString(),'success');activateBrain('reward',30);}}
+function delDeal(i){state.deals.splice(i,1);save();renderPipeline();}
 // ═══ STATE DASHBOARD ═══
 function renderStateDashboard(){
   const el=document.getElementById('state-cards');if(!el)return;
