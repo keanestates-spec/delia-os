@@ -205,17 +205,6 @@ body{
 .giants-upload-btn:hover{border-color:var(--accent);background:rgba(0,255,255,0.15);}
 .giants-quote{font-style:italic;color:var(--text-dim);font-size:0.78rem;padding:0.8rem;background:rgba(0,255,255,0.04);border-left:2px solid var(--accent);border-radius:6px;margin-top:0.8rem;}
 
-/* MUSIC ENGINE */
-.music-controls{display:flex;flex-direction:column;gap:0.6rem;}
-.music-input-row{display:flex;gap:0.5rem;}
-.music-input-row input{flex:1;background:rgba(0,255,255,0.06);border:1px solid var(--border);color:#fff;padding:0.65rem;border-radius:8px;font-size:0.78rem;font-family:inherit;}
-.music-input-row input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 18px var(--accent-glow);}
-.music-mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:0.7rem;}
-.music-mode{padding:0.6rem;background:rgba(0,255,255,0.06);border:1px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;font-size:0.7rem;letter-spacing:0.12rem;font-family:inherit;color:var(--text-dim);transition:all 0.2s;font-weight:600;}
-.music-mode:hover{border-color:var(--accent);color:var(--accent);}
-.music-mode.active{background:var(--accent);color:var(--bg-0);box-shadow:0 0 25px var(--accent);}
-.music-now-playing{margin-top:0.8rem;padding:0.7rem;background:rgba(0,255,255,0.08);border-radius:8px;font-size:0.78rem;color:var(--accent);text-align:center;letter-spacing:0.15rem;}
-.youtube-embed{margin-top:0.6rem;border-radius:8px;overflow:hidden;display:none;}
 .youtube-embed.active{display:block;}
 
 /* PROPERTY EMPIRE */
@@ -573,7 +562,6 @@ body.view-wing main.grid{padding-top:5.5rem;}
       <button class="qa-icon" title="Brain Home" onclick="goHome()">🧠</button>
       <button class="qa-icon" title="JARVIS Copilot" onclick="toggleCopilot()">💬</button>
       <button class="qa-icon" title="Focus" onclick="startFocus(25)">🎯</button>
-      <button class="qa-icon" title="Music Studio" onclick="showWing('music')">🎵</button>
       <button class="qa-icon" title="Biohacking" onclick="showWing('biohacking')">🫀</button>
       <button class="qa-icon" title="Connections" onclick="showWing('connections')">🔌</button>
     </div>
@@ -715,26 +703,6 @@ body.view-wing main.grid{padding-top:5.5rem;}
     <audio id="giants-audio" style="width:100%;margin-top:0.7rem;display:none;" controls></audio>
   </section>
 
-  <!-- MUSIC ENGINE -->
-  <section class="widget col-6">
-    <div class="widget-header"><span class="widget-title">🎵 SOUNDTRACK ENGINE // YOUR REBEL MIX</span><span class="widget-icon">🎸</span></div>
-    <div class="music-controls">
-      <div class="music-input-row">
-        <input type="text" id="music-url" placeholder="Paste YouTube URL (any song/playlist)...">
-        <button class="btn-primary" onclick="loadYouTube()">PLAY</button>
-      </div>
-      <div class="music-mode-grid">
-        <div class="music-mode" onclick="playPreset('stark')">⚡ STARK</div>
-        <div class="music-mode" onclick="playPreset('drive')">🔥 DRIVE</div>
-        <div class="music-mode" onclick="playPreset('focus')">🎯 FOCUS</div>
-        <div class="music-mode" onclick="playPreset('cosmic')">🌌 COSMIC</div>
-        <div class="music-mode" onclick="playPreset('deepcalm')">🕊️ CALM</div>
-        <div class="music-mode" onclick="playPreset('rock')">🎸 ROCK</div>
-      </div>
-      <div class="music-now-playing" id="music-now" onclick="stopMusic()" style="cursor:pointer;" title="Tap to stop">🔇 SILENCE — Pick a mode or paste a URL</div>
-      <div class="youtube-embed" id="yt-embed"></div>
-    </div>
-  </section>
 
   <!-- RSD SHIELD -->
   <section class="widget col-4">
@@ -983,7 +951,6 @@ body.view-wing main.grid{padding-top:5.5rem;}
   <button class="dock-btn" onclick="startFocus(25)">🎯 FOCUS 25</button>
   <button class="dock-btn" onclick="startFocus(90)">🎯 FOCUS 90</button>
   <div class="dock-sep"></div>
-  <button class="dock-btn" onclick="cycleMusicSimple()">🎵 MUSIC</button>
   <button class="dock-btn" onclick="hypeMe()">✨ HYPE ME</button>
   <div class="dock-sep"></div>
   <button class="dock-btn" onclick="toggleCopilot()">🦾 JARVIS</button>
@@ -1126,7 +1093,7 @@ body.view-wing main.grid{padding-top:5.5rem;}
 // ═══ STATE ═══
 const stored=JSON.parse(localStorage.getItem('deliaOSv5')||'{}');
 const state=Object.assign({
-  theme:'teal',voiceOn:true,musicMode:'silence',
+  theme:'teal',voiceOn:true,
   elevenLabsKey:'',elevenLabsVoice:'pNInz6obpgDQGcFmaJgB',
   anthropicKey:'',
   supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],deals:[],contentIdeas:[],commsLog:[],wins:[],goals:[],
@@ -1184,6 +1151,9 @@ const state=Object.assign({
   lastReset:new Date().toDateString()
 },stored);
 if(state.lastReset!==new Date().toDateString()){state.brainActivity={prefrontal:0,hippocampus:0,amygdala:0,cerebellum:0,temporal:0,occipital:0,motor:0,dmn:0,reward:0};state.lastReset=new Date().toDateString();}
+// ─── Supabase bootstrap: auto-connect with project credentials if not already saved ───
+if(!state.supabaseUrl)state.supabaseUrl='https://fuznirguvyiyqgcfbmxl.supabase.co';
+if(!state.supabaseKey)state.supabaseKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1em5pcmd1dnlpeXFnY2ZibXhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzM1MzMsImV4cCI6MjA5NjM0OTUzM30.ZDbGgpnVn9KbdrXOPyi5-0wbGqz7GmRZWoEmVPLD5yQ';
 function save(){const cleanState={...state};localStorage.setItem('deliaOSv5',JSON.stringify(cleanState));}
 // ═══ MENTOR ROSTER (force-update, preserve uploaded audio) ═══
 const NEXUS_MENTORS={
@@ -1257,7 +1227,7 @@ function initClapDetection(){
     (function loop(){requestAnimationFrame(loop);an.getByteTimeDomainData(data);let peak=0;for(let i=0;i<data.length;i++){const v=Math.abs(data[i]-128);if(v>peak)peak=v;}const now=Date.now();if(peak>72&&now-last>650){last=now;onClap();}})();
   }catch(e){}
 }
-function onClap(){lightning();bassBoom();chord();window.coherenceMode=true;Object.keys(state.brainActivity).forEach(k=>activateBrain(k,22));const hype=['Watch out world!','Let’s GO, Queen!','Yes Delia!','Fire it UP!','Boom — she’s up!','Empire mode: ON.'];speak(hype[Math.floor(Math.random()*hype.length)]);toast('👏 '+hype[Math.floor(Math.random()*hype.length)],'witty');setTimeout(()=>{if(!musicNodes)window.coherenceMode=false;},3000);}
+function onClap(){lightning();bassBoom();chord();window.coherenceMode=true;Object.keys(state.brainActivity).forEach(k=>activateBrain(k,22));const hype=['Watch out world!','Let’s GO, Queen!','Yes Delia!','Fire it UP!','Boom — she’s up!','Empire mode: ON.'];speak(hype[Math.floor(Math.random()*hype.length)]);toast('👏 '+hype[Math.floor(Math.random()*hype.length)],'witty');setTimeout(()=>{window.coherenceMode=false;},3000);}
 // ═══ HANDS-FREE VOICE (say "JARVIS ...") ═══
 let alwaysRec=null,alwaysOn=false;
 function openCopilotForVoice(){const p=document.getElementById('copilot-panel');if(p&&!p.classList.contains('open')){p.classList.add('open');renderCopilotMessages();}}
@@ -1472,66 +1442,6 @@ document.getElementById('giant-file').addEventListener('change',e=>{
   const reader=new FileReader();reader.onload=ev=>{state.giants[sel].audio=ev.target.result;save();renderGiants();renderOverview();toast('🦁 '+state.giants[sel].name+' loaded','success');chord();};reader.readAsDataURL(f);
 });
 
-// ═══ MUSIC ENGINE ═══
-const MUSIC_PRESETS={
-  panpipes:{label:'🎍 PAN PIPES',root:392,scale:[0,2,4,7,9,12],gap:[850,1500],dur:1.7,gain:0.17,pad:0.03},
-  forest:{label:'🌲 FOREST CALM',root:294,scale:[0,3,5,7,10,12],gap:[1300,2300],dur:2.3,gain:0.15,pad:0.04},
-  focus:{label:'🎯 FOCUS FLOW',root:440,scale:[0,2,4,7,9],gap:[650,1050],dur:1.2,gain:0.14,pad:0.022},
-  cosmic:{label:'🌌 COSMIC DRIFT',root:262,scale:[0,5,7,12,14,19],gap:[1700,2700],dur:2.8,gain:0.14,pad:0.045},
-  deepcalm:{label:'🕊️ DEEP CALM',root:196,scale:[0,3,7,10,12],gap:[1900,3100],dur:3.2,gain:0.14,pad:0.05}
-};
-let panTimer=null;
-function _mf(root,semi){return root*Math.pow(2,semi/12);}
-function _flute(freq,dur,gainV){const ctx=window.audioCtx;if(!ctx)return;const t=ctx.currentTime;const o=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain(),lp=ctx.createBiquadFilter(),lfo=ctx.createOscillator(),lfoG=ctx.createGain();o.type='sine';o2.type='triangle';o.frequency.value=freq;o2.frequency.value=freq;lp.type='lowpass';lp.frequency.value=freq*3.4;lfo.type='sine';lfo.frequency.value=4.7;lfoG.gain.value=freq*0.009;lfo.connect(lfoG);lfoG.connect(o.frequency);lfoG.connect(o2.frequency);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(gainV,t+0.16);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(lp);o2.connect(lp);lp.connect(g);g.connect(window._musicMaster||ctx.destination);o.start(t);o2.start(t);lfo.start(t);const e=t+dur+0.2;o.stop(e);o2.stop(e);lfo.stop(e);}
-let musicNodes=null;
-function stopMusic(){if(panTimer){clearTimeout(panTimer);panTimer=null;}if(musicNodes){musicNodes.forEach(n=>{try{n.stop&&n.stop();}catch(e){}try{n.disconnect&&n.disconnect();}catch(e){}});musicNodes=null;}if(window.ytPlayer&&ytPlayer.destroy){try{ytPlayer.destroy();}catch(e){}ytPlayer=null;}const emb=document.getElementById('yt-embed');if(emb){emb.classList.remove('active');emb.innerHTML='';}document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';window.coherenceMode=false;state.musicMode='silence';save();}
-function playPreset(p){
-  if(p==='rock'||p==='rebel')return loadRock();
-  if(p==='stark'||p==='drive')return playCinematic(p);
-  const pr=MUSIC_PRESETS[p]||MUSIC_PRESETS.forest;
-  stopMusic();
-  const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());
-  if(ctx.state==='suspended')ctx.resume();
-  const master=ctx.createGain();master.gain.setValueAtTime(0.0001,ctx.currentTime);master.gain.exponentialRampToValueAtTime(0.9,ctx.currentTime+1.5);master.connect(ctx.destination);window._musicMaster=master;
-  const pad=ctx.createOscillator(),pad2=ctx.createOscillator(),pg=ctx.createGain();pad.type='sine';pad2.type='sine';pad.frequency.value=pr.root/2;pad2.frequency.value=pr.root*0.748;pg.gain.value=pr.pad;pad.connect(pg);pad2.connect(pg);pg.connect(master);pad.start();pad2.start();
-  musicNodes=[pad,pad2,pg,master];
-  window.coherenceMode=true;
-  const step=()=>{if(Math.random()>0.22){const semi=pr.scale[Math.floor(Math.random()*pr.scale.length)]+(Math.random()<0.25?12:0);_flute(_mf(pr.root,semi),pr.dur,pr.gain);if(Math.random()<0.35){const s2=pr.scale[Math.floor(Math.random()*pr.scale.length)];setTimeout(()=>_flute(_mf(pr.root,s2+7),pr.dur*0.85,pr.gain*0.55),190);}}panTimer=setTimeout(step,pr.gap[0]+Math.random()*(pr.gap[1]-pr.gap[0]));};
-  step();
-  state.musicMode=p;save();
-  document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));
-  if(typeof event!=='undefined'&&event&&event.target&&event.target.classList)event.target.classList.add('active');
-  document.getElementById('music-now').textContent='▶ '+pr.label+'  (tap to stop)';
-  toast('🎵 '+pr.label,'success');
-}
-function loadRock(){stopMusic();window.open('https://www.youtube.com/results?search_query=rock+music+radio+live','_blank','noopener');const mn=document.getElementById('music-now');if(mn)mn.textContent='🎸 ROCK → opened on YouTube';toast('🎸 Rock can’t be synthesised — opened YouTube. Or paste any track URL below.','witty');}
-function starkStinger(){const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());if(ctx.state==='suspended')ctx.resume();const t0=ctx.currentTime;
-  const hit=(freqs,when,dur,gain)=>{freqs.forEach(f=>{const o=ctx.createOscillator(),o2=ctx.createOscillator(),g=ctx.createGain();o.type='sawtooth';o2.type='sawtooth';o.frequency.value=f;o2.frequency.value=f*1.006;g.gain.setValueAtTime(0.0001,when);g.gain.exponentialRampToValueAtTime(gain,when+0.05);g.gain.exponentialRampToValueAtTime(0.0001,when+dur);o.connect(g);o2.connect(g);g.connect(ctx.destination);o.start(when);o2.start(when);o.stop(when+dur+0.05);o2.stop(when+dur+0.05);});};
-  const sub=ctx.createOscillator(),sg=ctx.createGain();sub.type='sine';sub.frequency.setValueAtTime(95,t0);sub.frequency.exponentialRampToValueAtTime(45,t0+0.7);sg.gain.setValueAtTime(0.24,t0);sg.gain.exponentialRampToValueAtTime(0.001,t0+0.9);sub.connect(sg);sg.connect(ctx.destination);sub.start(t0);sub.stop(t0+1);
-  hit([110,164.81],t0,0.5,0.10);hit([146.83,220],t0+0.5,0.5,0.11);hit([164.81,246.94,329.63],t0+1.0,1.1,0.12);hit([220,329.63,440],t0+1.6,1.7,0.13);}
-function playCinematic(p){
-  stopMusic();const ctx=window.audioCtx||(window.audioCtx=new(window.AudioContext||window.webkitAudioContext)());if(ctx.state==='suspended')ctx.resume();
-  const master=ctx.createGain();master.gain.setValueAtTime(0.0001,ctx.currentTime);master.gain.exponentialRampToValueAtTime(0.8,ctx.currentTime+1.5);master.connect(ctx.destination);window._musicMaster=master;
-  const root=p==='drive'?98:82.4;
-  const pad=ctx.createOscillator(),pad5=ctx.createOscillator(),pg=ctx.createGain(),lp=ctx.createBiquadFilter();pad.type='sawtooth';pad5.type='sawtooth';pad.frequency.value=root;pad5.frequency.value=root*1.5;lp.type='lowpass';lp.frequency.value=650;pg.gain.value=0.06;pad.connect(lp);pad5.connect(lp);lp.connect(pg);pg.connect(master);pad.start();pad5.start();
-  const bass=ctx.createOscillator(),bg=ctx.createGain(),lfo=ctx.createOscillator(),lfoG=ctx.createGain();bass.type='triangle';bass.frequency.value=root/2;lfo.type='square';lfo.frequency.value=p==='drive'?4:2.4;lfoG.gain.value=0.08;lfo.connect(lfoG);lfoG.connect(bg.gain);bg.gain.value=0.05;bass.connect(bg);bg.connect(master);bass.start();lfo.start();
-  musicNodes=[pad,pad5,pg,lp,bass,bg,lfo,lfoG,master];window.coherenceMode=true;
-  const scale=[0,7,12,3,15,19];const step=()=>{const semi=scale[Math.floor(Math.random()*scale.length)];_flute(_mf(root*2,semi),1.1,0.085);panTimer=setTimeout(step,1300+Math.random()*1500);};step();
-  state.musicMode=p;save();document.querySelectorAll('.music-mode').forEach(m=>m.classList.remove('active'));if(typeof event!=='undefined'&&event&&event.target&&event.target.classList)event.target.classList.add('active');
-  document.getElementById('music-now').textContent='▶ '+(p==='drive'?'🔥 DRIVE':'⚡ STARK MODE')+'  (tap to stop)';toast('🎵 '+(p==='drive'?'DRIVE':'STARK MODE'),'success');}
-let ytApiLoading=false,ytPlayer=null;
-function ensureYTApi(cb){if(window.YT&&window.YT.Player)return cb();if(!ytApiLoading){ytApiLoading=true;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);}const iv=setInterval(()=>{if(window.YT&&window.YT.Player){clearInterval(iv);cb();}},150);setTimeout(()=>clearInterval(iv),8000);}
-function ytEmbedError(code,id){const reason=(code===101||code===150||code===153)?'the owner blocked embedding':(code===100)?'video not found or private':(code===2)?'invalid video link':'it can’t be embedded';const emb=document.getElementById('yt-embed');if(emb)emb.innerHTML='<div style="padding:0.7rem;font-size:0.78rem;color:var(--text-dim);">⚠️ Can’t embed — '+reason+'. <a href="https://www.youtube.com/watch?v='+id+'" target="_blank" rel="noopener" style="color:var(--accent);">Open on YouTube ↗</a><br>Tip: many videos block embedding — pick a binaural mode above for reliable in-app audio.</div>';const mn=document.getElementById('music-now');if(mn)mn.textContent='🔇 SILENCE — pick a mode or paste a URL';toast('⚠️ Video blocks embedding — fallback shown','warn');}
-function loadYouTube(){
-  const url=document.getElementById('music-url').value.trim();if(!url)return;
-  stopMusic();
-  let id='';const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);if(m)id=m[1];
-  if(!id)return toast('Invalid YouTube URL','warn');
-  const embed=document.getElementById('yt-embed');embed.classList.add('active');embed.innerHTML='<div id="yt-player"></div>';
-  document.getElementById('music-now').textContent='▶ LOADING YOUTUBE…';document.getElementById('music-url').value='';
-  ensureYTApi(()=>{try{ytPlayer=new YT.Player('yt-player',{height:'80',width:'100%',videoId:id,playerVars:{autoplay:1,playsinline:1},events:{onReady:e=>{try{e.target.playVideo();}catch(_){}document.getElementById('music-now').textContent='▶ YOUTUBE PLAYING (tap to stop)';},onError:e=>ytEmbedError(e.data,id)}});}catch(err){ytEmbedError(0,id);}});
-}
-function cycleMusicSimple(){const presets=['panpipes','forest','focus','cosmic','deepcalm'];const i=presets.indexOf(state.musicMode);state.musicMode=presets[(i+1)%presets.length];save();playPreset(state.musicMode);}
 
 // ═══ PROPERTIES ═══
 function renderProperties(){
@@ -1637,11 +1547,25 @@ async function loadCopilotHistory(){
     const res=await fetch(state.supabaseUrl+'/rest/v1/conversations?select=role,content,created_at&order=created_at.desc&limit=50',{
       headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey}
     });
+    // 404 means conversations table not yet created — not an error, just no history
+    if(res.status===404){setDbStatus('ok');return;}
     if(!res.ok){let m='HTTP '+res.status;try{const e=await res.json();if(e&&e.message)m=e.message;}catch(_){}throw new Error(m);}
     const rows=await res.json();rows.reverse();
     if(rows.length){state.copilotMessages=rows.map(r=>({role:r.role,text:r.content,t:new Date(r.created_at).getTime()}));save();renderCopilotMessages();}
     setDbStatus('ok');toast('🗄️ Memory loaded — '+rows.length+' messages','success');
   }catch(e){setDbStatus('error');toast('🗄️ Memory load failed: '+(e.message||e),'warn');}
+}
+async function pingSupabase(){
+  if(!supabaseConfigured())return;
+  try{
+    // Hit the PostgREST root — just validates the anon key, no table permissions needed
+    const res=await fetch(state.supabaseUrl+'/rest/v1/',{
+      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey,'Accept':'application/json'}
+    });
+    // 200 or 400-range content responses all mean we reached Supabase successfully
+    if(res.status<500){setDbStatus('ok');}
+    else{setDbStatus('error');}
+  }catch(e){console.warn('Supabase ping failed:',e);setDbStatus('error');}
 }
 function copilotSend(){const input=document.getElementById('copilot-input'),text=input.value.trim();if(!text)return;input.value='';copilotRespond(text);}
 async function copilotRespond(text){
@@ -1729,7 +1653,7 @@ function removeElevenLabs(){state.elevenLabsKey='';save();closeElevenLabs();docu
 // ═══ FOCUS ═══
 let focusTimer=null;
 function startFocus(min){const task=prompt('What ONE thing?')||'Focus session';document.getElementById('focus-task').textContent=task;document.getElementById('focus-overlay').classList.add('on');window.coherenceMode=true;let s=min*60;document.getElementById('focus-timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');speak('Engaging focus mode. '+min+' minutes. Lock in.');bassBoom();focusTimer=setInterval(()=>{s--;if(s<=0){clearInterval(focusTimer);exitFocus();speak('Focus complete. Beautiful work.');chord();playSound(1320,0.3);toast('🚀 Focus complete','success');activateBrain('reward',40);return;}document.getElementById('focus-timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);activateBrain('prefrontal',20);}
-function exitFocus(){if(focusTimer)clearInterval(focusTimer);document.getElementById('focus-overlay').classList.remove('on');window.coherenceMode=!!musicNodes;}
+function exitFocus(){if(focusTimer)clearInterval(focusTimer);document.getElementById('focus-overlay').classList.remove('on');window.coherenceMode=false;}
 
 // ═══ THEME / VOICE / EXPORT ═══
 function switchTheme(){const t=['teal','rebel','quantum','gold'];state.theme=t[(t.indexOf(state.theme)+1)%t.length];document.body.classList.remove('theme-teal','theme-rebel','theme-quantum','theme-gold');document.body.classList.add('theme-'+state.theme);save();toast('⬢ Theme: '+state.theme,'success');}
@@ -1753,7 +1677,7 @@ function calcLifeScore(){let s=50;const lw=state.wellness.slice(-1)[0];if(lw&&ne
 function initiate(){try{window.audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}ensureMic();document.getElementById('start-screen').classList.add('gone');document.getElementById('boot').classList.add('active');lightning();bassBoom();powerUp();setTimeout(()=>{lightning();bassBoom();},400);runBoot();}
 const bootMsgs=['NEURAL LINK INITIALISING...','LOADING 25 WINGS...','OBSERVATORY TOWER: ONLINE','AGENT TEAM: STANDING BY','BIOMETRIC SENSORS: SCANNING...','JARVIS COPILOT: ENGAGED','NEXUS ONLINE'];
 let bootStep=0;
-function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),900);toast('🦾 '+g,'witty');victoryChord();try{starkStinger();}catch(e){}setTimeout(()=>{try{playPreset('stark');toast('⚡ Music up · 👏 CLAP to fire it up','witty');}catch(e){}},2400);loadWeather();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[110,164.81,220,246.94,329.63,440,523.25];playSound(bootNotes[bootStep%bootNotes.length],0.18,'sawtooth',0.08);playSound(bootNotes[bootStep%bootNotes.length]*2,0.1,'triangle',0.05);if(bootStep%2===0){lightning();playSound(55,0.25,'sine',0.14);}bootStep++;setTimeout(runBoot,440);}
+function runBoot(){if(bootStep>=bootMsgs.length){setTimeout(()=>{document.getElementById('boot').classList.add('done');setTimeout(()=>{document.getElementById('boot').style.display='none';},1500);const g=getGreeting();setTimeout(()=>speak(g),900);toast('🦾 '+g,'witty');victoryChord();loadWeather();},800);return;}const bl=document.getElementById('boot-log');const ln=document.createElement('div');ln.textContent='> '+bootMsgs[bootStep];bl.appendChild(ln);document.getElementById('boot-bar-fill').style.width=((bootStep+1)/bootMsgs.length*100)+'%';const bootNotes=[110,164.81,220,246.94,329.63,440,523.25];playSound(bootNotes[bootStep%bootNotes.length],0.18,'sawtooth',0.08);playSound(bootNotes[bootStep%bootNotes.length]*2,0.1,'triangle',0.05);if(bootStep%2===0){lightning();playSound(55,0.25,'sine',0.14);}bootStep++;setTimeout(runBoot,440);}
 
 // ═══ INIT ═══
 function showInitError(e){const msg=(e&&e.message)?e.message:(''+e);window._errSeen=window._errSeen||new Set();if(window._errSeen.has(msg))return;window._errSeen.add(msg);let b=document.getElementById('init-err');if(!b){b=document.createElement('div');b.id='init-err';b.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:99999;background:rgba(120,0,20,0.95);color:#fff;font:11px monospace;padding:8px 12px;max-height:34vh;overflow:auto;border-top:2px solid #ff0044;';b.title='tap to dismiss';b.onclick=()=>b.remove();document.body.appendChild(b);}if(b.childElementCount>=10)return;const where=(e&&e.stack)?(' — '+(e.stack.split('\n')[1]||'').trim()):'';const d=document.createElement('div');d.textContent='⚠ '+msg+where;b.appendChild(d);}
@@ -1780,7 +1704,7 @@ function initEverything(){
   [initParticles,initStarfield,init3DBrain,renderTasks,renderRev,renderHeartbeat,renderBrainBalance,renderOverview,updateBodyScanner,renderWarrior,renderGiants,renderProperties,renderFinance,renderMedical,renderRSD,renderPeptides,renderStateDashboard,renderPipeline,renderContent,renderComms,renderWins,renderRitual,renderGoals,initPainLogging,renderPainPoints,renderCopilotMessages].forEach(S);
   S(()=>{document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';});
   S(()=>{document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';});
-  S(()=>{if(supabaseConfigured()){setDbStatus('connecting');loadCopilotHistory();}else setDbStatus('off');});
+  S(()=>{if(supabaseConfigured()){setDbStatus('connecting');pingSupabase();}else setDbStatus('off');});
   S(updateConnHud);S(updateHero);S(calcLifeScore);S(initHotel);
   S(()=>{document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);});
   setInterval(()=>{S(calcLifeScore);S(updateHero);S(updateBodyScanner);},30000);
@@ -1852,7 +1776,7 @@ function initAnatomy(){if(anatomyInit){setTimeout(resizeAnatomy,60);return;}anaC
 function resizeAnatomy(){if(!anaRenderer||!anaCont)return;const w=anaCont.clientWidth,h=anaCont.clientHeight;if(w&&h){anaCam.aspect=w/h;anaCam.updateProjectionMatrix();anaRenderer.setSize(w,h);}}
 function loadAnatomyEmbed(){const f=document.getElementById('anatomy-frame');if(f&&!f.src)f.src='https://sketchfab.com/models/ed05d3b7b49b4014a09d7a9d62e4f421/embed?autostart=1&autospin=0.2&ui_theme=dark&ui_annotations=1&ui_infos=0&ui_watermark=0&ui_stop=0&dnt=1';}
 // ═══ COMMAND PALETTE (⌘K) ═══
-function cmdkItems(){const items=[{ico:'🧠',label:'BRAIN HOME',tag:'GO',act:goHome}];WINGS.forEach(w=>items.push({ico:w.icon,label:w.name,tag:'WING',act:()=>showWing(w.id)}));items.push({ico:'💬',label:'OPEN JARVIS',tag:'AI',act:toggleCopilot},{ico:'🎯',label:'FOCUS · 25 MIN',tag:'DO',act:()=>startFocus(25)},{ico:'🎍',label:'PLAY PAN PIPES',tag:'AUDIO',act:()=>playPreset('panpipes')},{ico:'🔇',label:'STOP MUSIC',tag:'AUDIO',act:stopMusic},{ico:'🔄',label:'REFRESH BRIEFING',tag:'INTEL',act:loadBriefing});return items;}
+function cmdkItems(){const items=[{ico:'🧠',label:'BRAIN HOME',tag:'GO',act:goHome}];WINGS.forEach(w=>items.push({ico:w.icon,label:w.name,tag:'WING',act:()=>showWing(w.id)}));items.push({ico:'💬',label:'OPEN JARVIS',tag:'AI',act:toggleCopilot},{ico:'🎯',label:'FOCUS · 25 MIN',tag:'DO',act:()=>startFocus(25)},{ico:'🔄',label:'REFRESH BRIEFING',tag:'INTEL',act:loadBriefing});return items;}
 let cmdkSel=0,cmdkFiltered=[];
 function openCmdK(){document.getElementById('cmdk-overlay').classList.add('open');const inp=document.getElementById('cmdk-input');inp.value='';renderCmdK('');setTimeout(()=>inp.focus(),30);}
 function closeCmdK(){document.getElementById('cmdk-overlay').classList.remove('open');}
@@ -1886,7 +1810,6 @@ const WINGS=[
   {id:'finance',name:'FINANCIAL NS',icon:'💰',cls:'analytical',region:'parietal'},
   {id:'comms',name:'COMMS',icon:'📡',cls:'analytical',region:'temporal'},
   {id:'content',name:'CONTENT',icon:'🎬',cls:'creative',region:'occipital'},
-  {id:'music',name:'MUSIC STUDIO',icon:'🎵',cls:'creative',region:'reward'},
   {id:'biohacking',name:'BIOHACK LAB',icon:'🧬',cls:'optimisation',region:'motor'},
   {id:'optimisation',name:'HUMAN OPT',icon:'⚡',cls:'optimisation',region:'cerebellum'},
   {id:'adhd',name:'ADHD CENTRE',icon:'🧩',cls:'optimisation',region:'amygdala'},
@@ -1899,7 +1822,7 @@ const WINGS=[
   {id:'goals',name:'GOAL THERMOMETER',icon:'📈',cls:'analytical',region:''},
   {id:'connections',name:'CONNECTIONS',icon:'🔌',cls:'analytical',region:'hippocampus'}
 ];
-const WING_KEYWORDS=[['MISSION CONTROL','intel'],['COUNCIL OF GIANTS','intel'],['PROPERTY','business'],['BUSINESS METRICS','business'],['FINANCIAL','finance'],['SOUNDTRACK','music'],['BIO SCANNER','biohacking'],['MEDICAL','biohacking'],['WELLNESS','biohacking'],['WEIGHT WARRIOR','optimisation'],['ADOPTION','optimisation'],['RSD','adhd'],['MISSIONS','adhd'],['HEARTBEAT','adhd'],['NEURAL CORE','brain']];
+const WING_KEYWORDS=[['MISSION CONTROL','intel'],['COUNCIL OF GIANTS','intel'],['PROPERTY','business'],['BUSINESS METRICS','business'],['FINANCIAL','finance'],['BIO SCANNER','biohacking'],['MEDICAL','biohacking'],['WELLNESS','biohacking'],['WEIGHT WARRIOR','optimisation'],['ADOPTION','optimisation'],['RSD','adhd'],['MISSIONS','adhd'],['HEARTBEAT','adhd'],['NEURAL CORE','brain']];
 function tagWidgets(){document.querySelectorAll('main.grid .widget').forEach(el=>{if(el.dataset.wing)return;const t=((el.querySelector('.widget-title')||{}).textContent||'').toUpperCase();let wing='intel';for(const[k,w]of WING_KEYWORDS){if(t.includes(k)){wing=w;break;}}el.dataset.wing=wing;});}
 function regionToWing(rn){const w=WINGS.find(x=>x.region===rn);return w?w.id:null;}
 let currentWing='bridge';
@@ -1922,7 +1845,7 @@ function showWing(w){if(!w)return;currentWing=w;document.body.classList.remove('
   window.scrollTo(0,0);chord();
 }
 function goHome(){currentWing='bridge';document.body.classList.add('view-bridge');document.body.classList.remove('view-wing');document.querySelectorAll('main.grid .widget').forEach(el=>{el.style.display='';});layoutWingRing();setTimeout(resizeBrain,80);}
-const RING_IDS=['intel','business','finance','biohacking','anatomy','breath','music','connections'];
+const RING_IDS=['intel','business','finance','biohacking','anatomy','breath','connections'];
 function buildWingRing(){const ring=document.getElementById('wing-ring');if(!ring)return;ring.innerHTML='';WINGS.filter(w=>RING_IDS.includes(w.id)).forEach(w=>{const p=document.createElement('div');p.className='wing-panel '+w.cls;p.dataset.wing=w.id;p.innerHTML='<div class="wp-icon">'+w.icon+'</div><div class="wp-name">'+w.name+'</div>';p.onclick=()=>showWing(w.id);ring.appendChild(p);});const more=document.createElement('div');more.className='wing-panel analytical';more.dataset.wing='_more';more.innerHTML='<div class="wp-icon">☰</div><div class="wp-name">ALL ROOMS</div>';more.onclick=openRooms;ring.appendChild(more);layoutWingRing();}
 function layoutWingRing(){const panels=document.querySelectorAll('#wing-ring .wing-panel');const n=panels.length;const desktop=innerWidth>900;panels.forEach((p,i)=>{if(!desktop){p.style.left='';p.style.top='';p.style.transform='';return;}const ang=(-90+i*(360/n))*Math.PI/180;p.style.left=(50+38*Math.cos(ang))+'%';p.style.top=(50+42*Math.sin(ang))+'%';p.style.transform='translate(-50%,-50%)';});}
 function resizeBrain(){if(!brainRenderer||!brainContainer)return;const w=brainContainer.clientWidth,h=brainContainer.clientHeight;if(w&&h){brainCamera.aspect=w/h;brainCamera.updateProjectionMatrix();brainRenderer.setSize(w,h);}}
@@ -2007,7 +1930,7 @@ function startBreath(){stopBreath(true);const steps=BREATH_PATTERNS[breathPat];l
     let n=sec;clearInterval(window._breathCd);window._breathCd=setInterval(()=>{n--;const c=document.getElementById('breath-count');if(c)c.textContent=Math.max(0,n);if(n<=0)clearInterval(window._breathCd);},1000);
     breathTimer=setTimeout(()=>{si=(si+1)%steps.length;run();},sec*1000);};
   run();activateBrain('dmn',20);}
-function stopBreath(silent){if(breathTimer){clearTimeout(breathTimer);breathTimer=null;}clearInterval(window._breathCd);const orb=document.getElementById('breath-orb');if(orb){orb.style.transition='transform 1s';orb.style.transform='scale(1)';}const tog=document.getElementById('breath-toggle');if(tog)tog.textContent='▶ START';const txt=document.getElementById('breath-text');if(txt&&!silent)txt.textContent='Nice. Nervous system reset. 🫁';if(!silent&&!musicNodes)window.coherenceMode=false;}
+function stopBreath(silent){if(breathTimer){clearTimeout(breathTimer);breathTimer=null;}clearInterval(window._breathCd);const orb=document.getElementById('breath-orb');if(orb){orb.style.transition='transform 1s';orb.style.transform='scale(1)';}const tog=document.getElementById('breath-toggle');if(tog)tog.textContent='▶ START';const txt=document.getElementById('breath-text');if(txt&&!silent)txt.textContent='Nice. Nervous system reset. 🫁';if(!silent)window.coherenceMode=false;}
 function toggleBreath(){if(breathTimer)stopBreath();else startBreath();}
 // ═══ STATE DASHBOARD ═══
 function renderStateDashboard(){
