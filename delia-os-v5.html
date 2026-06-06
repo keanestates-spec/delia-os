@@ -1640,7 +1640,29 @@ let dumpCat='raw';
 document.querySelectorAll('.dump-cat').forEach(c=>c.onclick=()=>{document.querySelectorAll('.dump-cat').forEach(x=>x.classList.remove('active'));c.classList.add('active');dumpCat=c.dataset.cat;});
 function openDump(){document.getElementById('brain-dump').classList.add('open');setTimeout(()=>document.getElementById('dump-text').focus(),100);activateBrain('dmn',15);}
 function closeDump(){document.getElementById('brain-dump').classList.remove('open');document.getElementById('dump-text').value='';}
-function saveDump(){const t=document.getElementById('dump-text').value.trim();if(!t)return;state.dumps.push({text:t,cat:dumpCat,date:Date.now()});save();if(dumpCat==='task'||(dumpCat==='raw'&&t.length<60)){state.tasks.push({text:t,done:false});renderTasks();}renderOverview();toast('⚡ Captured — your brain is lighter','success');chord();activateBrain('hippocampus',20);activateBrain('dmn',25);closeDump();}
+function saveDump(){const t=document.getElementById('dump-text').value.trim();if(!t)return;state.dumps.push({text:t,cat:dumpCat,date:Date.now()});save();if(dumpCat==='task'||(dumpCat==='raw'&&t.length<60)){state.tasks.push({text:t,done:false});renderTasks();}renderOverview();toast('⚡ Captured — your brain is lighter','success');chord();activateBrain('hippocampus',20);activateBrain('dmn',25);saveStateSnapshot(t,dumpCat);closeDump();}
+async function saveStateSnapshot(summary,category){
+  if(!supabaseConfigured())return;
+  const payload={
+    summary,
+    category,
+    snapshot_data:{
+      lifeScore:state.lifeScore,
+      currentWeight:state.currentWeight,
+      brainActivity:state.brainActivity,
+      openTasks:state.tasks.filter(t=>!t.done).length,
+      capturedAt:new Date().toISOString()
+    }
+  };
+  try{
+    const res=await fetch(state.supabaseUrl+'/rest/v1/state_snapshots',{
+      method:'POST',
+      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(payload)
+    });
+    if(res.ok){setDbStatus('ok');}else{const e=await res.json().catch(()=>({}));console.warn('state_snapshot save failed',res.status,e);}
+  }catch(e){console.warn('state_snapshot network error',e);}
+}
 let dumpRec=null;
 async function dumpVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return toast('Voice not supported','warn');if(!await ensureMic())return;if(!dumpRec){dumpRec=new SR();dumpRec.lang='en-US';dumpRec.continuous=true;dumpRec.interimResults=true;dumpRec.onresult=e=>{let out='';for(let i=0;i<e.results.length;i++)out+=e.results[i][0].transcript+(e.results[i].isFinal?' ':'');document.getElementById('dump-text').value=out;};}try{dumpRec.start();toast('🎙️ Listening...','success');}catch(e){}setTimeout(()=>{try{dumpRec.stop();}catch(e){}},30000);}
 
