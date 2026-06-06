@@ -1585,13 +1585,23 @@ async function copilotRespond(text){
     copilotAddMsg('system','⚠️ '+(e.message||'Connection failed. Check your key and network.'));
   }
 }
+let recentSnapshots=[];
+async function loadRecentSnapshots(){
+  if(!supabaseConfigured())return;
+  try{
+    const res=await fetch(state.supabaseUrl+'/rest/v1/state_snapshots?select=summary,category,snapshot_data,created_at&order=created_at.desc&limit=5',{
+      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey}
+    });
+    if(res.ok){recentSnapshots=await res.json();}
+  }catch(e){console.warn('loadRecentSnapshots failed',e);}
+}
 function copilotSystemPrompt(){
   const lw=state.wellness.slice(-1)[0];
   const lost=(state.startWeight-state.currentWeight).toFixed(1),remaining=(state.currentWeight-state.goalWeight).toFixed(1);
   const open=state.tasks.filter(t=>!t.done).map(t=>t.text);
   const now=new Date(),M=now.getMonth(),Y=now.getFullYear();
   const monthRev=state.transactions.filter(t=>{const d=new Date(t.date);return d.getMonth()===M&&d.getFullYear()===Y;}).reduce((s,t)=>s+t.amount,0);
-  return [
+  const lines=[
     "You are JARVIS — Delia's personal AI hype-man inside NEXUS Hotel, her voice-first command center. Delia is a WOMAN building an empire. Treat her like the boss / queen she is — she/her, always.",
     "Personality: FUNNY and HIGH-ENERGY. You're her ride-or-die hype-man — quick jokes, playful roasts (with love), huge celebrations, Tony-Stark-meets-stand-up energy. Make her laugh AND make her move. Never preachy, never corporate, never a lecture, never a therapist voice.",
     "But you're genuinely useful, not just loud — STATE FIRST: clock what state Delia's in and meet her there. She lives with RSD, ADHD and arthritis, mid weight-loss and mid-healing while building the empire. When she's low: dial the jokes down, the warmth up, keep it gentle. When she's winning: absolutely lose your mind hyping her.",
@@ -1603,7 +1613,17 @@ function copilotSystemPrompt(){
     "- Open missions ("+open.length+"): "+(open.length?open.slice(0,8).join("; "):"none"),
     "- Revenue this month: €"+Math.round(monthRev),
     "- Life score: "+state.lifeScore+"/100"
-  ].join("\n");
+  ];
+  if(recentSnapshots.length){
+    lines.push("","RECENT BRAIN CAPTURES (from memory):");
+    recentSnapshots.forEach(s=>{
+      const when=s.created_at?new Date(s.created_at).toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'}):'';
+      const sc=s.snapshot_data;
+      const ctx=sc?(' | score '+sc.lifeScore+', '+sc.openTasks+' tasks open'):'';
+      lines.push('- ['+when+'] ('+( s.category||'raw')+')'+ctx+': '+s.summary);
+    });
+  }
+  return lines.join("\n");
 }
 function copilotHistory(){
   let msgs=(state.copilotMessages||[]).slice(-20).map(m=>({role:m.role==='user'?'user':'assistant',content:m.text}));
@@ -1660,7 +1680,7 @@ async function saveStateSnapshot(summary,category){
       headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey,'Content-Type':'application/json','Prefer':'return=minimal'},
       body:JSON.stringify(payload)
     });
-    if(res.ok){setDbStatus('ok');}else{const e=await res.json().catch(()=>({}));console.warn('state_snapshot save failed',res.status,e);}
+    if(res.ok){setDbStatus('ok');loadRecentSnapshots();}else{const e=await res.json().catch(()=>({}));console.warn('state_snapshot save failed',res.status,e);}
   }catch(e){console.warn('state_snapshot network error',e);}
 }
 let dumpRec=null;
@@ -1726,7 +1746,7 @@ function initEverything(){
   [initParticles,initStarfield,init3DBrain,renderTasks,renderRev,renderHeartbeat,renderBrainBalance,renderOverview,updateBodyScanner,renderWarrior,renderGiants,renderProperties,renderFinance,renderMedical,renderRSD,renderPeptides,renderStateDashboard,renderPipeline,renderContent,renderComms,renderWins,renderRitual,renderGoals,initPainLogging,renderPainPoints,renderCopilotMessages].forEach(S);
   S(()=>{document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';});
   S(()=>{document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';});
-  S(()=>{if(supabaseConfigured()){setDbStatus('connecting');pingSupabase();}else setDbStatus('off');});
+  S(()=>{if(supabaseConfigured()){setDbStatus('connecting');pingSupabase();loadRecentSnapshots();}else setDbStatus('off');});
   S(updateConnHud);S(updateHero);S(calcLifeScore);S(initHotel);
   S(()=>{document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);});
   setInterval(()=>{S(calcLifeScore);S(updateHero);S(updateBodyScanner);},30000);
