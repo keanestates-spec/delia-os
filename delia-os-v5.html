@@ -1680,8 +1680,9 @@ async function saveStateSnapshot(summary,category){
       headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey,'Content-Type':'application/json','Prefer':'return=minimal'},
       body:JSON.stringify(payload)
     });
-    if(res.ok){setDbStatus('ok');loadRecentSnapshots();}else{const e=await res.json().catch(()=>({}));console.warn('state_snapshot save failed',res.status,e);}
-  }catch(e){console.warn('state_snapshot network error',e);}
+    if(res.ok){setDbStatus('ok');loadRecentSnapshots();toast('🗄️ Snapshot saved to memory','success');}
+    else{const e=await res.json().catch(()=>({}));toast('🗄️ Snapshot failed: '+(e.message||e.code||res.status),'warn');}
+  }catch(e){toast('🗄️ Snapshot error: '+(e.message||e),'warn');}
 }
 let dumpRec=null;
 async function dumpVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return toast('Voice not supported','warn');if(!await ensureMic())return;if(!dumpRec){dumpRec=new SR();dumpRec.lang='en-US';dumpRec.continuous=true;dumpRec.interimResults=true;dumpRec.onresult=e=>{let out='';for(let i=0;i<e.results.length;i++)out+=e.results[i][0].transcript+(e.results[i].isFinal?' ':'');document.getElementById('dump-text').value=out;};}try{dumpRec.start();toast('🎙️ Listening...','success');}catch(e){}setTimeout(()=>{try{dumpRec.stop();}catch(e){}},30000);}
