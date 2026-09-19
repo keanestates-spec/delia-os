@@ -8,15 +8,15 @@
 // session has a dozen of them). Ruflo/Claude Code then orchestrates by connecting to
 // THIS server, the same way it connects to any other MCP tool provider.
 //
-// UNVERIFIED PACKAGE PATH — flagging rather than guessing silently: training data and
-// a live fetch of the MCP TypeScript SDK's docs disagreed on the exact import path
-// (`@modelcontextprotocol/sdk/server/mcp.js` vs `@modelcontextprotocol/server`).
-// Confirm the current package name/import path against the SDK's actual npm listing
-// before `npm install` — do not assume either is right without checking.
+// Import path CONFIRMED by actually running this (2026-09-19, Node v24.19.0):
+// `@modelcontextprotocol/sdk/server/mcp.js` / `.../server/stdio.js` are correct —
+// npm install + execution both succeeded on these imports. The earlier draft flagged
+// this as unverified rather than guessing; now it's verified, not guessed.
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'; // VERIFY this import path before install
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { readFile } from 'node:fs/promises';
 import { createMapper } from './agent-mapper.js';
 import 'dotenv/config';
 
@@ -26,13 +26,25 @@ const mapper = createMapper({
   publishExternalUrl: process.env.PUBLISH_EXTERNAL_URL
 });
 
+// BUG FOUND AND FIXED by actually running this: Node's native fetch() does not
+// support file:// URLs ("not implemented... yet" from undici) — fetch() here was
+// copied from ip-layer.js's browser-side pattern without checking it also works in
+// Node. It doesn't. This reads the local manifest file directly instead.
+async function loadManifest() {
+  for (const name of ['../ip_layer_manifest.local.json', '../ip_layer_manifest.json']) {
+    try {
+      const text = await readFile(new URL(name, import.meta.url), 'utf8');
+      return JSON.parse(text);
+    } catch (e) { /* try next candidate — a missing local override is expected, not an error */ }
+  }
+  return { estate_agents_enabled: false, bodies_of_work: [], protocols: {} }; // same safe default as ip-layer.js
+}
+
 async function main() {
   // estate_agents_enabled read from the SAME manifest file every other part of this
   // system reads — not re-derived, not hardcoded. A licensed deployment's manifest is
   // empty, so buildAgentDefinitions() naturally returns only core-layer agents.
-  const manifestRes = await fetch(new URL('../ip_layer_manifest.local.json', import.meta.url)).catch(() => null)
-    ?? await fetch(new URL('../ip_layer_manifest.json', import.meta.url));
-  const manifest = await manifestRes.json();
+  const manifest = await loadManifest();
 
   const agents = await mapper.buildAgentDefinitions(manifest.estate_agents_enabled === true);
   const agentIds = new Set(agents.map((a) => a.id));
