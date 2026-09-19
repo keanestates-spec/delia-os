@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "night-shift": "node night-shift.js"
+    "night-shift": "node night-shift.js",
+    "agent-loop": "node agent-loop.js",
+    "setup": "node setup.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
