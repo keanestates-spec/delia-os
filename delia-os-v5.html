@@ -969,14 +969,24 @@ body.view-wing main.grid{padding-top:5.5rem;}
     <div style="font-family:'Orbitron',sans-serif;letter-spacing:0.1em;color:var(--accent);font-size:1rem;margin-bottom:1.2rem;text-shadow:0 0 14px var(--accent);">🗄️ CONNECT SUPABASE MEMORY</div>
     <label style="font-size:0.7rem;color:var(--text-dim);letter-spacing:0.05em;">PROJECT URL</label>
     <input class="lab-input" id="sb-url" placeholder="https://xxxxxxxx.supabase.co" style="width:100%;margin:0.3rem 0 1.1rem;">
-    <label style="font-size:0.7rem;color:var(--text-dim);letter-spacing:0.05em;">ANON PUBLIC KEY (the long one)</label>
-    <textarea class="lab-input" id="sb-key" placeholder="paste the long anon key here…" style="width:100%;height:100px;margin:0.3rem 0 1.1rem;resize:vertical;font-family:monospace;font-size:0.7rem;line-height:1.4;"></textarea>
+    <label style="font-size:0.7rem;color:var(--text-dim);letter-spacing:0.05em;">PUBLISHABLE / ANON KEY (the long one)</label>
+    <textarea class="lab-input" id="sb-key" placeholder="paste the long publishable key here…" style="width:100%;height:100px;margin:0.3rem 0 1.1rem;resize:vertical;font-family:monospace;font-size:0.7rem;line-height:1.4;"></textarea>
     <div style="display:flex;gap:0.6rem;justify-content:flex-end;flex-wrap:wrap;">
       <button class="hero-btn" onclick="closeSupabaseModal()" style="opacity:0.7;">CANCEL</button>
       <button class="hero-btn" onclick="clearSupabaseModal()" style="color:var(--danger);border-color:var(--danger);">CLEAR</button>
       <button class="hero-btn" onclick="saveSupabaseModal()">✓ CONNECT</button>
     </div>
-    <p style="font-size:0.62rem;color:var(--text-faint);margin-top:1rem;line-height:1.5;">Find both in Supabase → Project Settings → API. Paste the URL and the <b>anon / public</b> key (not service_role). Safe in the browser — protected by Row Level Security.</p>
+    <p style="font-size:0.62rem;color:var(--text-faint);margin-top:1rem;line-height:1.5;">Find both in Supabase → Project Settings → API Keys. Safe in the browser — protected by Row Level Security, not by secrecy.</p>
+    <div style="border-top:1px solid var(--border-bright);margin-top:1.3rem;padding-top:1.1rem;">
+      <label style="font-size:0.7rem;color:var(--text-dim);letter-spacing:0.05em;">SIGN IN (required — your data is locked to your account, the publishable key alone no longer grants access)</label>
+      <div id="sb-auth-status" style="font-size:0.68rem;color:var(--text-faint);margin:0.4rem 0;">Not signed in.</div>
+      <input class="lab-input" id="sb-email" type="email" placeholder="you@example.com" style="width:100%;margin:0.3rem 0 0.6rem;">
+      <div style="display:flex;gap:0.6rem;justify-content:flex-end;flex-wrap:wrap;">
+        <button class="hero-btn" onclick="signOutSupabase()" style="opacity:0.7;">SIGN OUT</button>
+        <button class="hero-btn" onclick="sendSupabaseMagicLink()">✉ SEND MAGIC LINK</button>
+      </div>
+      <p style="font-size:0.62rem;color:var(--text-faint);margin-top:0.7rem;line-height:1.5;">No password — click the link in your email, it redirects back here and signs you in automatically.</p>
+    </div>
   </div>
 </div>
 <div id="camera-overlay">
@@ -1096,7 +1106,7 @@ const state=Object.assign({
   theme:'teal',voiceOn:true,
   elevenLabsKey:'',elevenLabsVoice:'pNInz6obpgDQGcFmaJgB',
   anthropicKey:'',
-  supabaseUrl:'',supabaseKey:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],deals:[],contentIdeas:[],commsLog:[],wins:[],goals:[],
+  supabaseUrl:'',supabaseKey:'',supabaseAccessToken:'',supabaseRefreshToken:'',supabaseTokenExpiresAt:0,supabaseUserEmail:'',apiKeys:{},peptides:[],supplements:[],painPoints:[],deals:[],contentIdeas:[],commsLog:[],wins:[],goals:[],
   tasks:[],transactions:[],wellness:[],dumps:[],heartbeat:[],
   // Weight Warrior
   startWeight:129,goalWeight:84,currentWeight:129,weightLog:[],photos:[],
@@ -1540,18 +1550,79 @@ function setAnthropicKey(){const k=prompt('Paste your Anthropic API key (starts 
 // ═══ SUPABASE MEMORY ═══
 let copilotSessionId='sess_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 function supabaseConfigured(){return !!(state.supabaseUrl&&state.supabaseKey);}
+// Signed in = has a live access token. Under the auth-scoped RLS policies
+// (supabase-auth-scoped-policies.sql), the publishable key alone reaches nothing —
+// state_snapshot/memory_item require an authenticated session, not just the key.
+function supabaseAuthenticated(){return !!(state.supabaseAccessToken&&state.supabaseTokenExpiresAt>Date.now());}
+function sbAuthHeader(){return 'Bearer '+(supabaseAuthenticated()?state.supabaseAccessToken:state.supabaseKey);}
+function updateAuthStatusUI(){const el=document.getElementById('sb-auth-status');if(!el)return;el.textContent=supabaseAuthenticated()?('Signed in as '+state.supabaseUserEmail):(state.supabaseRefreshToken?'Session expired — sending a new link needed.':'Not signed in.');}
+async function sendSupabaseMagicLink(){
+  const email=(document.getElementById('sb-email').value||'').trim();
+  if(!email){toast('Enter an email first','warn');return;}
+  if(!supabaseConfigured()){toast('Set the project URL + publishable key first','warn');return;}
+  try{
+    const res=await fetch(state.supabaseUrl+'/auth/v1/otp',{
+      method:'POST',
+      headers:{'apikey':state.supabaseKey,'Content-Type':'application/json'},
+      body:JSON.stringify({email:email,create_user:true})
+    });
+    if(res.ok){toast('✉ Magic link sent — check your email','success');}
+    else{let m='HTTP '+res.status;try{const e=await res.json();if(e&&e.error_description)m=e.error_description;}catch(_){}toast('Magic link failed: '+m,'warn');}
+  }catch(e){toast('Magic link failed: '+(e.message||e),'warn');}
+}
+function signOutSupabase(){state.supabaseAccessToken='';state.supabaseRefreshToken='';state.supabaseTokenExpiresAt=0;state.supabaseUserEmail='';save();updateAuthStatusUI();updateConnHud();toast('Signed out','warn');}
+// Called once on boot (see the S(()=>{...}) block near the bottom): the magic-link
+// redirect lands here with tokens in the URL fragment (Supabase's implicit flow),
+// never in the query string or server logs.
+function parseSupabaseAuthRedirect(){
+  if(!window.location.hash||window.location.hash.indexOf('access_token=')===-1)return;
+  const params=new URLSearchParams(window.location.hash.slice(1));
+  const accessToken=params.get('access_token'),refreshToken=params.get('refresh_token'),expiresIn=parseInt(params.get('expires_in')||'3600',10);
+  if(!accessToken)return;
+  state.supabaseAccessToken=accessToken;
+  state.supabaseRefreshToken=refreshToken||'';
+  state.supabaseTokenExpiresAt=Date.now()+(expiresIn*1000);
+  save();
+  // Strip the tokens out of the visible URL immediately — they're sensitive, don't
+  // leave them sitting in browser history or a shared-screen URL bar.
+  history.replaceState(null,'',window.location.pathname+window.location.search);
+  fetchSupabaseUserEmail();
+}
+async function fetchSupabaseUserEmail(){
+  if(!supabaseConfigured()||!state.supabaseAccessToken)return;
+  try{
+    const res=await fetch(state.supabaseUrl+'/auth/v1/user',{headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseAccessToken}});
+    if(res.ok){const u=await res.json();state.supabaseUserEmail=u.email||'';save();}
+  }catch(e){console.warn('fetchSupabaseUserEmail failed',e);}
+  updateAuthStatusUI();updateConnHud();
+}
+async function refreshSupabaseTokenIfNeeded(){
+  if(!state.supabaseRefreshToken)return;
+  if(state.supabaseTokenExpiresAt>Date.now()+60000)return; // still valid for >1min, don't bother
+  try{
+    const res=await fetch(state.supabaseUrl+'/auth/v1/token?grant_type=refresh_token',{
+      method:'POST',
+      headers:{'apikey':state.supabaseKey,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:state.supabaseRefreshToken})
+    });
+    if(res.ok){const d=await res.json();state.supabaseAccessToken=d.access_token;state.supabaseRefreshToken=d.refresh_token||state.supabaseRefreshToken;state.supabaseTokenExpiresAt=Date.now()+((d.expires_in||3600)*1000);save();}
+    else{signOutSupabase();} // refresh token itself expired/revoked — needs a fresh magic link
+  }catch(e){console.warn('token refresh failed',e);}
+}
 function updateConnHud(){const set=(id,on)=>{const e=document.getElementById(id);if(e)e.className='conn-dot'+(on?' live':'');};set('conn-anthropic',!!state.anthropicKey);set('conn-supabase',supabaseConfigured());set('conn-voice',state.voiceOn);const w=document.getElementById('conn-wave');if(w)w.classList.toggle('idle',!state.voiceOn);}
 function setDbStatus(s){const d=document.getElementById('copilot-db-dot');if(!d)return;const map={off:['#555','Memory: not connected'],connecting:['#ffb020','Memory: connecting…'],ok:['#00e676','Memory: synced'],error:['#ff3b30','Memory: error — tap 🗄️ to check']};const v=map[s]||map.off;d.style.background=v[0];d.style.boxShadow=s==='off'?'none':'0 0 8px '+v[0];d.title=v[1];}
-function setSupabase(){const m=document.getElementById('supabase-modal');if(!m)return;document.getElementById('sb-url').value=state.supabaseUrl||'';document.getElementById('sb-key').value=state.supabaseKey||'';m.style.display='flex';setTimeout(()=>document.getElementById('sb-url').focus(),50);}
+function setSupabase(){const m=document.getElementById('supabase-modal');if(!m)return;document.getElementById('sb-url').value=state.supabaseUrl||'';document.getElementById('sb-key').value=state.supabaseKey||'';document.getElementById('sb-email').value=state.supabaseUserEmail||'';updateAuthStatusUI();m.style.display='flex';setTimeout(()=>document.getElementById('sb-url').focus(),50);}
 function closeSupabaseModal(){const m=document.getElementById('supabase-modal');if(m)m.style.display='none';}
 function clearSupabaseModal(){document.getElementById('sb-url').value='';document.getElementById('sb-key').value='';}
-function saveSupabaseModal(){state.supabaseUrl=document.getElementById('sb-url').value.trim().replace(/\/+$/,'');state.supabaseKey=document.getElementById('sb-key').value.trim();save();updateConnHud();const btn=document.getElementById('copilot-db-btn');if(btn)btn.style.opacity=supabaseConfigured()?'1':'0.5';closeSupabaseModal();if(typeof renderConnections==='function')renderConnections();if(supabaseConfigured()){setDbStatus('connecting');toast('🗄️ Supabase connected — loading memory…','success');loadCopilotHistory();}else{setDbStatus('off');toast('🗄️ Supabase cleared','warn');}}
+function saveSupabaseModal(){state.supabaseUrl=document.getElementById('sb-url').value.trim().replace(/\/+$/,'');state.supabaseKey=document.getElementById('sb-key').value.trim();save();updateConnHud();const btn=document.getElementById('copilot-db-btn');if(btn)btn.style.opacity=supabaseConfigured()?'1':'0.5';closeSupabaseModal();if(typeof renderConnections==='function')renderConnections();if(supabaseConfigured()){setDbStatus(supabaseAuthenticated()?'connecting':'off');if(supabaseAuthenticated()){toast('🗄️ Supabase connected — loading memory…','success');loadCopilotHistory();}else{toast('🗄️ URL/key saved — sign in below to actually load or save anything','warn');}}else{setDbStatus('off');toast('🗄️ Supabase cleared','warn');}}
 async function pushToSupabase(role,text){
   if(!supabaseConfigured())return;
+  await refreshSupabaseTokenIfNeeded();
+  if(!supabaseAuthenticated()){setDbStatus('error');return;} // auth-scoped RLS: unauthenticated writes are rejected server-side anyway, don't bother trying
   try{
     const res=await fetch(state.supabaseUrl+'/rest/v1/conversations',{
       method:'POST',
-      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+      headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader(),'Content-Type':'application/json','Prefer':'return=minimal'},
       body:JSON.stringify({session_id:copilotSessionId,role:role,content:text})
     });
     setDbStatus(res.ok?'ok':'error');
@@ -1559,9 +1630,11 @@ async function pushToSupabase(role,text){
 }
 async function loadCopilotHistory(){
   if(!supabaseConfigured())return;
+  await refreshSupabaseTokenIfNeeded();
+  if(!supabaseAuthenticated()){setDbStatus('off');return;}
   try{
     const res=await fetch(state.supabaseUrl+'/rest/v1/conversations?select=role,content,created_at&order=created_at.desc&limit=50',{
-      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey}
+      headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader()}
     });
     // 404 means conversations table not yet created — not an error, just no history
     if(res.status===404){setDbStatus('ok');return;}
@@ -1574,12 +1647,12 @@ async function loadCopilotHistory(){
 async function pingSupabase(){
   if(!supabaseConfigured())return;
   try{
-    // Hit the PostgREST root — just validates the anon key, no table permissions needed
+    // Hit the PostgREST root — just validates the key reaches the project, no table permissions needed
     const res=await fetch(state.supabaseUrl+'/rest/v1/',{
-      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey,'Accept':'application/json'}
+      headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader(),'Accept':'application/json'}
     });
     // 200 or 400-range content responses all mean we reached Supabase successfully
-    if(res.status<500){setDbStatus('ok');}
+    if(res.status<500){setDbStatus(supabaseAuthenticated()?'ok':'off');}
     else{setDbStatus('error');}
   }catch(e){console.warn('Supabase ping failed:',e);setDbStatus('error');}
 }
@@ -1604,9 +1677,11 @@ async function copilotRespond(text){
 let recentSnapshots=[];
 async function loadRecentSnapshots(){
   if(!supabaseConfigured())return;
+  await refreshSupabaseTokenIfNeeded();
+  if(!supabaseAuthenticated())return;
   try{
     const res=await fetch(state.supabaseUrl+'/rest/v1/state_snapshots?select=summary,category,snapshot_data,created_at&order=created_at.desc&limit=5',{
-      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey}
+      headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader()}
     });
     if(res.ok){recentSnapshots=await res.json();}
   }catch(e){console.warn('loadRecentSnapshots failed',e);}
@@ -1690,10 +1765,12 @@ async function saveStateSnapshot(summary,category){
       capturedAt:new Date().toISOString()
     }
   };
+  await refreshSupabaseTokenIfNeeded();
+  if(!supabaseAuthenticated()){toast('🗄️ Sign in to Supabase first (tap 🗄️)','warn');return;}
   try{
     const res=await fetch(state.supabaseUrl+'/rest/v1/state_snapshots',{
       method:'POST',
-      headers:{'apikey':state.supabaseKey,'Authorization':'Bearer '+state.supabaseKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+      headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader(),'Content-Type':'application/json','Prefer':'return=minimal'},
       body:JSON.stringify(payload)
     });
     if(res.ok){setDbStatus('ok');loadRecentSnapshots();toast('🗄️ Snapshot saved to memory','success');}
@@ -1760,10 +1837,11 @@ function checkEnv(){
 function initEverything(){
   const S=fn=>{try{fn();}catch(e){console.error('init step failed:',e);showInitError(e);}};
   S(checkEnv);
+  S(parseSupabaseAuthRedirect); // must run before anything else touches Supabase — this is where a magic-link click-through actually signs in
   [initParticles,initStarfield,init3DBrain,renderTasks,renderRev,renderHeartbeat,renderBrainBalance,renderOverview,updateBodyScanner,renderWarrior,renderGiants,renderProperties,renderFinance,renderMedical,renderRSD,renderPeptides,renderStateDashboard,renderPipeline,renderContent,renderComms,renderWins,renderRitual,renderGoals,initPainLogging,renderPainPoints,renderCopilotMessages].forEach(S);
   S(()=>{document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';});
   S(()=>{document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';});
-  S(()=>{if(supabaseConfigured()){setDbStatus('connecting');pingSupabase();loadRecentSnapshots();}else setDbStatus('off');});
+  S(()=>{if(supabaseConfigured()&&supabaseAuthenticated()){setDbStatus('connecting');pingSupabase();loadRecentSnapshots();}else{setDbStatus('off');}});
   S(updateConnHud);S(updateHero);S(calcLifeScore);S(initHotel);
   S(()=>{document.getElementById('rev-date').value=new Date().toISOString().slice(0,10);});
   setInterval(()=>{S(calcLifeScore);S(updateHero);S(updateBodyScanner);},30000);
