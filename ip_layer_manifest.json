@@ -1,0 +1,10 @@
+{
+  "estate_agents_enabled": false,
+  "bodies_of_work": [],
+  "protocols": {
+    "subtraction": false,
+    "peptide": false,
+    "breathwork": false,
+    "calibration_loops": false
+  }
+}

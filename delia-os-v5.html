@@ -1151,9 +1151,7 @@ const state=Object.assign({
   lastReset:new Date().toDateString()
 },stored);
 if(state.lastReset!==new Date().toDateString()){state.brainActivity={prefrontal:0,hippocampus:0,amygdala:0,cerebellum:0,temporal:0,occipital:0,motor:0,dmn:0,reward:0};state.lastReset=new Date().toDateString();}
-// ─── Supabase bootstrap: auto-connect with project credentials if not already saved ───
-if(!state.supabaseUrl)state.supabaseUrl='https://fuznirguvyiyqgcfbmxl.supabase.co';
-if(!state.supabaseKey)state.supabaseKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1em5pcmd1dnlpeXFnY2ZibXhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzM1MzMsImV4cCI6MjA5NjM0OTUzM30.ZDbGgpnVn9KbdrXOPyi5-0wbGqz7GmRZWoEmVPLD5yQ';
+// ─── Supabase connection: paste your project URL/anon key into the MEMORY modal (no credentials ship in source) ───
 // Load Anthropic key from its own backup entry if the state bundle didn't have it
 if(!state.anthropicKey)state.anthropicKey=localStorage.getItem('nexus_anthropic_key')||'';
 function save(){

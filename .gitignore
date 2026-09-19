@@ -1,0 +1,11 @@
+# Founder's real IP-layer config — never commit. The checked-in ip_layer_manifest.json
+# is the licensed-core default (everything disabled) on purpose; this file overrides it locally.
+ip_layer_manifest.local.json
+
+# Real IP body-of-work registry rows — references actual patent-draft filenames.
+# supabase-ip-registry-schema.sql (the table structure) is committed; this data is not.
+ip-body-registry.local.sql
+
+# Orchestrator secrets and dependencies — never commit either.
+orchestrator/.env
+orchestrator/node_modules/

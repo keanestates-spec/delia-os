@@ -1,0 +1,21 @@
+{
+  "name": "hotel-nexus-orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hotel NEXUS as an MCP server — Ruflo/Claude Code orchestrates by connecting to this, it is not run as a library. See ../adapters/ruflo.md for the design and the correction from the original plan.",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "night-shift": "node night-shift.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "node-cron": "^3.0.3",
+    "zod": "^3.23.0",
+    "dotenv": "^16.4.0"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
