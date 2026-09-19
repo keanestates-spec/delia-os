@@ -838,6 +838,27 @@ body.view-wing main.grid{padding-top:5.5rem;}
     </div>
     <div class="pipeline" id="pipeline"></div>
   </section>
+  <!-- MORNING BOARD -->
+  <section class="widget col-12" data-wing="morningboard">
+    <div class="widget-header"><span class="widget-title">🎯 MORNING BOARD // HOTEL NEXUS</span><span class="widget-icon" id="mb-conn-note" style="font-size:0.6rem;color:var(--text-faint);cursor:pointer;" onclick="setSupabase()">connect memory ↗</span></div>
+    <div id="mb-gate" style="color:var(--text-dim);font-size:0.78rem;">Sign in to Supabase memory (🗄️ above) to use the Morning Board — it reads and writes real state_snapshot/approval_request rows, not local-only data.</div>
+    <div id="mb-body" style="display:none;">
+      <div class="lab-col-title">TODAY'S STATE</div>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <input class="lab-input" id="mb-intention" placeholder="What's the intention right now?" style="flex:2;min-width:200px;">
+        <input class="lab-input" id="mb-energy" type="number" min="1" max="10" placeholder="Energy 1-10" style="width:110px;">
+        <input class="lab-input" id="mb-mood" type="number" min="1" max="10" placeholder="Mood 1-10" style="width:100px;">
+        <button class="hero-btn" onclick="logStateSnapshot()">+ LOG STATE</button>
+      </div>
+      <div id="mb-snapshots" style="margin-bottom:1rem;"></div>
+
+      <div class="lab-col-title">APPROVAL QUEUE</div>
+      <div id="mb-approvals" style="margin-bottom:1rem;"></div>
+
+      <div class="lab-col-title">RECENT MEMORY</div>
+      <div id="mb-memory"></div>
+    </div>
+  </section>
   <!-- WIN VAULT -->
   <section class="widget col-12" data-wing="winvault">
     <div class="widget-header"><span class="widget-title">🏆 WIN VAULT // BANK EVERY VICTORY</span><span class="widget-icon" id="win-count">0 wins</span></div>
@@ -1595,6 +1616,7 @@ async function fetchSupabaseUserEmail(){
     if(res.ok){const u=await res.json();state.supabaseUserEmail=u.email||'';save();}
   }catch(e){console.warn('fetchSupabaseUserEmail failed',e);}
   updateAuthStatusUI();updateConnHud();
+  if(typeof renderMorningBoard==='function')renderMorningBoard();
 }
 async function refreshSupabaseTokenIfNeeded(){
   if(!state.supabaseRefreshToken)return;
@@ -1838,7 +1860,7 @@ function initEverything(){
   const S=fn=>{try{fn();}catch(e){console.error('init step failed:',e);showInitError(e);}};
   S(checkEnv);
   S(parseSupabaseAuthRedirect); // must run before anything else touches Supabase — this is where a magic-link click-through actually signs in
-  [initParticles,initStarfield,init3DBrain,renderTasks,renderRev,renderHeartbeat,renderBrainBalance,renderOverview,updateBodyScanner,renderWarrior,renderGiants,renderProperties,renderFinance,renderMedical,renderRSD,renderPeptides,renderStateDashboard,renderPipeline,renderContent,renderComms,renderWins,renderRitual,renderGoals,initPainLogging,renderPainPoints,renderCopilotMessages].forEach(S);
+  [initParticles,initStarfield,init3DBrain,renderTasks,renderRev,renderHeartbeat,renderBrainBalance,renderOverview,updateBodyScanner,renderWarrior,renderGiants,renderProperties,renderFinance,renderMedical,renderRSD,renderPeptides,renderStateDashboard,renderPipeline,renderContent,renderComms,renderWins,renderRitual,renderGoals,initPainLogging,renderPainPoints,renderCopilotMessages,renderMorningBoard].forEach(S);
   S(()=>{document.getElementById('copilot-key-btn').style.opacity=state.anthropicKey?'1':'0.5';});
   S(()=>{document.getElementById('copilot-db-btn').style.opacity=supabaseConfigured()?'1':'0.5';});
   S(()=>{if(supabaseConfigured()&&supabaseAuthenticated()){setDbStatus('connecting');pingSupabase();loadRecentSnapshots();}else{setDbStatus('off');}});
@@ -2025,6 +2047,87 @@ function toggleComms(i){state.commsLog[i].done=!state.commsLog[i].done;save();re
 function delComms(i){state.commsLog.splice(i,1);save();renderComms();}
 // ═══ SAVA NEXUS PIPELINE ═══
 const DEAL_STAGES=['lead','qualified','proposal','closed'];
+// ═══ MORNING BOARD ═══
+// Real CRUD against state_snapshot / approval_request / memory_item — no agent
+// reasoning happens here, there's no orchestrator running anywhere yet to produce
+// one. This is the board (the surface), not the agents. readiness_band below is a
+// deliberately simple, clearly-labeled heuristic, not inference — matches the brain
+// doc's own §39.10 instruction to start pragmatic and replace it later.
+function mbHeuristicBand(energy,mood){const avg=(energy+mood)/2;if(avg<=3)return 'red';if(avg>=7)return 'green';return 'amber';}
+function renderMorningBoard(){
+  const gate=document.getElementById('mb-gate'),body=document.getElementById('mb-body');
+  if(!gate||!body)return;
+  if(!supabaseConfigured()||!supabaseAuthenticated()){gate.style.display='block';body.style.display='none';return;}
+  gate.style.display='none';body.style.display='block';
+  loadMbSnapshots();loadMbApprovals();loadMbMemory();
+}
+async function logStateSnapshot(){
+  if(!supabaseAuthenticated()){toast('Sign in to Supabase first','warn');return;}
+  const intention=document.getElementById('mb-intention').value.trim();
+  const energy=parseInt(document.getElementById('mb-energy').value,10)||5;
+  const mood=parseInt(document.getElementById('mb-mood').value,10)||5;
+  await refreshSupabaseTokenIfNeeded();
+  try{
+    const res=await fetch(state.supabaseUrl+'/rest/v1/state_snapshot',{
+      method:'POST',
+      headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader(),'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({
+        person_id:state.supabaseUserEmail||'founder',
+        estate_id:'hotel-nexus-primary',
+        intention:{stated_focus:intention},
+        physiology:{energy_level:energy},
+        mood:{score:mood},
+        readiness_band:mbHeuristicBand(energy,mood),
+        confidence_score:40, // low on purpose — a 2-input heuristic isn't confident inference, say so
+        explanation_summary:'client heuristic from energy+mood inputs only, no state fusion yet'
+      })
+    });
+    if(res.ok){toast('🎯 State logged','success');document.getElementById('mb-intention').value='';loadMbSnapshots();}
+    else{const e=await res.json().catch(()=>({}));toast('State log failed: '+(e.message||e.code||res.status),'warn');}
+  }catch(e){toast('State log error: '+(e.message||e),'warn');}
+}
+async function loadMbSnapshots(){
+  const el=document.getElementById('mb-snapshots');if(!el)return;
+  await refreshSupabaseTokenIfNeeded();
+  try{
+    const res=await fetch(state.supabaseUrl+'/rest/v1/state_snapshot?select=intention,physiology,mood,readiness_band,timestamp&order=timestamp.desc&limit=5',{headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader()}});
+    if(!res.ok){el.innerHTML='<div style="color:var(--text-dim);font-size:0.72rem;">Could not load — '+res.status+'</div>';return;}
+    const rows=await res.json();
+    el.innerHTML=rows.length?rows.map(r=>'<div class="pep-card"><span style="flex:1;">'+(r.intention&&r.intention.stated_focus?r.intention.stated_focus:'—')+' <span style="color:var(--text-faint);">⚡'+(r.physiology&&r.physiology.energy_level||'—')+' 😊'+(r.mood&&r.mood.score||'—')+' '+(r.readiness_band||'')+'</span></span><span style="color:var(--text-faint);font-size:0.62rem;">'+new Date(r.timestamp).toLocaleString()+'</span></div>').join(''):'<div style="color:var(--text-dim);font-size:0.72rem;">No snapshots yet — log one above.</div>';
+  }catch(e){el.innerHTML='<div style="color:var(--danger);font-size:0.72rem;">Load failed: '+(e.message||e)+'</div>';}
+}
+async function loadMbApprovals(){
+  const el=document.getElementById('mb-approvals');if(!el)return;
+  await refreshSupabaseTokenIfNeeded();
+  try{
+    const res=await fetch(state.supabaseUrl+'/rest/v1/approval_request?decision_status=eq.pending&select=approval_request_id,requested_action_type,requested_by_agent,risk_tier,recommended_decision,created_at&order=created_at.desc&limit=10',{headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader()}});
+    if(!res.ok){el.innerHTML='<div style="color:var(--text-dim);font-size:0.72rem;">Could not load — '+res.status+'</div>';return;}
+    const rows=await res.json();
+    el.innerHTML=rows.length?rows.map(r=>'<div class="pep-card"><span style="flex:1;"><b>'+r.requested_action_type+'</b> by '+r.requested_by_agent+' <span style="color:var(--text-faint);">risk '+r.risk_tier+'</span></span><button class="deal-btn" onclick="decideApproval(\''+r.approval_request_id+'\',\'approved\')" title="Approve">✓</button><button class="deal-btn" style="color:var(--danger);" onclick="decideApproval(\''+r.approval_request_id+'\',\'rejected\')" title="Reject">✕</button></div>').join(''):'<div style="color:var(--text-dim);font-size:0.72rem;">Nothing pending.</div>';
+  }catch(e){el.innerHTML='<div style="color:var(--danger);font-size:0.72rem;">Load failed: '+(e.message||e)+'</div>';}
+}
+async function decideApproval(id,decision){
+  await refreshSupabaseTokenIfNeeded();
+  try{
+    const res=await fetch(state.supabaseUrl+'/rest/v1/approval_request?approval_request_id=eq.'+id,{
+      method:'PATCH',
+      headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader(),'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({decision_status:decision,decision_at:new Date().toISOString(),decision_by:state.supabaseUserEmail||'founder'})
+    });
+    if(res.ok){toast(decision==='approved'?'✓ Approved':'✕ Rejected','success');loadMbApprovals();}
+    else{toast('Decision failed — '+res.status,'warn');}
+  }catch(e){toast('Decision error: '+(e.message||e),'warn');}
+}
+async function loadMbMemory(){
+  const el=document.getElementById('mb-memory');if(!el)return;
+  await refreshSupabaseTokenIfNeeded();
+  try{
+    const res=await fetch(state.supabaseUrl+'/rest/v1/memory_item?select=title,summary,evidence_class,memory_type,created_at&order=created_at.desc&limit=8',{headers:{'apikey':state.supabaseKey,'Authorization':sbAuthHeader()}});
+    if(!res.ok){el.innerHTML='<div style="color:var(--text-dim);font-size:0.72rem;">Could not load — '+res.status+'</div>';return;}
+    const rows=await res.json();
+    el.innerHTML=rows.length?rows.map(r=>'<div class="pep-card"><span style="flex:1;">'+r.title+' <span style="color:var(--text-faint);">'+r.evidence_class+'</span></span><span style="color:var(--text-faint);font-size:0.62rem;">'+new Date(r.created_at).toLocaleDateString()+'</span></div>').join(''):'<div style="color:var(--text-dim);font-size:0.72rem;">No memory yet.</div>';
+  }catch(e){el.innerHTML='<div style="color:var(--danger);font-size:0.72rem;">Load failed: '+(e.message||e)+'</div>';}
+}
 const STAGE_LABELS={lead:'LEAD',qualified:'QUALIFIED',proposal:'PROPOSAL',closed:'CLOSED'};
 function renderPipeline(){const el=document.getElementById('pipeline');if(!el)return;state.deals=state.deals||[];
   el.innerHTML=DEAL_STAGES.map(st=>{const ds=state.deals.map((d,i)=>({d,i})).filter(x=>x.d.stage===st);const total=ds.reduce((s,x)=>s+(x.d.value||0),0);
